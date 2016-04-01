@@ -236,12 +236,12 @@ div#notebook {
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h3 id="2.-What-is-an-appropriate-set-of-hypotheses-for-this-task?-What-kind-of-statistical-test-do-you-expect-to-perform?-Justify-your-choices.">2. What is an appropriate set of hypotheses for this task? What kind of statistical test do you expect to perform? Justify your choices.<a class="anchor-link" href="#2.-What-is-an-appropriate-set-of-hypotheses-for-this-task?-What-kind-of-statistical-test-do-you-expect-to-perform?-Justify-your-choices.">&#182;</a></h3><p>H0: Null hypothesis ==&gt; <strong>the congruent condition does not decrease the average time needed to read the list of words</strong>, i.e. the average time difference between the congruent and incongruent conditions is higher or equal than 0.</p>
-$$\mu_{congruent}-\mu_{incongruent}\geq0$$<p>H1: Alternative hypothesis ==&gt; <strong>the incongruent condition does decrease the average time needed to read the list of words</strong>, i.e. the average time difference between the congruent and incongruent conditions is lower than 0.</p>
-$$\mu_{congruent}-\mu_{incongruent}<0$$<p>With :</p>
-<p>$\mu_{congruent}$ as the average time needed to recognize the color with the congruent condition</p>
-<p>$\mu_{incongruent}$ as the average time needed to recognize the color with the congruent condition</p>
-<p>As the same person is trying the two different word condition in a row, we are working with <strong>dependent samples</strong>. As we want to evaluate the difference between these two word conditions (and we do not know the mean&amp;standard deviation for the entire population), we are going to follow a <strong>one sample t-test</strong> with the recorded time difference between the two test conditions.</p>
+<h3 id="2.-What-is-an-appropriate-set-of-hypotheses-for-this-task?-What-kind-of-statistical-test-do-you-expect-to-perform?-Justify-your-choices.">2. What is an appropriate set of hypotheses for this task? What kind of statistical test do you expect to perform? Justify your choices.<a class="anchor-link" href="#2.-What-is-an-appropriate-set-of-hypotheses-for-this-task?-What-kind-of-statistical-test-do-you-expect-to-perform?-Justify-your-choices.">&#182;</a></h3><p>H0: Null hypothesis ==&gt; <strong>the incongruent population mean is not higher than the congruent population mean</strong></p>
+$$H_0:\mu_{congruent}\geq\mu_{incongruent}$$<p>H1: Alternative hypothesis ==&gt; <strong>the incongruent population mean is higher than the congruent population mean</strong></p>
+$$H_1:\mu_{congruent}<\mu_{incongruent}$$<p>With :</p>
+<p>$\mu_{congruent}$ as the population mean for the congruent condition</p>
+<p>$\mu_{incongruent}$ as the population mean for the incongruent condition</p>
+<p>As the same person is trying the two different word conditions in a row, we are working with <strong>dependent samples</strong>. As we want to evaluate the difference between these two population mean (and we do not know the mean&amp;standard deviation for the entire population), and as we will see later, the two distribution are <strong>approximately normal</strong>, we are going to follow a <strong>dependent t-test</strong> with the recorded time difference between the two test conditions.</p>
 <p>According to the definition of our null hypothesis, we are focusing on a <strong>one-tailed test in the negative direction</strong>.</p>
 
 </div>
