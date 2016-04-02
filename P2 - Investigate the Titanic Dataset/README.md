@@ -4,7 +4,10 @@ The goal here was to demonstrate some basic Data analysis skills using the Pytho
 
 To showcase this, the wellknown **Titanic dataset** from Kaggle has been chosen. The main question that has been considered here was: **What factors made people more likely to survive**?
 
-No machine learning algorythm has been used here. The point was not to recreate the Kaggle tutorial scripts, but to illustrate the first steps when confronted to a new (clean) dataset.
+The correlation of the survival rate with each independent variable was studied, and visualizations were made to help the analyze. For a few unexpected results, additional Data manipulation was done to try to get some clues about possible explanations.
+
+No machine learning algorythm has been used here. The point was not to recreate the Kaggle tutorial scripts, but to illustrate the first steps when confronted to a new (clean) dataset. 
+
 
 
 ##Background Dataset Information (from the Kaggle website)
