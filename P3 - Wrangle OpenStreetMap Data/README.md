@@ -22,6 +22,5 @@ Once satisfied with the MongoDB database, I used some queries to analyze the OSM
 
 
 ##Jupyter Notebook
-As for the previous projects, I displayed my code and analysis via a Jupyter Notebook. I was not able to upload the OSM data on the GitHub platform (file size limited to 100 MB), and, as I needed an active MongoDB database, the hosted notebook does not run correctly.
-
-But I put an html version in the "html" folder which should display the correct results. Thank you to open [this page](html/notebook.html) if you wish to consult my work.
+As for the previous projects, I displayed my code and analysis via a Jupyter Notebook. I was not able to upload the OSM data on the GitHub platform (file size limited to 100 MB), but the data is freely available under the link specified at the begining of this page. 
+You can find the notebook [here](P3%20-%20Wrangle%20OSM%20Data%20with%20MongoDB.ipynb)
