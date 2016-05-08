@@ -187,8 +187,8 @@ div#notebook {
 <li>Process data from very large files that can not be cleaned with spreadsheet programs</li>
 <li>Learn how to store, query, and aggregate data using MongoDB</li>
 </ul>
-<p>The first part of my work is focused on getting some first clues about data quality of the OSM file. The idea is to find out which treatment has to be done to the data before importing it to the database.</p>
-<p>But as the file size is very big, it is not very handy to do all the auditing via the OSM file. This is why, after having imported the data into MongoDB, I start with some further auditing in order to check the data quality level.</p>
+<p>The first part of my work is focused on getting some first clues about data quality of the OSM file. The idea is to find out which treatment has to be done to the data in order to improve its quality before importing it to the database. The main focus is on postcodes, streetnames, and population.</p>
+<p>As the file size is very big, it is not very handy to do all the auditing via the OSM file. This is why, after having imported the data into MongoDB, I start with some further auditing in order to check the data quality level.</p>
 <p>When satisfied with the MongoDB database, I use some queries to analyze the OSM data further and try to find out interesting numbers or trends with the Paris Metroline data.</p>
 
 </div>
@@ -207,7 +207,7 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[12]:</div>
+<div class="prompt input_prompt">In&nbsp;[1]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span class="kn">import</span> <span class="nn">codecs</span>
@@ -215,19 +215,22 @@ div#notebook {
 <span class="n">lines</span> <span class="o">=</span> <span class="mi">100000</span> <span class="c"># maximum number of lines to be copied in the smaller file</span>
 <span class="n">file_in</span> <span class="o">=</span> <span class="s">&#39;data</span><span class="se">\\</span><span class="s">paris_france.osm&#39;</span>
 <span class="n">file_out</span> <span class="o">=</span> <span class="s">&#39;{0}_extract.{1}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">file_in</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;.&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span> <span class="n">file_in</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;.&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">])</span>
-<span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
-<span class="k">with</span> <span class="n">codecs</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">file_out</span><span class="p">,</span> <span class="s">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fo</span><span class="p">:</span>
-    <span class="k">with</span> <span class="n">codecs</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">file_in</span><span class="p">,</span> <span class="s">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fi</span><span class="p">:</span>
-        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">fi</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">lines</span><span class="p">:</span>
-                <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
-                <span class="n">fo</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="n">i</span> <span class="o">==</span> <span class="n">lines</span><span class="p">:</span>
-                <span class="n">fo</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;&lt;/osm&gt;&#39;</span><span class="p">)</span>    <span class="c"># Adding osm end tag in the end of the file to close the osm tag from the file start</span>
-                <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">break</span>
-<span class="n">filename</span> <span class="o">=</span> <span class="n">file_out</span>
+
+<span class="k">def</span> <span class="nf">small_file</span><span class="p">(</span><span class="n">file_in</span><span class="p">,</span> <span class="n">file_out</span><span class="p">,</span> <span class="n">lines</span><span class="p">):</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">with</span> <span class="n">codecs</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">file_out</span><span class="p">,</span> <span class="s">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fo</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">codecs</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">file_in</span><span class="p">,</span> <span class="s">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fi</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">fi</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">lines</span><span class="p">:</span>
+                    <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+                    <span class="n">fo</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">i</span> <span class="o">==</span> <span class="n">lines</span><span class="p">:</span>
+                    <span class="n">fo</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;&lt;/osm&gt;&#39;</span><span class="p">)</span>    <span class="c"># Adding osm end tag in the end of the file to close the osm tag from the file start</span>
+                    <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">break</span>
+
+<span class="n">small_file</span><span class="p">(</span><span class="n">file_in</span><span class="p">,</span> <span class="n">file_out</span><span class="p">,</span> <span class="n">lines</span><span class="p">)</span>
 </pre></div>
 
 </div>
@@ -379,6 +382,125 @@ div#notebook {
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Auditing-postcode">Auditing postcode<a class="anchor-link" href="#Auditing-postcode">&#182;</a></h3>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[24]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span class="kn">import</span> <span class="nn">xml.etree.cElementTree</span> <span class="kn">as</span> <span class="nn">ET</span>
+<span class="kn">import</span> <span class="nn">pprint</span>
+<span class="kn">import</span> <span class="nn">re</span>
+
+<span class="n">std_postcodes</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+<span class="n">nostd_postcodes</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+<span class="n">postcodes_types</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+
+<span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">element</span> <span class="ow">in</span> <span class="n">ET</span><span class="o">.</span><span class="n">iterparse</span><span class="p">(</span><span class="s">&#39;data</span><span class="se">\\</span><span class="s">paris_france.osm&#39;</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">element</span><span class="o">.</span><span class="n">tag</span> <span class="ow">in</span> <span class="p">[</span><span class="s">&#39;way&#39;</span><span class="p">,</span> <span class="s">&#39;node&#39;</span><span class="p">,</span> <span class="s">&#39;relation&#39;</span><span class="p">]:</span> 
+        <span class="k">for</span> <span class="n">subel</span> <span class="ow">in</span> <span class="n">element</span><span class="p">:</span>
+            <span class="n">t_key</span> <span class="o">=</span> <span class="n">subel</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;k&#39;</span><span class="p">)</span>
+            <span class="n">t_value</span> <span class="o">=</span> <span class="n">subel</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;v&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">t_key</span> <span class="o">==</span> <span class="s">&#39;addr:postcode&#39;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">t_value</span><span class="p">)</span> <span class="o">!=</span><span class="mi">5</span><span class="p">:</span>
+                    <span class="n">nostd_postcodes</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">t_value</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">t_value</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">t_value</span><span class="p">)</span>
+                        <span class="c"># all the French departments where the metroline goes</span>
+                        <span class="k">if</span> <span class="n">t_value</span><span class="o">/</span><span class="mi">1000</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">75</span><span class="p">,</span> <span class="mi">92</span><span class="p">,</span> <span class="mi">93</span><span class="p">,</span> <span class="mi">94</span><span class="p">,</span> <span class="mi">95</span><span class="p">,</span> <span class="mi">77</span><span class="p">,</span> <span class="mi">91</span><span class="p">,</span><span class="mi">78</span><span class="p">,</span> <span class="mi">60</span><span class="p">,</span> <span class="mi">62</span><span class="p">]:</span> 
+                            <span class="n">std_postcodes</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">t_value</span><span class="p">)</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">nostd_postcodes</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">t_value</span><span class="p">)</span>
+                    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                        <span class="n">nostd_postcodes</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">t_value</span><span class="p">)</span>
+        <span class="n">element</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+<span class="k">print</span> <span class="s">&#39;number of standard postcodes: &#39;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">std_postcodes</span><span class="p">)</span>
+<span class="k">print</span> <span class="s">&#39;number of non standard postcodes: &#39;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">nostd_postcodes</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area"><div class="prompt"></div>
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>number of standard postcodes:  543
+number of non standard postcodes:  14
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[22]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span class="k">for</span> <span class="n">el</span> <span class="ow">in</span> <span class="n">nostd_postcodes</span><span class="p">:</span>
+    <span class="k">print</span> <span class="n">el</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area"><div class="prompt"></div>
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>92055 la défense cedex
+92190;92360
+94100;94210 (La Varenne)
+33000
+71370
+94010 CRETEIL CEDEX
+93200;93210
+94100;94210
+62160
+64230
+51540
+92 100
+95000;95300
+95000;95800
+75016;75116
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>When reading the different postcodes, python imports them as string. To use them, I first have to convert them into integers.</p>
+<p>It appears that some entries are done with several postcodes. In that situation, I will make a list out of it before importing it in the MongoDB database. Some postcodes contain text which can be deleted. I will also handle these before importing them.
+I also checked if all the relevant postcodes were located in the French departments where the metroline goes. Some entries are refering to department far away from Paris. As I have strong doubts about the accuracy of these elements, I decided to not import these in the database.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
 <h3 id="Auditing-street-names">Auditing street names<a class="anchor-link" href="#Auditing-street-names">&#182;</a></h3><p>Let's have a look at the first street names we bump into in the small dataset.</p>
 
 </div>
@@ -386,19 +508,27 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[13]:</div>
+<div class="prompt input_prompt">In&nbsp;[3]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span class="kn">import</span> <span class="nn">xml.etree.cElementTree</span> <span class="kn">as</span> <span class="nn">ET</span>
 <span class="kn">import</span> <span class="nn">pprint</span>
 <span class="kn">import</span> <span class="nn">re</span>
 
-<span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">element</span> <span class="ow">in</span> <span class="n">ET</span><span class="o">.</span><span class="n">iterparse</span><span class="p">(</span><span class="s">&#39;data</span><span class="se">\\</span><span class="s">paris_france_extract.osm&#39;</span><span class="p">):</span>
-    <span class="k">if</span> <span class="n">element</span><span class="o">.</span><span class="n">tag</span> <span class="ow">in</span> <span class="p">[</span><span class="s">&#39;way&#39;</span><span class="p">,</span> <span class="s">&#39;node&#39;</span><span class="p">,</span> <span class="s">&#39;relation&#39;</span><span class="p">]:</span> 
-        <span class="k">for</span> <span class="n">subel</span> <span class="ow">in</span> <span class="n">element</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">subel</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;k&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s">&#39;addr:street&#39;</span><span class="p">:</span>
-                <span class="k">print</span> <span class="n">subel</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;v&#39;</span><span class="p">)</span>  
+<span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">i_max</span> <span class="o">=</span> <span class="mi">50</span>
+
+<span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">element</span> <span class="ow">in</span> <span class="n">ET</span><span class="o">.</span><span class="n">iterparse</span><span class="p">(</span><span class="s">&#39;data</span><span class="se">\\</span><span class="s">paris_france.osm&#39;</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;=</span> <span class="n">i_max</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">element</span><span class="o">.</span><span class="n">tag</span> <span class="ow">in</span> <span class="p">[</span><span class="s">&#39;way&#39;</span><span class="p">,</span> <span class="s">&#39;node&#39;</span><span class="p">,</span> <span class="s">&#39;relation&#39;</span><span class="p">]:</span> 
+            <span class="k">for</span> <span class="n">subel</span> <span class="ow">in</span> <span class="n">element</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">subel</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;k&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s">&#39;addr:street&#39;</span><span class="p">:</span>
+                    <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+                    <span class="k">print</span> <span class="n">subel</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;v&#39;</span><span class="p">)</span>  
+            <span class="n">element</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
         <span class="n">element</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="k">break</span>
 </pre></div>
 
 </div>
@@ -450,6 +580,18 @@ Avenue Émile Cossonneau
 Rue Pablo Neruda
 Avenue Pablo Picasso
 Boulevard Saint-Germain
+Rue Maurice Utrillo
+Rue de la Pépinière
+Quai Branly
+Rue Velpeau
+Quai Saint-Bernard
+Rue Saint-Honoré
+Rue de Montpensier
+Rue des Lavandières Sainte-Opportune
+Rue Saint-Honoré
+Rue du Parc Royal
+Boulevard Saint-Germain
+Rue de la Station
 </pre>
 </div>
 </div>
@@ -463,8 +605,5152 @@ Boulevard Saint-Germain
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>I am a bit astonished by the quality of the street name. The only uniformity issue that I found was that some street name began with a lower case, instead of an uppercase. I adapted the pre-processing code that produces the json file to be stored in the database in order to handle this correction.</p>
-<p>Except for that, all the names were formatted in a consistent way and seemed to be legitimate, which led me to believe that there is no more uniformity or validity issue.</p>
+<p>Looking at the first street names from the file, the only uniformity issue that I found was that some street name began with a lower case, instead of an uppercase.</p>
+<p>But there might be other issues with the qualifier name (Avenue, Rue, etc.) for the rest of the file. I want to make sure that the qualifiers are uniformly written, and that there are no consistency issues with two different qualifiers for the same street name.</p>
+<p>Last but not least, I need to check if hyphens are correctly used, or if they can create some uniformity issues.</p>
+<h5 id="Auditing-the-qualifiers-mispelling">Auditing the qualifiers mispelling<a class="anchor-link" href="#Auditing-the-qualifiers-mispelling">&#182;</a></h5>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[91]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span class="kn">import</span> <span class="nn">xml.etree.cElementTree</span> <span class="kn">as</span> <span class="nn">ET</span>
+<span class="kn">import</span> <span class="nn">pprint</span>
+<span class="kn">import</span> <span class="nn">re</span>
+
+<span class="n">qualifiers</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+
+<span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">element</span> <span class="ow">in</span> <span class="n">ET</span><span class="o">.</span><span class="n">iterparse</span><span class="p">(</span><span class="s">&#39;data</span><span class="se">\\</span><span class="s">paris_france.osm&#39;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">element</span><span class="o">.</span><span class="n">tag</span> <span class="ow">in</span> <span class="p">[</span><span class="s">&#39;way&#39;</span><span class="p">,</span> <span class="s">&#39;node&#39;</span><span class="p">,</span> <span class="s">&#39;relation&#39;</span><span class="p">]:</span> 
+            <span class="k">for</span> <span class="n">subel</span> <span class="ow">in</span> <span class="n">element</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">subel</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;k&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s">&#39;addr:street&#39;</span><span class="p">:</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">qualifier</span> <span class="o">=</span> <span class="n">subel</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;v&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+                        <span class="n">qualifiers</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">qualifier</span><span class="p">)</span>
+                    <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+                        <span class="k">pass</span>
+            <span class="n">element</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+
+<span class="k">print</span> <span class="s">&#39;there are {} qualifiers </span><span class="se">\n</span><span class="s">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">qualifiers</span><span class="p">))</span>
+
+<span class="k">for</span> <span class="n">el</span> <span class="ow">in</span> <span class="n">qualifiers</span><span class="p">:</span>
+    <span class="k">print</span> <span class="n">el</span>    
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area"><div class="prompt"></div>
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>there are 232 qualifiers 
+
+rte
+Van
+12e
+desserte
+Paris
+Parvis
+CTRE
+Passage
+Jules
+Bernard
+Station
+Chemin
+avenue
+allée
+Bd
+Jean-Philippe
+Bobierre
+Petite
+Galerie
+Fontenelle
+Nélaton
+Sente
+Leroyer
+5e
+chemin
+Guyancourt
+Bis
+Hameau
+division
+CENTRE
+ordre
+Rond-Point
+Promenée
+Henri
+Septième
+Lotissement
+Porte
+Michael
+Impasse
+Mont
+Grande
+Nogent
+bis
+Troisième
+Villa
+Desserte
+cité
+ZAC
+Grand&apos;Rue
+Redoute
+2e
+Allee
+PL
+Paul
+11e
+Résidence
+Bois
+square
+Sentier
+Zone
+Entrée
+esplanade
+10e
+Métro
+Aérodrome
+General
+Jardins
+Marceau
+RN4
+RTE
+Parc
+GALERIE
+Habert
+Rue
+Les
+Quai
+Francis
+3e
+bd
+C
+Domexpo
+Allées
+ZI
+Forum
+Maréchal
+Tunnel
+C.CIAL
+Edgar
+rue
+PLACE
+Première
+Rond-point
+8e
+Avenus
+D186
+promenade
+N10
+Square
+Gaston
+Ïle
+Côte
+Pont
+route
+Digue
+Moutard
+domaine
+N
+place
+Place
+N.4
+Saule
+Jardin
+Cloitre
+Boulevard
+alfortville
+Ccial
+Mare
+Château
+D988
+ROUTE
+9e
+Aéroport
+Cité
+Le
+Angle
+des
+GR
+villa
+Montagne
+Roissypôle
+boulevard
+Eugène
+Centre
+La
+Danton
+Chambly
+Av.
+Quatrième
+Z.A.C.
+Jean-Baptiste
+Carré-Sénart
+parc
+6e
+Nancel
+CC
+Traverse
+D
+Espace
+Cottage
+1er
+quai
+Grand&apos;Place
+mail
+Jean
+Lasserre
+Bouleverd
+Camille
+Cour
+Championnet
+Otis
+Cc
+la
+C.Cial
+Avenur
+Esplanade
+RUE
+impasse
+r
+Île
+C.C
+bouleard
+Clos
+Deuxième
+Avenue
+CHE
+7e
+Cours
+Carrefour
+Aire
+Chaussée
+Rond
+Terminal
+Edouard
+14e
+Ctre
+Venelle
+av
+Mail
+Ferdinand
+Main
+résidence
+Ruelle
+cours
+Benoit
+AVENUE
+Voie
+Edmond
+Promenade
+Niveau
+Circulaire
+roland
+Vieux
+Stalingrad
+A
+Aristide
+Ile
+rond-point
+1re
+centre
+C.C.
+Residence
+Route
+Domaine
+Sidi-Brahim
+av.
+15e
+sente
+CD
+e
+promenée
+Bry
+Terrasse
+Charles
+Pierre
+Marcel
+Avenu
+de
+grande
+Av
+4e
+Port
+Allée
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>It appears that some street names have their qualifier mispelled. I can use this list to correct the qualifier spelling when export the data in JSON.</p>
+<p>But it also appears that some street name do not have any qualifier at all. Let's look at these street names in particular.</p>
+<h5 id="Auditing-the-non-standard-qualifiers">Auditing the non standard qualifiers<a class="anchor-link" href="#Auditing-the-non-standard-qualifiers">&#182;</a></h5>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[89]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span class="kn">import</span> <span class="nn">xml.etree.cElementTree</span> <span class="kn">as</span> <span class="nn">ET</span>
+<span class="kn">import</span> <span class="nn">pprint</span>
+<span class="kn">import</span> <span class="nn">re</span>
+
+<span class="c"># list of qualifiers correctly spelled (lowercase)</span>
+<span class="n">qual_list</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;allée&#39;</span><span class="p">,</span><span class="s">&#39;impasse&#39;</span><span class="p">,</span><span class="s">&#39;porte&#39;</span><span class="p">,</span><span class="s">&#39;chaussée&#39;</span><span class="p">,</span><span class="s">&#39;domaine&#39;</span><span class="p">,</span><span class="s">&#39;square&#39;</span><span class="p">,</span><span class="s">&#39;quai&#39;</span><span class="p">,</span><span class="s">&#39;cours&#39;</span><span class="p">,</span> <span class="s">&#39;grande&#39;</span><span class="p">,</span> <span class="s">&#39;passage&#39;</span><span class="p">,</span> <span class="s">&#39;cité&#39;</span><span class="p">,</span> <span class="s">&#39;promenée&#39;</span><span class="p">,</span>
+             <span class="s">&#39;sente&#39;</span><span class="p">,</span> <span class="s">&#39;mail&#39;</span><span class="p">,</span> <span class="s">&#39;ruelle&#39;</span><span class="p">,</span> <span class="s">&#39;clos&#39;</span><span class="p">,</span> <span class="s">&#39;résidence&#39;</span><span class="p">,</span> <span class="s">&#39;cour&#39;</span><span class="p">,</span> <span class="s">&#39;villa&#39;</span><span class="p">,</span> <span class="s">&#39;bois&#39;</span><span class="p">,</span> <span class="s">&#39;sentier&#39;</span><span class="p">,</span> <span class="s">&#39;voie&#39;</span><span class="p">,</span>
+             <span class="s">&#39;rond-point&#39;</span><span class="p">,</span> <span class="s">&#39;esplanade&#39;</span><span class="p">,</span> <span class="s">&#39;circulaire&#39;</span><span class="p">,</span> <span class="s">&#39;hameau&#39;</span><span class="p">,</span> <span class="s">&#39;carrefour&#39;</span><span class="p">,</span> <span class="s">&#39;promenade&#39;</span><span class="p">,</span> <span class="s">&#39;desserte&#39;</span><span class="p">,</span> <span class="s">&#39;ZAC&#39;</span><span class="p">,</span> <span class="s">&#39;cottage&#39;</span><span class="p">,</span>
+             <span class="s">&#39;port&#39;</span><span class="p">,</span> <span class="s">&#39;parc&#39;</span><span class="p">,</span> <span class="s">&#39;&#39;</span><span class="p">,</span> <span class="s">&#39;&#39;</span><span class="p">]</span>
+
+<span class="c"># dictionnary of mispelled qualifiers</span>
+<span class="n">qual_mispelled</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;rte&#39;</span><span class="p">:</span><span class="s">&#39;Route&#39;</span><span class="p">,</span> <span class="s">&#39;bd&#39;</span><span class="p">:</span><span class="s">&#39;Boulevard&#39;</span><span class="p">,</span> <span class="s">&#39;CENTRE&#39;</span><span class="p">:</span><span class="s">&#39;Centre&#39;</span><span class="p">,</span> <span class="s">&#39;CTRE&#39;</span><span class="p">:</span><span class="s">&#39;Centre&#39;</span><span class="p">,</span> <span class="s">&#39;Allee&#39;</span><span class="p">:</span><span class="s">&#39;Allée&#39;</span><span class="p">,</span> <span class="s">&#39;PL&#39;</span><span class="p">:</span><span class="s">&#39;Place&#39;</span><span class="p">,</span> 
+ <span class="s">&#39;RTE&#39;</span><span class="p">:</span><span class="s">&#39;Route&#39;</span><span class="p">,</span> <span class="s">&#39;GALERIE&#39;</span><span class="p">:</span><span class="s">&#39;Galerie&#39;</span><span class="p">,</span> <span class="s">&#39;Allées&#39;</span><span class="p">:</span><span class="s">&#39;Allée&#39;</span><span class="p">,</span> <span class="s">&#39;C.CIAL&#39;</span><span class="p">:</span><span class="s">&#39;Centre commercial&#39;</span><span class="p">,</span> <span class="s">&#39;Avenus&#39;</span><span class="p">:</span><span class="s">&#39;Avenue&#39;</span><span class="p">,</span> <span class="s">&#39;Ïle&#39;</span><span class="p">:</span><span class="s">&#39;Île&#39;</span><span class="p">,</span>
+ <span class="s">&#39;Ccial&#39;</span><span class="p">:</span><span class="s">&#39;Centre commercial&#39;</span><span class="p">,</span> <span class="s">&#39;CC&#39;</span><span class="p">:</span><span class="s">&#39;Centre commercial&#39;</span><span class="p">,</span> <span class="s">&#39;C.C&#39;</span><span class="p">:</span><span class="s">&#39;Centre commercial&#39;</span><span class="p">,</span> <span class="s">&#39;Cc&#39;</span><span class="p">:</span><span class="s">&#39;Centre commercial&#39;</span><span class="p">,</span> <span class="s">&#39;C.Cial&#39;</span><span class="p">:</span><span class="s">&#39;Centre commercial&#39;</span><span class="p">,</span>
+ <span class="s">&#39;Av.&#39;</span><span class="p">:</span><span class="s">&#39;Avenue&#39;</span><span class="p">,</span> <span class="s">&#39;Bouleverd&#39;</span><span class="p">:</span><span class="s">&#39;Boulevard&#39;</span><span class="p">,</span> <span class="s">&#39;Avenur&#39;</span><span class="p">:</span><span class="s">&#39;Avenue&#39;</span><span class="p">,</span> <span class="s">&#39;RUE&#39;</span><span class="p">:</span><span class="s">&#39;Rue&#39;</span><span class="p">,</span> <span class="s">&#39;r&#39;</span><span class="p">:</span><span class="s">&#39;Rue&#39;</span><span class="p">,</span><span class="s">&#39;bouleard&#39;</span><span class="p">:</span><span class="s">&#39;Boulevard&#39;</span><span class="p">,</span> <span class="s">&#39;CHE&#39;</span><span class="p">:</span><span class="s">&#39;Chemin&#39;</span><span class="p">,</span> 
+ <span class="s">&#39;Ctre&#39;</span><span class="p">:</span><span class="s">&#39;Centre&#39;</span><span class="p">,</span> <span class="s">&#39;av&#39;</span><span class="p">:</span><span class="s">&#39;Avenue&#39;</span><span class="p">,</span> <span class="s">&#39;AVENUE&#39;</span><span class="p">:</span><span class="s">&#39;Avenue&#39;</span><span class="p">,</span> <span class="s">&#39;Ile&#39;</span><span class="p">:</span><span class="s">&#39;Île&#39;</span><span class="p">,</span> <span class="s">&#39;C.C.&#39;</span><span class="p">:</span><span class="s">&#39;Centre commercial&#39;</span><span class="p">,</span> <span class="s">&#39;av.&#39;</span><span class="p">:</span><span class="s">&#39;Avenue&#39;</span><span class="p">,</span>
+ <span class="s">&#39;Avenu&#39;</span><span class="p">:</span><span class="s">&#39;Avenue&#39;</span><span class="p">,</span> <span class="s">&#39;Av&#39;</span><span class="p">:</span><span class="s">&#39;Avenue&#39;</span><span class="p">,</span> <span class="s">&#39;Z.A.C.&#39;</span><span class="p">:</span><span class="s">&#39;ZAC&#39;</span><span class="p">,</span> <span class="s">&#39;Residence&#39;</span><span class="p">:</span><span class="s">&#39;Résidence}</span>
+
+<span class="c"># set of qualifiers (correct and mispelled)</span>
+<span class="n">qual_set</span> <span class="o">=</span> <span class="p">[</span><span class="n">qual</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">for</span> <span class="n">qual</span> <span class="ow">in</span> <span class="nb">set</span><span class="p">(</span><span class="n">qual_mispelled</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="o">+</span> <span class="n">qual_mispelled</span><span class="o">.</span><span class="n">values</span><span class="p">()</span> <span class="o">+</span> <span class="n">qual_list</span><span class="p">)]</span>
+
+<span class="c"># set of street_names to be further audited</span>
+<span class="n">street_names_err</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+
+<span class="c"># this process looks for street names with non standard qualifiers</span>
+<span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">element</span> <span class="ow">in</span> <span class="n">ET</span><span class="o">.</span><span class="n">iterparse</span><span class="p">(</span><span class="s">&#39;data</span><span class="se">\\</span><span class="s">paris_france.osm&#39;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">element</span><span class="o">.</span><span class="n">tag</span> <span class="ow">in</span> <span class="p">[</span><span class="s">&#39;way&#39;</span><span class="p">,</span> <span class="s">&#39;node&#39;</span><span class="p">,</span> <span class="s">&#39;relation&#39;</span><span class="p">]:</span> 
+            <span class="k">for</span> <span class="n">subel</span> <span class="ow">in</span> <span class="n">element</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">subel</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;k&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s">&#39;addr:street&#39;</span> <span class="ow">and</span> <span class="n">subel</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;v&#39;</span><span class="p">)</span> <span class="o">!=</span> <span class="bp">None</span><span class="p">:</span>
+                    <span class="n">k_value</span> <span class="o">=</span> <span class="n">subel</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;k&#39;</span><span class="p">)</span>
+                    <span class="n">v_value</span> <span class="o">=</span> <span class="n">subel</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;v&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s">&#39;utf-8&#39;</span><span class="p">)</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">qualifier</span> <span class="o">=</span> <span class="n">v_value</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span> 
+                        <span class="k">if</span> <span class="n">qualifier</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">qual_set</span><span class="p">:</span>
+                            <span class="n">street_names_err</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">subel</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;v&#39;</span><span class="p">))</span>
+                    <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+                        <span class="k">print</span> <span class="n">subel</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;k&#39;</span><span class="p">),</span> <span class="n">subel</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;v&#39;</span><span class="p">),</span> <span class="nb">type</span><span class="p">(</span><span class="n">subel</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;v&#39;</span><span class="p">))</span>
+            <span class="n">element</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+
+<span class="k">print</span> <span class="nb">len</span><span class="p">(</span><span class="n">street_names_err</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">el</span> <span class="ow">in</span> <span class="n">street_names_err</span><span class="p">:</span>
+    <span class="k">print</span> <span class="n">el</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area"><div class="prompt"></div>
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>addr:street 
+&lt;type &apos;str&apos;&gt;
+169
+Aristide Briand
+ordre
+alfortville
+bis Route de Grigny
+Zone artisanale commerciale « Les Mériels »
+11e Avenue
+D 19
+Residence Moulin de Mennecourt
+Charles Edouard Jeannet
+Eugène Pelletan
+Residence de la Roseraie
+Francis de Pressensé
+Le Clos Rose
+Guyancourt
+Le Clos des Vergers
+Redoute des Petits Carreaux
+Bobierre de Vallière
+5e Avenue
+8e Avenue
+Van Gogh
+Angle 6R.Basse/3R.Equer.Argent - Forum - Niveau -3 B.P. 293
+12e Avenue
+bis Route d&apos;Égly
+Mont Griffard
+Le Grand Lievre
+Jules Larose
+N.4 ZAC de la Croix St Nicolas-6 rue André Citroën
+Grand&apos;Rue
+La Sucrerie - près Carrefour RD 317 - CD 9
+9e Avenue
+Jean-Philippe Rameau
+Jardin Fatima Bedar
+Terminal 2
+Mare
+Terminal 1
+Bernard Palissy
+Habert de Montmort
+Bis Avenue Pierre Mendes France
+Quatrième Avenue
+Marceau
+Les Bocages Marines
+N 4 - Direction Paris, Lieu-dit &apos;&apos;Les Rables&apos;&apos;
+Montagne du Vieux Marché
+la butte aux chênes
+Bry Sur Marne
+Leroyer
+Château de Combreux
+Les Arches d&apos;Issy
+C Cial Regional Les 3 Fontaines
+Residence des Glycines
+de Pierrelaye
+N 104
+Henri Vidal
+Moutard Martin
+Paul Eluard
+Digue d&apos;Alfortville
+Aire de la Prairie
+des Alluets
+GR GRANDE RUE
+6e Avenue
+Rond point de l&apos;Espace
+Venelle des Enfants Gatés
+Le chaperon vert
+Deuxième Avenue
+N10
+La Boursidière
+Parvis Notre-Dame - Place Jean-Paul II
+Cloitre Saint-Spire
+Jean Macé
+Pierre Timbaud
+Lotissement Le Haras du Coq
+Troisième Avenue
+ZI Le Clos aux Pois
+Niveau -4 Zone Lescot
+Métro Richelieu-Drouot
+Camille Guerin
+A 10
+Fontenelle
+Les Hauts de Bruyères
+Maréchal de Lattre de Tassigny
+Première Avenue
+D988
+Aérodrome - Rue du Docteur Vaillant
+3e Avenue
+D 59
+roland toutain
+General de Gaulle
+Espace commercial Saint Lazare Paris
+Tunnel de La Défense
+Gaston Roussel
+Espace Saint-Quentin
+Danton
+Residence les Ormes
+Chambly
+Main Street
+Septième Avenue
+Residence des Lilas
+D186
+Nogent sur Marne
+Les Vergers de Montjay
+14e Avenue
+division Leclerc
+Le Parvis
+15e Avenue
+Vieux Chemin de Paris
+Lasserre
+Marcel Dadi
+Jean Jaurès
+Terrasse Modigliani
+La Petite Seigneurie
+Pont Morland
+La Pointe d&apos;Oeuf
+Aéroport du Bourget
+Championnet
+Forum Des Halles - Niveau-3 - 7/9 Rue De La Boucle - B.P.293
+Residence Les Bihaumes
+Henri Barbusse
+La Fontaine Ronde, Route Départementale 306
+Francis Combe
+Edmond Bonté
+Paris La Défense
+D 922
+Rond Point Paris West
+Edgar Quinet
+4e Avenue
+D 471
+Station RER AUBER
+CD 19
+Côte de l&apos;Entre-Deux
+Jules Ferry
+1re Avenue
+Michael Faraday
+Le Bel Air
+Benoit Malon
+Carré-Sénart
+1er impasse justin
+Otis Mygatt
+Nélaton
+Ferdinand Buisson
+Stalingrad
+RN4
+10e Avenue
+Traverse Jules Guesde
+Aérodrome
+Residence des Coquelicots
+Residence des Pervenches
+Sidi-Brahim
+Roissypôle Rue de Rome
+7e Avenue
+Domexpo Sud - RN 20
+2e Avenue
+Nancel Penard
+Les Bocages Orange
+La Terrasse du Parc
+Petite Voie des Fontaines
+Saule Trapu
+Jean-Baptiste Clément
+Entrée Coquillière (Voie A4)
+e du Colonel Fabien
+Vieux Chemin de Montgeroult
+Bernard gante
+Residence des Iris
+Jules Guesde
+Jardins des Tuileries
+Residence des Jonquilles
+C Cial Les 4 Temps
+Les Miroirs
+Edouard Vaillant
+Grand&apos;Place
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>The vast majority of the remaining street names are related to a very specific location context, or do not have any qualifier entered. Hence, I do not believe that there is much more to be done here.</p>
+<h5 id="Auditing-qualifiers-consistency">Auditing qualifiers consistency<a class="anchor-link" href="#Auditing-qualifiers-consistency">&#182;</a></h5>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[90]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span class="kn">import</span> <span class="nn">xml.etree.cElementTree</span> <span class="kn">as</span> <span class="nn">ET</span>
+<span class="kn">import</span> <span class="nn">pprint</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
+
+<span class="n">street_names</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">set</span><span class="p">)</span>
+
+<span class="c"># this process looks for similar street names with different qualifiers</span>
+<span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">element</span> <span class="ow">in</span> <span class="n">ET</span><span class="o">.</span><span class="n">iterparse</span><span class="p">(</span><span class="s">&#39;data</span><span class="se">\\</span><span class="s">paris_france.osm&#39;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">element</span><span class="o">.</span><span class="n">tag</span> <span class="ow">in</span> <span class="p">[</span><span class="s">&#39;way&#39;</span><span class="p">,</span> <span class="s">&#39;node&#39;</span><span class="p">,</span> <span class="s">&#39;relation&#39;</span><span class="p">]:</span> 
+            <span class="k">for</span> <span class="n">subel</span> <span class="ow">in</span> <span class="n">element</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">subel</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;k&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s">&#39;addr:street&#39;</span> <span class="ow">and</span> <span class="n">subel</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;v&#39;</span><span class="p">)</span> <span class="o">!=</span> <span class="bp">None</span><span class="p">:</span>
+                    <span class="n">k_value</span> <span class="o">=</span> <span class="n">subel</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;k&#39;</span><span class="p">)</span>
+                    <span class="n">v_value</span> <span class="o">=</span> <span class="n">subel</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;v&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s">&#39;utf-8&#39;</span><span class="p">)</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">street</span> <span class="o">=</span> <span class="s">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">v_value</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">1</span><span class="p">:])</span>
+                        <span class="n">qualifier</span> <span class="o">=</span> <span class="n">v_value</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span> 
+                        <span class="n">street_names</span><span class="p">[</span><span class="n">street</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">qualifier</span><span class="p">)</span> 
+                    <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+                        <span class="k">pass</span>
+            <span class="n">element</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+
+<span class="k">print</span> <span class="nb">len</span><span class="p">(</span><span class="n">street_names</span><span class="p">)</span>
+
+<span class="c"># printing only the street names with several different qualifiers</span>
+<span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">street_names</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">print</span> <span class="n">key</span><span class="p">,</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area"><div class="prompt"></div>
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>7912
+ 
+set([&apos;Mare&apos;, &apos;alfortville&apos;, &apos;A\xc3\xa9rodrome&apos;, &apos;D988&apos;, &apos;Carr\xc3\xa9-S\xc3\xa9nart&apos;, &apos;Marceau&apos;, &apos;RN4&apos;, &apos;N\xc3\xa9laton&apos;, &apos;Danton&apos;, &apos;Chambly&apos;, &apos;Leroyer&apos;, &apos;Stalingrad&apos;, &apos;Guyancourt&apos;, &apos;ordre&apos;, &apos;Sidi-Brahim&apos;, &apos;Lasserre&apos;, &quot;Grand&apos;Place&quot;, &apos;D186&apos;, &apos;N10&apos;, &apos;Championnet&apos;, &quot;Grand&apos;Rue&quot;, &apos;Fontenelle&apos;]) 
+
+de Dijon 
+set([&apos;All\xc3\xa9e&apos;, &apos;Rue&apos;]) 
+
+Henri Brisson 
+set([&apos;rue&apos;, &apos;Rue&apos;]) 
+
+de la résistance 
+set([&apos;boulevard&apos;, &apos;avenue&apos;]) 
+
+Charles Péguy 
+set([&apos;Square&apos;, &apos;Rue&apos;]) 
+
+Pégoud 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Salvador Allende 
+set([&apos;Avenue&apos;, &apos;avenue&apos;, &apos;place&apos;, &apos;Place&apos;, &apos;Rue&apos;]) 
+
+des Glycines 
+set([&apos;All\xc3\xa9e&apos;, &apos;Residence&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+de Chilly 
+set([&apos;Chemin&apos;, &apos;Rue&apos;]) 
+
+Eugène Varlin 
+set([&apos;Square&apos;, &apos;Rue&apos;]) 
+
+de Bellevue 
+set([&apos;All\xc3\xa9e&apos;, &apos;Boulevard&apos;, &apos;Avenue&apos;, &apos;Villa&apos;, &apos;Rue&apos;]) 
+
+de l&apos;Ourcq 
+set([&apos;Quai&apos;, &apos;Rue&apos;]) 
+
+du Maréchal Juin 
+set([&apos;Place&apos;, &apos;Avenur&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+de l&apos;Ancre 
+set([&apos;Voie&apos;, &apos;Passage&apos;]) 
+
+de la Haute Borne 
+set([&apos;Impasse&apos;, &apos;Avenue&apos;]) 
+
+de la République 
+set([&apos;Boulevard&apos;, &apos;Villa&apos;, &apos;avenue&apos;, &apos;Esplanade&apos;, &apos;rue&apos;, &apos;Place&apos;, &apos;place&apos;, &apos;Rue&apos;, &apos;Avenue&apos;]) 
+
+du 14 Juillet 
+set([&apos;Avenue&apos;, &apos;Place&apos;, &apos;Rue&apos;]) 
+
+des Primevères 
+set([&apos;All\xc3\xa9e&apos;, &apos;Impasse&apos;, &apos;Rue&apos;]) 
+
+Carnot 
+set([&apos;Boulevard&apos;, &apos;Villa&apos;, &apos;Rue&apos;, &apos;Impasse&apos;, &apos;Quai&apos;, &apos;place&apos;, &apos;Place&apos;, &apos;rue&apos;, &apos;Avenue&apos;]) 
+
+Saint-Hubert 
+set([&apos;All\xc3\xa9e&apos;, &apos;Rue&apos;]) 
+
+Saint-James 
+set([&apos;Rond-Point&apos;, &apos;Rue&apos;]) 
+
+d&apos;Antin 
+set([&apos;Impasse&apos;, &apos;Cit\xc3\xa9&apos;, &apos;Rue&apos;]) 
+
+Mouchy 
+set([&apos;Boulevard&apos;, &apos;Rue&apos;]) 
+
+Guénot 
+set([&apos;Rue&apos;, &apos;Passage&apos;]) 
+
+de Reims 
+set([&apos;Boulevard&apos;, &apos;Rue&apos;]) 
+
+des Pierres Beurres 
+set([&apos;Place&apos;, &apos;Rue&apos;]) 
+
+de la Marne 
+set([&apos;Quai&apos;, &apos;Avenue&apos;, &apos;Place&apos;, &apos;Rue&apos;]) 
+
+du Docteur Calmette 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Louis Bertrand 
+set([&apos;Square&apos;, &apos;Rue&apos;]) 
+
+de Saint-Mandé 
+set([&apos;Avenue&apos;, &apos;Villa&apos;]) 
+
+Camélinat 
+set([&apos;Boulevard&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Le Corbusier 
+set([&apos;All\xc3\xa9e&apos;, &apos;rue&apos;, &apos;Rue&apos;]) 
+
+Sébastien Mercier 
+set([&apos;rue&apos;, &apos;Rue&apos;]) 
+
+Vandrezanne 
+set([&apos;Passage&apos;, &apos;Rue&apos;]) 
+
+Pierre Guérin 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+de la Seine 
+set([&apos;Route&apos;, &apos;Boulevard&apos;, &apos;Quai&apos;]) 
+
+Paul Signac 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+d&apos;Alsace 
+set([&apos;Avenue&apos;, &apos;Villa&apos;, &apos;Rue&apos;]) 
+
+de Picpus 
+set([&apos;Boulevard&apos;, &apos;Rue&apos;]) 
+
+Haussmann 
+set([&apos;Boulevard&apos;, &apos;villa&apos;]) 
+
+d&apos;Ermenonville 
+set([&apos;all\xc3\xa9e&apos;, &apos;All\xc3\xa9e&apos;]) 
+
+du Président Kennedy 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Blomet 
+set([&apos;rue&apos;, &apos;Rue&apos;]) 
+
+de la Chaussée d&apos;Antin 
+set([&apos;rue&apos;, &apos;Rue&apos;]) 
+
+Branly 
+set([&apos;Quai&apos;, &apos;Rue&apos;]) 
+
+Hallé 
+set([&apos;Villa&apos;, &apos;Rue&apos;]) 
+
+Wauthier 
+set([&apos;rue&apos;, &apos;Rue&apos;]) 
+
+des Belles Feuilles 
+set([&apos;Impasse&apos;, &apos;Rue&apos;]) 
+
+Sainte-Geneviève 
+set([&apos;Rue&apos;, &apos;rue&apos;]) 
+
+des Jardins 
+set([&apos;All\xc3\xa9e&apos;, &apos;Villa&apos;, &apos;Rue&apos;]) 
+
+de Grenelle 
+set([&apos;Boulevard&apos;, &apos;Quai&apos;, &apos;Port&apos;, &apos;Rue&apos;]) 
+
+de la Cascade 
+set([&apos;All\xc3\xa9e&apos;, &apos;route&apos;]) 
+
+Léon Giraud 
+set([&apos;Rue&apos;, &apos;rue&apos;]) 
+
+Boucicaut 
+set([&apos;Rue&apos;, &apos;rue&apos;]) 
+
+de la Villette 
+set([&apos;Boulevard&apos;, &apos;Rue&apos;]) 
+
+Édouard Manet 
+set([&apos;All\xc3\xa9e&apos;, &apos;Rue&apos;]) 
+
+d&apos;Alembert 
+set([&apos;Boulevard&apos;, &apos;Rue&apos;]) 
+
+de Saint-Ouen 
+set([&apos;Quai&apos;, &apos;Avenue&apos;]) 
+
+Frédéric Mistral 
+set([&apos;All\xc3\xa9e&apos;, &apos;Villa&apos;, &apos;Rue&apos;]) 
+
+de Strasbourg 
+set([&apos;Boulevard&apos;, &apos;Rue&apos;]) 
+
+Baudricourt 
+set([&apos;Impasse&apos;, &apos;Rue&apos;]) 
+
+du Plateau 
+set([&apos;Rue&apos;, &apos;rue&apos;]) 
+
+Jacques Monod 
+set([&apos;All\xc3\xa9e&apos;, &apos;Rue&apos;]) 
+
+Ambroise Paré 
+set([&apos;All\xc3\xa9e&apos;, &apos;Rue&apos;]) 
+
+Saint-Roch 
+set([&apos;Passage&apos;, &apos;Place&apos;, &apos;Rue&apos;]) 
+
+des Taillandiers 
+set([&apos;Passage&apos;, &apos;rue&apos;, &apos;Rue&apos;]) 
+
+Jean Gabin 
+set([&apos;RUE&apos;, &apos;rue&apos;]) 
+
+Monge 
+set([&apos;place&apos;, &apos;Square&apos;, &apos;Place&apos;, &apos;Rue&apos;]) 
+
+du Nord 
+set([&apos;Boulevard&apos;, &apos;Passage&apos;]) 
+
+André Gide 
+set([&apos;Square&apos;, &apos;Rue&apos;]) 
+
+des Panoramas 
+set([&apos;Rue&apos;, &apos;Passage&apos;]) 
+
+des Jonquilles 
+set([&apos;All\xc3\xa9e&apos;, &apos;Residence&apos;, &apos;Rue&apos;]) 
+
+de la Vallée à la Dame 
+set([&apos;Chemin&apos;, &apos;Rue&apos;]) 
+
+Le Brun 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Henri IV 
+set([&apos;Boulevard&apos;, &apos;Porte&apos;, &apos;Rue&apos;, &apos;Place&apos;, &apos;Quai&apos;, &apos;rue&apos;]) 
+
+des Oiseaux 
+set([&apos;Boulevard&apos;, &apos;Rue&apos;]) 
+
+Léonard de Vinci 
+set([&apos;All\xc3\xa9e&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Pierre Curie 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+de Pologne 
+set([&apos;rue&apos;, &apos;Rue&apos;]) 
+
+de Silly 
+set([&apos;Place&apos;, &apos;Rue&apos;]) 
+
+Pierre de Coubertin 
+set([&apos;All\xc3\xa9e&apos;, &apos;Allee&apos;, &apos;Boulevard&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+du Four 
+set([&apos;rue&apos;, &apos;Rue&apos;]) 
+
+d&apos;Enfer 
+set([&apos;Rue&apos;, &apos;Passage&apos;]) 
+
+Gallieni 
+set([&apos;Quai&apos;, &apos;Boulevard&apos;, &apos;Avenue&apos;, &apos;rue&apos;, &apos;Rue&apos;]) 
+
+d&apos;Arpajon 
+set([&apos;Route&apos;, &apos;Rue&apos;]) 
+
+de Picardie 
+set([&apos;rue&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Jacques Cœur 
+set([&apos;Place&apos;, &apos;Rue&apos;]) 
+
+Pierre Brossolette 
+set([&apos;Place&apos;, &apos;Avenue&apos;, &apos;Impasse&apos;, &apos;Rue&apos;]) 
+
+de l&apos;Avenir 
+set([&apos;Cit\xc3\xa9&apos;, &apos;Rue&apos;]) 
+
+Charles de Gaulle 
+set([&apos;Bd&apos;, &apos;Boulevard&apos;, &apos;Esplanade&apos;, &apos;Rue&apos;, &apos;boulevard&apos;, &apos;Place&apos;, &apos;Av&apos;, &apos;Avenue&apos;]) 
+
+Honoré de Balzac 
+set([&apos;Boulevard&apos;, &apos;Rue&apos;]) 
+
+Léon Frot 
+set([&apos;rue&apos;, &apos;Rue&apos;]) 
+
+du 8 mai 1945 
+set([&apos;avenue&apos;, &apos;Rue&apos;, &apos;Quai&apos;, &apos;place&apos;, &apos;Place&apos;, &apos;Avenue&apos;]) 
+
+d&apos;Alexandrie 
+set([&apos;All\xc3\xa9e&apos;, &apos;Rue&apos;]) 
+
+des Marronniers 
+set([&apos;All\xc3\xa9e&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+de Rosny 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+du Général Clavery 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Michelet 
+set([&apos;Cour&apos;, &apos;Avenue&apos;, &apos;Cours&apos;, &apos;Rue&apos;]) 
+
+Abel Gance 
+set([&apos;Place&apos;, &apos;Rue&apos;]) 
+
+du Mail 
+set([&apos;All\xc3\xa9e&apos;, &apos;Rue&apos;]) 
+
+de Versailles 
+set([&apos;Route&apos;, &apos;Square&apos;, &apos;Avenue&apos;, &apos;route&apos;, &apos;Rue&apos;]) 
+
+Arago 
+set([&apos;Boulevard&apos;, &apos;Avenue&apos;, &apos;Rue&apos;, &apos;Square&apos;]) 
+
+André Maurois 
+set([&apos;Square&apos;, &apos;Rue&apos;]) 
+
+Roland Garros 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Joffre 
+set([&apos;Avenue&apos;, &apos;Place&apos;]) 
+
+Claude Chappe 
+set([&apos;All\xc3\xa9e&apos;, &apos;Rue&apos;]) 
+
+de la Harpe 
+set([&apos;All\xc3\xa9e&apos;, &apos;Rue&apos;]) 
+
+des Collines 
+set([&apos;rue&apos;, &apos;Rue&apos;]) 
+
+des Sablons 
+set([&apos;Chemin&apos;, &apos;Square&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+de l&apos;Ormeteau 
+set([&apos;Chemin&apos;, &apos;Rue&apos;]) 
+
+de Lorraine 
+set([&apos;Boulevard&apos;, &apos;Villa&apos;, &apos;Rue&apos;]) 
+
+des Terrasses 
+set([&apos;Place&apos;, &apos;Avenue&apos;]) 
+
+Foch 
+set([&apos;avenue&apos;, &apos;Avenue&apos;, &apos;Impasse&apos;]) 
+
+de l&apos;Appel du 18 Juin 1940 
+set([&apos;Place&apos;, &apos;Avenue&apos;]) 
+
+Mozart 
+set([&apos;All\xc3\xa9e&apos;, &apos;Square&apos;, &apos;Avenue&apos;, &apos;Villa&apos;, &apos;Rue&apos;]) 
+
+Lénine 
+set([&apos;Square&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Santos-Dumont 
+set([&apos;All\xc3\xa9e&apos;, &apos;Villa&apos;, &apos;Rue&apos;]) 
+
+des Noisetiers 
+set([&apos;All\xc3\xa9e&apos;, &apos;Sente&apos;]) 
+
+Ferdinand Buisson 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+du Télégraphe 
+set([&apos;Impasse&apos;, &apos;Rue&apos;]) 
+
+Raymond Poincaré 
+set([&apos;Boulevard&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Edmond Rostand 
+set([&apos;Place&apos;, &apos;Rue&apos;]) 
+
+Edouard Branly 
+set([&apos;All\xc3\xa9e&apos;, &apos;Rue&apos;]) 
+
+Georges Charpak 
+set([&apos;Place&apos;, &apos;Rue&apos;]) 
+
+des Arts 
+set([&apos;Impasse&apos;, &apos;Place&apos;, &apos;Passage&apos;]) 
+
+des Fontaines 
+set([&apos;All\xc3\xa9e&apos;, &apos;Chemin&apos;]) 
+
+de Saxe 
+set([&apos;Avenue&apos;, &apos;Villa&apos;, &apos;Rue&apos;]) 
+
+Pascal 
+set([&apos;rue&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Albert Joly 
+set([&apos;Avenue&apos;, &apos;rue&apos;, &apos;Quai&apos;, &apos;Rue&apos;]) 
+
+de la Ferme Saint-Lazare 
+set([&apos;Cour&apos;, &apos;Passage&apos;]) 
+
+du Maréchal Maunoury 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+de Bretagne 
+set([&apos;All\xc3\xa9e&apos;, &apos;Chemin&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Marcel Paul 
+set([&apos;All\xc3\xa9e&apos;, &apos;avenue&apos;, &apos;Avenue&apos;, &apos;Place&apos;, &apos;Rue&apos;]) 
+
+Saint-Spire 
+set([&apos;Cloitre&apos;, &apos;Rue&apos;]) 
+
+du Président Wilson 
+set([&apos;avenue&apos;, &apos;rue&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+de la Sablière 
+set([&apos;All\xc3\xa9e&apos;, &apos;Rue&apos;]) 
+
+Daviel 
+set([&apos;Villa&apos;, &apos;Rue&apos;]) 
+
+Bichat 
+set([&apos;rue&apos;, &apos;Rue&apos;]) 
+
+La Défense 
+set([&apos;Paris&apos;, &apos;Circulaire&apos;]) 
+
+du Marché Neuf 
+set([&apos;Place&apos;, &apos;Quai&apos;, &apos;Rue&apos;]) 
+
+Magellan 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Saint-Germain 
+set([&apos;Boulevard&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+du Bourg l&apos;Abbé 
+set([&apos;Passage&apos;, &apos;Rue&apos;]) 
+
+Division Leclerc 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+des Yvelines 
+set([&apos;All\xc3\xa9e&apos;, &apos;Route&apos;]) 
+
+du Général De Gaulle 
+set([&apos;Avenue&apos;, &apos;Place&apos;, &apos;rue&apos;]) 
+
+de Billancourt 
+set([&apos;All\xc3\xa9e&apos;, &apos;Rue&apos;]) 
+
+François 1er 
+set([&apos;Place&apos;, &apos;Rue&apos;]) 
+
+de la Chapelle 
+set([&apos;Boulevard&apos;, &apos;Rue&apos;, &apos;Cit\xc3\xa9&apos;, &apos;Place&apos;, &apos;R\xc3\xa9sidence&apos;, &apos;Avenue&apos;]) 
+
+de la Pléiade 
+set([&apos;Chemin&apos;, &apos;Rue&apos;]) 
+
+du Pressoir 
+set([&apos;All\xc3\xa9e&apos;, &apos;Rue&apos;]) 
+
+Alexandre Dumas 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Charles Dickens 
+set([&apos;Square&apos;, &apos;Rue&apos;]) 
+
+de Longchamp 
+set([&apos;Avenue&apos;, &apos;Villa&apos;, &apos;Rue&apos;]) 
+
+d&apos;Arcole 
+set([&apos;Passage&apos;, &apos;Rue&apos;]) 
+
+Masséna 
+set([&apos;Boulevard&apos;, &apos;Square&apos;]) 
+
+des Saints-Pères 
+set([&apos;rue&apos;, &apos;Rue&apos;]) 
+
+André Breton 
+set([&apos;All\xc3\xa9e&apos;, &apos;Place&apos;, &apos;Rue&apos;]) 
+
+des Blés 
+set([&apos;Impasse&apos;, &apos;Rue&apos;]) 
+
+de la Mission Marchand 
+set([&apos;Boulevard&apos;, &apos;Rue&apos;]) 
+
+Blaise Pascal 
+set([&apos;Boulevard&apos;, &apos;Cours&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Amédée Gordini 
+set([&apos;rue&apos;, &apos;Rue&apos;]) 
+
+Vivaldi 
+set([&apos;All\xc3\xa9e&apos;, &apos;Rue&apos;]) 
+
+de la Pépinière 
+set([&apos;All\xc3\xa9e&apos;, &apos;Rue&apos;]) 
+
+de la Bourdonnais 
+set([&apos;Avenue&apos;, &apos;Port&apos;]) 
+
+Albert Einstein 
+set([&apos;Square&apos;, &apos;Rue&apos;]) 
+
+Agrippa d&apos;Aubigné 
+set([&apos;All\xc3\xa9e&apos;, &apos;Square&apos;, &apos;Rue&apos;]) 
+
+des Irlandais 
+set([&apos;All\xc3\xa9e&apos;, &apos;Rue&apos;]) 
+
+Bergère 
+set([&apos;Cit\xc3\xa9&apos;, &apos;Rue&apos;]) 
+
+Paul-Langevin 
+set([&apos;Rue&apos;, &apos;rue&apos;]) 
+
+Albert Rémy 
+set([&apos;Rue&apos;, &apos;rue&apos;]) 
+
+des Gardes 
+set([&apos;Route&apos;, &apos;route&apos;]) 
+
+de la Tuilerie 
+set([&apos;Chemin&apos;, &apos;Rue&apos;]) 
+
+Louis Braille 
+set([&apos;All\xc3\xa9e&apos;, &apos;Rue&apos;]) 
+
+Maurice Audin 
+set([&apos;All\xc3\xa9e&apos;, &apos;Rue&apos;]) 
+
+du Petit Pont 
+set([&apos;Place&apos;, &apos;Rue&apos;]) 
+
+du Bellay 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Philippe Auguste 
+set([&apos;Avenue&apos;, &apos;Passage&apos;]) 
+
+Jean Giono 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Spontini 
+set([&apos;Villa&apos;, &apos;Rue&apos;]) 
+
+Félix Merlin 
+set([&apos;rue&apos;, &apos;Rue&apos;]) 
+
+Eugène Manuel 
+set([&apos;Villa&apos;, &apos;Rue&apos;]) 
+
+des Gobelins 
+set([&apos;Avenue&apos;, &apos;Villa&apos;, &apos;Rue&apos;]) 
+
+Newton 
+set([&apos;Boulevard&apos;, &apos;Rue&apos;]) 
+
+des Roches 
+set([&apos;Cours&apos;, &apos;Rue&apos;]) 
+
+Saint-Martin 
+set([&apos;All\xc3\xa9e&apos;, &apos;Cit\xc3\xa9&apos;, &apos;Boulevard&apos;, &apos;rue&apos;, &apos;Rue&apos;]) 
+
+Rose 
+set([&apos;Villa&apos;, &apos;Rue&apos;]) 
+
+Nélaton 
+set([&apos;Boulevard&apos;, &apos;Rue&apos;]) 
+
+de Gergovie 
+set([&apos;Passage&apos;, &apos;Rue&apos;]) 
+
+Georges Bizet 
+set([&apos;All\xc3\xa9e&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+du Roussillon 
+set([&apos;All\xc3\xa9e&apos;, &apos;Place&apos;, &apos;Rue&apos;]) 
+
+Popincourt 
+set([&apos;Cit\xc3\xa9&apos;, &apos;Impasse&apos;, &apos;Rue&apos;]) 
+
+des Carrières 
+set([&apos;Impasse&apos;, &apos;Quai&apos;, &apos;Chemin&apos;]) 
+
+Jean Monnet 
+set([&apos;Avenue&apos;, &apos;Boulevard&apos;, &apos;Place&apos;, &apos;Rue&apos;]) 
+
+Mademoiselle 
+set([&apos;rue&apos;, &apos;Rue&apos;]) 
+
+de la Porte Jaune 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Eugène Delacroix 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Thérèse 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+des Tourelles 
+set([&apos;Rue&apos;, &apos;Passage&apos;]) 
+
+de l&apos;Étang 
+set([&apos;All\xc3\xa9e&apos;, &apos;Chauss\xc3\xa9e&apos;, &apos;Villa&apos;, &apos;Rue&apos;]) 
+
+Franz Liszt 
+set([&apos;Impasse&apos;, &apos;Boulevard&apos;, &apos;Place&apos;]) 
+
+Marx Dormoy 
+set([&apos;avenue&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Mazarin 
+set([&apos;avenue&apos;, &apos;Avenue&apos;]) 
+
+Stalingrad 
+set([&apos;Avenue&apos;, &apos;Place&apos;, &apos;avenue&apos;]) 
+
+Saint-Ferdinand 
+set([&apos;Place&apos;, &apos;Rue&apos;]) 
+
+des Capucines 
+set([&apos;Boulevard&apos;, &apos;Rue&apos;]) 
+
+Saint-Laurent 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Boissière 
+set([&apos;Villa&apos;, &apos;Rue&apos;]) 
+
+des Coches 
+set([&apos;Rue&apos;, &apos;rue&apos;]) 
+
+de l&apos;Egalité 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Bosquet 
+set([&apos;Avenue&apos;, &apos;Villa&apos;, &apos;Rue&apos;]) 
+
+du Marché Saint-Honoré 
+set([&apos;Place&apos;, &apos;Rue&apos;]) 
+
+Karl Marx 
+set([&apos;Boulevard&apos;, &apos;Rue&apos;]) 
+
+Pauline 
+set([&apos;Avenue&apos;, &apos;Villa&apos;]) 
+
+de Choisy 
+set([&apos;Route&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+José Marti 
+set([&apos;all\xc3\xa9e&apos;, &apos;All\xc3\xa9e&apos;]) 
+
+Molière 
+set([&apos;rue&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+du 18 Juin 1940 
+set([&apos;Place&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Albert Thomas 
+set([&apos;All\xc3\xa9e&apos;, &apos;rue&apos;, &apos;place&apos;, &apos;Rue&apos;]) 
+
+Bougainville 
+set([&apos;All\xc3\xa9e&apos;, &apos;Rue&apos;]) 
+
+de la Résistance 
+set([&apos;All\xc3\xa9e&apos;, &apos;Avenue&apos;, &apos;Place&apos;, &apos;Rue&apos;]) 
+
+Pétrarque 
+set([&apos;Square&apos;, &apos;Rue&apos;]) 
+
+Bernard Iské 
+set([&apos;rue&apos;, &apos;Rue&apos;]) 
+
+des États-Unis 
+set([&apos;Place&apos;, &apos;Rue&apos;]) 
+
+de la Croix 
+set([&apos;Passage&apos;, &apos;Rue&apos;]) 
+
+de Bagatelle 
+set([&apos;Place&apos;, &apos;Rue&apos;]) 
+
+de la Reine Blanche 
+set([&apos;Quai&apos;, &apos;Rue&apos;]) 
+
+de Milly 
+set([&apos;Route&apos;, &apos;Rue&apos;]) 
+
+Telles de la Poterie 
+set([&apos;rue&apos;, &apos;Rue&apos;]) 
+
+des Epinettes 
+set([&apos;Sentier&apos;, &apos;Rue&apos;]) 
+
+du Point du Jour 
+set([&apos;Quai&apos;, &apos;Rue&apos;]) 
+
+d&apos;Issy 
+set([&apos;All\xc3\xa9e&apos;, &apos;Rue&apos;]) 
+
+des Sources 
+set([&apos;All\xc3\xa9e&apos;, &apos;Rue&apos;]) 
+
+Marcel Doret 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+des Celtes 
+set([&apos;Rue&apos;, &apos;rue&apos;]) 
+
+des Vallées 
+set([&apos;rue&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+d&apos;Alleray 
+set([&apos;Hameau&apos;, &apos;Place&apos;, &apos;Rue&apos;]) 
+
+de Lille 
+set([&apos;All\xc3\xa9e&apos;, &apos;Rue&apos;]) 
+
+Maximilien Robespierre 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+de Gravelle 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+au Pain 
+set([&apos;Rue&apos;, &apos;rue&apos;]) 
+
+du Docteur Roux 
+set([&apos;Square&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+de Rohan 
+set([&apos;Cour&apos;, &apos;Rue&apos;]) 
+
+Jules Verne 
+set([&apos;Impasse&apos;, &apos;Avenue&apos;, &apos;Place&apos;, &apos;Rue&apos;]) 
+
+des Chênes 
+set([&apos;All\xc3\xa9e&apos;, &apos;Cit\xc3\xa9&apos;, &apos;Avenue&apos;, &apos;R\xc3\xa9sidence&apos;, &apos;Rue&apos;]) 
+
+de Tourville 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+du Colombier 
+set([&apos;Place&apos;, &apos;Rue&apos;]) 
+
+du Général Gallieni 
+set([&apos;Boulevard&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Denfert-Rochereau 
+set([&apos;Place&apos;, &apos;Avenue&apos;]) 
+
+de Belleville 
+set([&apos;Boulevard&apos;, &apos;Rue&apos;]) 
+
+de Polangis 
+set([&apos;Boulevard&apos;, &apos;Quai&apos;]) 
+
+de la Halte 
+set([&apos;Impasse&apos;, &apos;Rue&apos;]) 
+
+Édouard Vaillant 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+de Lyon 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+du Sergent Bobillot 
+set([&apos;rue&apos;, &apos;Rue&apos;]) 
+
+du Couvent 
+set([&apos;Cit\xc3\xa9&apos;, &apos;Rue&apos;]) 
+
+Hector Berlioz 
+set([&apos;Square&apos;, &apos;Rue&apos;, &apos;Boulevard&apos;, &apos;All\xc3\xa9e&apos;, &apos;Mail&apos;, &apos;Avenue&apos;]) 
+
+de Vaugirard 
+set([&apos;Boulevard&apos;, &apos;Rue&apos;]) 
+
+Dupont 
+set([&apos;Cit\xc3\xa9&apos;, &apos;Villa&apos;]) 
+
+Winston Churchill 
+set([&apos;Place&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Béranger 
+set([&apos;Hameau&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+des Violettes 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+du Sahel 
+set([&apos;Villa&apos;, &apos;Rue&apos;]) 
+
+de l&apos;Université 
+set([&apos;All\xc3\xa9e&apos;, &apos;Rue&apos;]) 
+
+Edmond Michelet 
+set([&apos;Place&apos;, &apos;Rue&apos;]) 
+
+François Mouthon 
+set([&apos;Rue&apos;, &apos;rue&apos;]) 
+
+des Prés 
+set([&apos;Avenue&apos;, &apos;Impasse&apos;, &apos;Chemin&apos;, &apos;All\xc3\xa9e&apos;, &apos;Rue&apos;]) 
+
+des Bergères 
+set([&apos;Chemin&apos;, &apos;Rue&apos;]) 
+
+Cardinet 
+set([&apos;Passage&apos;, &apos;Rue&apos;]) 
+
+du Moulin des Prés 
+set([&apos;Rue&apos;, &apos;Passage&apos;]) 
+
+de l&apos;Orge 
+set([&apos;Impasse&apos;, &apos;Rue&apos;]) 
+
+du Pontel 
+set([&apos;Rue&apos;, &apos;rue&apos;]) 
+
+du Maine 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+de Corse 
+set([&apos;All\xc3\xa9e&apos;, &apos;Avenue&apos;]) 
+
+Victor Cresson 
+set([&apos;avenue&apos;, &apos;Avenue&apos;]) 
+
+Villebois Mareuil 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Basfroi 
+set([&apos;Passage&apos;, &apos;Rue&apos;]) 
+
+du Moulin Vert 
+set([&apos;Impasse&apos;, &apos;Rue&apos;]) 
+
+Robert Desnos 
+set([&apos;Place&apos;, &apos;Rue&apos;]) 
+
+de Passy 
+set([&apos;Place&apos;, &apos;Rue&apos;]) 
+
+Marguerite Perey 
+set([&apos;Rue&apos;, &apos;Av&apos;]) 
+
+Blaise Cendrars 
+set([&apos;all\xc3\xa9e&apos;, &apos;Square&apos;]) 
+
+du Général de Gaulle 
+set([&apos;Boulevard&apos;, &apos;avenue&apos;, &apos;Rue&apos;, &apos;Place&apos;, &apos;Av&apos;, &apos;rue&apos;, &apos;Avenue&apos;]) 
+
+d&apos;Anjou 
+set([&apos;All\xc3\xa9e&apos;, &apos;Quai&apos;, &apos;Rue&apos;]) 
+
+de Seine 
+set([&apos;Avenue&apos;, &apos;Place&apos;, &apos;rue&apos;, &apos;Quai&apos;, &apos;Rue&apos;]) 
+
+de la Madeleine 
+set([&apos;Boulevard&apos;, &apos;Place&apos;]) 
+
+Descartes 
+set([&apos;Place&apos;, &apos;boulevard&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+du Luxembourg 
+set([&apos;Avenue&apos;, &apos;rue&apos;]) 
+
+de Flandre 
+set([&apos;Avenue&apos;, &apos;Passage&apos;]) 
+
+Marcel Allégot 
+set([&apos;rue&apos;, &apos;Rue&apos;]) 
+
+de la Salle 
+set([&apos;rue&apos;, &apos;Rue&apos;]) 
+
+Grétry 
+set([&apos;Voie&apos;, &apos;Rue&apos;]) 
+
+des Mariniers 
+set([&apos;All\xc3\xa9e&apos;, &apos;Quai&apos;, &apos;Rue&apos;]) 
+
+du Mont Valérien 
+set([&apos;Rue&apos;, &apos;rue&apos;]) 
+
+des Écureuils 
+set([&apos;Impasse&apos;, &apos;Rue&apos;]) 
+
+Christophe Colomb 
+set([&apos;rue&apos;, &apos;Rue&apos;]) 
+
+Bossuet 
+set([&apos;Villa&apos;, &apos;Rue&apos;]) 
+
+du Fief 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+de Lozère 
+set([&apos;Rue&apos;, &apos;rue&apos;]) 
+
+Moncey 
+set([&apos;Square&apos;, &apos;Rue&apos;]) 
+
+du Marechal Joffre 
+set([&apos;Boulevard&apos;, &apos;Rue&apos;]) 
+
+Saint-Philippe du Roule 
+set([&apos;Rue&apos;, &apos;Passage&apos;]) 
+
+des Tamaris 
+set([&apos;All\xc3\xa9e&apos;, &apos;Rue&apos;]) 
+
+de la Forêt 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+de Gesvres 
+set([&apos;Quai&apos;, &apos;quai&apos;]) 
+
+Truillot 
+set([&apos;Impasse&apos;, &apos;Rue&apos;]) 
+
+Montesquieu 
+set([&apos;All\xc3\xa9e&apos;, &apos;Rue&apos;]) 
+
+Lavoisier 
+set([&apos;Avenue&apos;, &apos;Place&apos;, &apos;Rue&apos;]) 
+
+de Châtillon 
+set([&apos;Impasse&apos;, &apos;Rue&apos;]) 
+
+de la Petite Sologne 
+set([&apos;All\xc3\xa9e&apos;, &apos;Avenue&apos;]) 
+
+des Ormeaux 
+set([&apos;All\xc3\xa9e&apos;, &apos;Rue&apos;]) 
+
+Dombasle 
+set([&apos;Impasse&apos;, &apos;Passage&apos;, &apos;Rue&apos;]) 
+
+Gabriel et Charles Voisin 
+set([&apos;rue&apos;, &apos;Rue&apos;]) 
+
+Ledru-Rollin 
+set([&apos;rue&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+André Malraux 
+set([&apos;Avenue&apos;, &apos;Square&apos;, &apos;Place&apos;, &apos;Rue&apos;]) 
+
+de Gisors 
+set([&apos;Route&apos;, &apos;Rue&apos;]) 
+
+Rapp 
+set([&apos;Square&apos;, &apos;Avenue&apos;]) 
+
+de la Courre aux Lièvres 
+set([&apos;Sentier&apos;, &apos;Rue&apos;]) 
+
+Saint-Émilion 
+set([&apos;Cour&apos;, &apos;Passage&apos;]) 
+
+Paul Vaillant Couturier 
+set([&apos;Boulevard&apos;, &apos;avenue&apos;, &apos;rue&apos;, &apos;Impasse&apos;, &apos;Rue&apos;, &apos;Avenue&apos;]) 
+
+du Fer à Cheval 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+des Vosges 
+set([&apos;Avenue&apos;, &apos;place&apos;, &apos;Place&apos;]) 
+
+Théodore de Banville 
+set([&apos;Rue&apos;, &apos;rue&apos;]) 
+
+Gabriel Péri 
+set([&apos;Place&apos;, &apos;Boulevard&apos;, &apos;Avenue&apos;, &apos;rue&apos;, &apos;Rue&apos;]) 
+
+Saint-Exupéry 
+set([&apos;Avenue&apos;, &apos;Quai&apos;, &apos;Rue&apos;]) 
+
+de Boulainvilliers 
+set([&apos;Hameau&apos;, &apos;Rue&apos;]) 
+
+de la Tombe Issoire 
+set([&apos;rue&apos;, &apos;Rue&apos;]) 
+
+du Buisson Saint-Louis 
+set([&apos;Passage&apos;, &apos;Rue&apos;]) 
+
+Kléber 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+d&apos;Hauteville 
+set([&apos;Cit\xc3\xa9&apos;, &apos;Rue&apos;]) 
+
+du Bel Ébat 
+set([&apos;Place&apos;, &apos;R\xc3\xa9sidence&apos;]) 
+
+des Récollets 
+set([&apos;Rue&apos;, &apos;Passage&apos;]) 
+
+des Fougères 
+set([&apos;All\xc3\xa9e&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+des Genêts 
+set([&apos;All\xc3\xa9e&apos;, &apos;Rue&apos;]) 
+
+Maubert 
+set([&apos;Impasse&apos;, &apos;Place&apos;]) 
+
+du Pont Colbert 
+set([&apos;Impasse&apos;, &apos;Rue&apos;]) 
+
+Vaneau 
+set([&apos;Cit\xc3\xa9&apos;, &apos;Rue&apos;]) 
+
+du Renard 
+set([&apos;All\xc3\xa9e&apos;, &apos;Rue&apos;]) 
+
+Houdan 
+set([&apos;Rue&apos;, &apos;rue&apos;]) 
+
+de Chabrol 
+set([&apos;Cit\xc3\xa9&apos;, &apos;Rue&apos;]) 
+
+de la Passerelle 
+set([&apos;Route&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Brune 
+set([&apos;Boulevard&apos;, &apos;Villa&apos;, &apos;Rue&apos;]) 
+
+du Moulinet 
+set([&apos;Passage&apos;, &apos;Rue&apos;]) 
+
+Jean Varenne 
+set([&apos;rue&apos;, &apos;Rue&apos;]) 
+
+des Combattants 
+set([&apos;Place&apos;, &apos;Avenue&apos;]) 
+
+des frères Lumière 
+set([&apos;All\xc3\xa9e&apos;, &apos;all\xc3\xa9e&apos;, &apos;Avenue&apos;]) 
+
+Gabriel-Péri 
+set([&apos;Av.&apos;, &apos;Avenue&apos;, &apos;rue&apos;]) 
+
+du Professeur Calmette 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Habert de Montmort 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Clément Marot 
+set([&apos;Square&apos;, &apos;Rue&apos;]) 
+
+Jean Giraudoux 
+set([&apos;Square&apos;, &apos;Rue&apos;]) 
+
+Ingres 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Jeanne 
+set([&apos;All\xc3\xa9e&apos;, &apos;Rue&apos;]) 
+
+des Jardiniers 
+set([&apos;Impasse&apos;, &apos;Rue&apos;]) 
+
+des Antilles 
+set([&apos;Place&apos;, &apos;Rue&apos;]) 
+
+Henri Sellier 
+set([&apos;Boulevard&apos;, &apos;Avenue&apos;]) 
+
+de Beaumont 
+set([&apos;Route&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Jasmin 
+set([&apos;Square&apos;, &apos;Cour&apos;, &apos;Rue&apos;]) 
+
+de Clignancourt 
+set([&apos;Square&apos;, &apos;Rue&apos;]) 
+
+de Bourgogne 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+René Coty 
+set([&apos;Place&apos;, &apos;Avenue&apos;]) 
+
+de l&apos;Union 
+set([&apos;Rue&apos;, &apos;Avenue&apos;, &apos;Passage&apos;]) 
+
+de l&apos;Hôtel de Ville 
+set([&apos;Quai&apos;, &apos;Boulevard&apos;, &apos;Place&apos;, &apos;Rue&apos;]) 
+
+Clément 
+set([&apos;Jean-Baptiste&apos;, &apos;Rue&apos;]) 
+
+Youri Gagarine 
+set([&apos;Rond-Point&apos;, &apos;Rue&apos;]) 
+
+Jules Guesde 
+set([&apos;All\xc3\xa9e&apos;, &apos;Traverse&apos;, &apos;rue&apos;, &apos;Place&apos;, &apos;Rue&apos;]) 
+
+de la Cerisaie 
+set([&apos;Impasse&apos;, &apos;Rue&apos;]) 
+
+Henri Dunant 
+set([&apos;Boulevard&apos;, &apos;rue&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Chevalot 
+set([&apos;Impasse&apos;, &apos;Rue&apos;]) 
+
+Montbrun 
+set([&apos;Rue&apos;, &apos;Passage&apos;]) 
+
+Théophile Gautier 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Maryse Bastié 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+des Trois Fontanot 
+set([&apos;Rue&apos;, &apos;rue&apos;]) 
+
+de l&apos;Abreuvoir 
+set([&apos;rue&apos;, &apos;Impasse&apos;, &apos;Place&apos;, &apos;Chemin&apos;, &apos;Rue&apos;, &apos;Avenue&apos;]) 
+
+Louis-Philippe 
+set([&apos;Passage&apos;, &apos;Rue&apos;]) 
+
+Saint-Honoré 
+set([&apos;rue&apos;, &apos;Rue&apos;]) 
+
+du Poirier au Large 
+set([&apos;Impasse&apos;, &apos;Rue&apos;]) 
+
+de l&apos;Opéra 
+set([&apos;Place&apos;, &apos;Avenue&apos;]) 
+
+de France 
+set([&apos;Place&apos;, &apos;Boulevard&apos;, &apos;Avenue&apos;]) 
+
+des Cèdres 
+set([&apos;All\xc3\xa9e&apos;, &apos;Rue&apos;]) 
+
+de la Redoute 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+de Bercy 
+set([&apos;Boulevard&apos;, &apos;Quai&apos;, &apos;Rue&apos;]) 
+
+Clisson 
+set([&apos;Impasse&apos;, &apos;Rue&apos;]) 
+
+Marguerite Yourcenar 
+set([&apos;All\xc3\xa9e&apos;, &apos;Place&apos;, &apos;Rue&apos;]) 
+
+les Terres Rouges 
+set([&apos;All\xc3\xa9e&apos;, &apos;R\xc3\xa9sidence&apos;]) 
+
+de Reuilly 
+set([&apos;Bd&apos;, &apos;bd&apos;, &apos;Boulevard&apos;, &apos;Rue&apos;, &apos;boulevard&apos;, &apos;bouleard&apos;]) 
+
+de Richelieu 
+set([&apos;Boulevard&apos;, &apos;rue&apos;, &apos;Rue&apos;]) 
+
+du Parc de Montsouris 
+set([&apos;Villa&apos;, &apos;Rue&apos;]) 
+
+Riquet 
+set([&apos;rue&apos;, &apos;Rue&apos;]) 
+
+Dupetit-Thouars 
+set([&apos;Cit\xc3\xa9&apos;, &apos;Rue&apos;]) 
+
+de la Forge 
+set([&apos;Place&apos;, &apos;Rue&apos;]) 
+
+Gay Lussac 
+set([&apos;Mail&apos;, &apos;Rue&apos;]) 
+
+de la Ferme 
+set([&apos;All\xc3\xa9e&apos;, &apos;Route&apos;, &apos;Esplanade&apos;, &apos;Rue&apos;]) 
+
+des Eaux 
+set([&apos;Passage&apos;, &apos;Rue&apos;]) 
+
+Félix Éboué 
+set([&apos;Place&apos;, &apos;Rue&apos;]) 
+
+Jean-Baptiste Clément 
+set([&apos;Quai&apos;, &apos;Rue&apos;, &apos;Avenue&apos;, &apos;Place&apos;, &apos;Av&apos;]) 
+
+du Montparnasse 
+set([&apos;Boulevard&apos;, &apos;Rue&apos;]) 
+
+Monseigneur Roméro 
+set([&apos;cours&apos;, &apos;Cours&apos;]) 
+
+Boulard 
+set([&apos;rue&apos;, &apos;Rue&apos;]) 
+
+Godefroy 
+set([&apos;rue&apos;, &apos;Rue&apos;]) 
+
+du Loing 
+set([&apos;All\xc3\xa9e&apos;, &apos;Rue&apos;]) 
+
+d&apos;Argenteuil 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+des Lacs 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Paul Langevin 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+du 25 Août 1944 
+set([&apos;Place&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Dauphine 
+set([&apos;Passage&apos;, &apos;Place&apos;, &apos;Rue&apos;]) 
+
+de la Queue en Brie 
+set([&apos;route&apos;, &apos;Route&apos;]) 
+
+de la Fontaine des Saules 
+set([&apos;Rue&apos;, &apos;Ruelle&apos;]) 
+
+des Perroquets 
+set([&apos;Cottage&apos;, &apos;Rue&apos;]) 
+
+Jean Ferrat 
+set([&apos;All\xc3\xa9e&apos;, &apos;Place&apos;]) 
+
+Pierre Corneille 
+set([&apos;All\xc3\xa9e&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+d&apos;Aligre 
+set([&apos;Avenue&apos;, &apos;Place&apos;, &apos;Rue&apos;]) 
+
+de Port-Royal 
+set([&apos;Boulevard&apos;, &apos;Rue&apos;, &apos;Square&apos;]) 
+
+Jean Beausire 
+set([&apos;Impasse&apos;, &apos;Rue&apos;]) 
+
+de Condé 
+set([&apos;All\xc3\xa9e&apos;, &apos;Rue&apos;]) 
+
+de la Tour Maubourg 
+set([&apos;Boulevard&apos;, &apos;Square&apos;]) 
+
+de l&apos;Aqueduc 
+set([&apos;All\xc3\xa9e&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Aristide Maillol 
+set([&apos;all\xc3\xa9e&apos;, &apos;Rue&apos;]) 
+
+Deslandes 
+set([&apos;rue&apos;, &apos;Rue&apos;]) 
+
+Reille 
+set([&apos;Impasse&apos;, &apos;Avenue&apos;]) 
+
+Damesme 
+set([&apos;Impasse&apos;, &apos;Rue&apos;]) 
+
+Charpentier 
+set([&apos;Boulevard&apos;, &apos;Rue&apos;]) 
+
+Alexandra David-Neel 
+set([&apos;All\xc3\xa9e&apos;, &apos;Rue&apos;]) 
+
+de Sévigné 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+des Prairies 
+set([&apos;All\xc3\xa9e&apos;, &apos;rue&apos;, &apos;Rue&apos;]) 
+
+de l&apos;Aube 
+set([&apos;rue&apos;, &apos;Rue&apos;]) 
+
+Archimède 
+set([&apos;Bd&apos;, &apos;Boulevard&apos;]) 
+
+du Bel-Air 
+set([&apos;rue&apos;, &apos;Avenue&apos;, &apos;Villa&apos;, &apos;Rue&apos;]) 
+
+de l&apos;Abbé Grégoire 
+set([&apos;Place&apos;, &apos;Rue&apos;]) 
+
+Vendôme 
+set([&apos;Place&apos;, &apos;Passage&apos;]) 
+
+Fernand Widal 
+set([&apos;rue&apos;, &apos;Rue&apos;]) 
+
+du Printemps 
+set([&apos;Place&apos;, &apos;Rue&apos;]) 
+
+des Vignes 
+set([&apos;All\xc3\xa9e&apos;, &apos;Chemin&apos;, &apos;Rue&apos;]) 
+
+de Joinville 
+set([&apos;Impasse&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+La Fontaine 
+set([&apos;Square&apos;, &apos;Rue&apos;, &apos;Hameau&apos;]) 
+
+de Diane 
+set([&apos;Square&apos;, &apos;Parc&apos;]) 
+
+de la Planchette 
+set([&apos;Impasse&apos;, &apos;Ruelle&apos;]) 
+
+Modigliani 
+set([&apos;Terrasse&apos;, &apos;Rue&apos;]) 
+
+du Docteur Charcot 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+de Phalsbourg 
+set([&apos;Cit\xc3\xa9&apos;, &apos;Rue&apos;]) 
+
+de Conti 
+set([&apos;Impasse&apos;, &apos;Quai&apos;]) 
+
+Pierre Larousse 
+set([&apos;avenue&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+du Val de Marne 
+set([&apos;all\xc3\xa9e&apos;, &apos;All\xc3\xa9e&apos;]) 
+
+Geoffroy Saint-Hilaire 
+set([&apos;All\xc3\xa9e&apos;, &apos;Rue&apos;]) 
+
+des Ecoles 
+set([&apos;All\xc3\xa9e&apos;, &apos;Impasse&apos;]) 
+
+des Charmes 
+set([&apos;All\xc3\xa9e&apos;, &apos;Avenue&apos;]) 
+
+Sainte-Marie 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Jeanne d&apos;Arc 
+set([&apos;Place&apos;, &apos;rue&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Léon Blum 
+set([&apos;Boulevard&apos;, &apos;Avenue&apos;, &apos;Square&apos;, &apos;Place&apos;, &apos;Rue&apos;]) 
+
+Corneille 
+set([&apos;All\xc3\xa9e&apos;, &apos;Rue&apos;]) 
+
+Fanac 
+set([&apos;\xc3\x8fle&apos;, &apos;\xc3\x8ele&apos;, &apos;Ile&apos;]) 
+
+Buffault 
+set([&apos;rue&apos;, &apos;Rue&apos;]) 
+
+Henry Dunant 
+set([&apos;Rond-Point&apos;, &apos;Rue&apos;]) 
+
+du Haras 
+set([&apos;Domaine&apos;, &apos;Rue&apos;]) 
+
+Danielle Casanova 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Lefebvre 
+set([&apos;Boulevard&apos;, &apos;Rue&apos;]) 
+
+du Havre 
+set([&apos;Boulevard&apos;, &apos;Place&apos;, &apos;Rue&apos;]) 
+
+du Clos Saint-Georges 
+set([&apos;Avenue&apos;, &apos;avenue&apos;]) 
+
+Delaunay 
+set([&apos;Impasse&apos;, &apos;Cit\xc3\xa9&apos;]) 
+
+Joliot Curie 
+set([&apos;avenue&apos;, &apos;Rue&apos;]) 
+
+Delambre 
+set([&apos;Square&apos;, &apos;Rue&apos;]) 
+
+du Dragon 
+set([&apos;All\xc3\xa9e&apos;, &apos;Impasse&apos;, &apos;Square&apos;, &apos;Chemin&apos;, &apos;Rue&apos;]) 
+
+Rondelet 
+set([&apos;Cit\xc3\xa9&apos;, &apos;Rue&apos;]) 
+
+Roger Hennequin 
+set([&apos;avenue&apos;, &apos;Avenue&apos;]) 
+
+Ronsard 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+des Chantiers 
+set([&apos;rue&apos;, &apos;Rue&apos;]) 
+
+des Érables 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+des Petits Pères 
+set([&apos;Rue&apos;, &apos;Place&apos;, &apos;Passage&apos;]) 
+
+des Petits Carreaux 
+set([&apos;Redoute&apos;, &apos;Rue&apos;]) 
+
+des Princes 
+set([&apos;Route&apos;, &apos;Avenue&apos;, &apos;Villa&apos;]) 
+
+de la Trinité 
+set([&apos;Rue&apos;, &apos;Place&apos;, &apos;Passage&apos;]) 
+
+d&apos;Orléans 
+set([&apos;Route&apos;, &apos;route&apos;, &apos;Quai&apos;, &apos;Villa&apos;, &apos;Rue&apos;]) 
+
+Saint-Marc 
+set([&apos;Galerie&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Malesherbes 
+set([&apos;Cit\xc3\xa9&apos;, &apos;Boulevard&apos;]) 
+
+Émile Cloud 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+du ménil 
+set([&apos;Rue&apos;, &apos;rue&apos;]) 
+
+Rougemont 
+set([&apos;Cit\xc3\xa9&apos;, &apos;Rue&apos;]) 
+
+Antoine Arnauld 
+set([&apos;Square&apos;, &apos;Rue&apos;]) 
+
+du Lavoir 
+set([&apos;All\xc3\xa9e&apos;, &apos;Impasse&apos;, &apos;Villa&apos;, &apos;Rue&apos;]) 
+
+Tourneux 
+set([&apos;Impasse&apos;, &apos;Rue&apos;]) 
+
+Spinoza 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Laënnec 
+set([&apos;All\xc3\xa9e&apos;, &apos;Rue&apos;]) 
+
+des Castors 
+set([&apos;All\xc3\xa9e&apos;, &apos;Cit\xc3\xa9&apos;, &apos;Avenue&apos;]) 
+
+du Midi 
+set([&apos;boulevard&apos;, &apos;Boulevard&apos;, &apos;rue&apos;]) 
+
+Raymond Lefèvre 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+du Belvédère 
+set([&apos;Promenade&apos;, &apos;Avenue&apos;, &apos;R\xc3\xa9sidence&apos;, &apos;Esplanade&apos;, &apos;Rue&apos;]) 
+
+de Saint-Cloud 
+set([&apos;Rue&apos;, &apos;Avenue&apos;, &apos;rue&apos;]) 
+
+Ducastel 
+set([&apos;Rue&apos;, &apos;rue&apos;]) 
+
+Marceau 
+set([&apos;Villa&apos;, &apos;Avenue&apos;, &apos;rue&apos;, &apos;Impasse&apos;, &apos;Rue&apos;, &apos;avenue&apos;]) 
+
+du Théâtre 
+set([&apos;Passage&apos;, &apos;rue&apos;, &apos;Rue&apos;]) 
+
+des Iris 
+set([&apos;All\xc3\xa9e&apos;, &apos;Residence&apos;, &apos;R\xc3\xa9sidence&apos;, &apos;Rue&apos;]) 
+
+de Mulhouse 
+set([&apos;Boulevard&apos;, &apos;Rue&apos;]) 
+
+de Metz 
+set([&apos;rue&apos;, &apos;Quai&apos;, &apos;Rue&apos;]) 
+
+Vauquelin 
+set([&apos;rue&apos;, &apos;Rue&apos;]) 
+
+de la Verrerie 
+set([&apos;rue&apos;, &apos;Rue&apos;]) 
+
+de Bordeaux 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+de la Tour d&apos;Auvergne 
+set([&apos;Impasse&apos;, &apos;Rue&apos;]) 
+
+Renault 
+set([&apos;Route&apos;, &apos;Rue&apos;]) 
+
+du Faubourg Saint-Denis 
+set([&apos;rue&apos;, &apos;Rue&apos;]) 
+
+de Chennevières 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Claude Lorrain 
+set([&apos;Villa&apos;, &apos;Rue&apos;]) 
+
+Jacques Brel 
+set([&apos;Place&apos;, &apos;Rue&apos;]) 
+
+de l&apos;Alma 
+set([&apos;Cit\xc3\xa9&apos;, &apos;Place&apos;, &apos;Rue&apos;]) 
+
+Arletty 
+set([&apos;Place&apos;, &apos;Avenue&apos;]) 
+
+des Tuileries 
+set([&apos;Avenue&apos;, &apos;Jardins&apos;]) 
+
+des Coutures 
+set([&apos;All\xc3\xa9e&apos;, &apos;Rue&apos;]) 
+
+Charbonnel 
+set([&apos;rue&apos;, &apos;Rue&apos;]) 
+
+Faraday 
+set([&apos;Michael&apos;, &apos;Rue&apos;]) 
+
+des Batignolles 
+set([&apos;Boulevard&apos;, &apos;Rue&apos;]) 
+
+Montmartre 
+set([&apos;Galerie&apos;, &apos;Boulevard&apos;, &apos;Rue&apos;]) 
+
+Husson 
+set([&apos;Impasse&apos;, &apos;Boulevard&apos;]) 
+
+Copernic 
+set([&apos;Boulevard&apos;, &apos;Place&apos;, &apos;Rue&apos;]) 
+
+d&apos;Italie 
+set([&apos;Place&apos;, &apos;Avenue&apos;, &apos;avenue&apos;, &apos;Rue&apos;]) 
+
+de Liège 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Myrha 
+set([&apos;rue&apos;, &apos;Rue&apos;]) 
+
+Berthelot 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Octave Mirbeau 
+set([&apos;All\xc3\xa9e&apos;, &apos;Rue&apos;]) 
+
+Aimé Césaire 
+set([&apos;Place&apos;, &apos;Rue&apos;]) 
+
+Elsa Triolet 
+set([&apos;place&apos;, &apos;Rue&apos;]) 
+
+Armand Carrel 
+set([&apos;rue&apos;, &apos;Rue&apos;]) 
+
+Gabrielle 
+set([&apos;All\xc3\xa9e&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Margot 
+set([&apos;Impasse&apos;, &apos;Rue&apos;]) 
+
+Leconte de Lisle 
+set([&apos;Villa&apos;, &apos;Rue&apos;]) 
+
+de Roissy 
+set([&apos;route&apos;, &apos;Route&apos;]) 
+
+Delessert 
+set([&apos;Boulevard&apos;, &apos;Passage&apos;]) 
+
+du Commandant René Mouchotte 
+set([&apos;rue&apos;, &apos;Rue&apos;]) 
+
+Jouvenet 
+set([&apos;Square&apos;, &apos;Rue&apos;]) 
+
+du Viaduc 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+de Normandie 
+set([&apos;All\xc3\xa9e&apos;, &apos;all\xc3\xa9e&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+des Patriarches 
+set([&apos;Passage&apos;, &apos;Rue&apos;]) 
+
+Royale 
+set([&apos;Place&apos;, &apos;Rue&apos;]) 
+
+Léger 
+set([&apos;Impasse&apos;, &apos;Villa&apos;]) 
+
+Auguste Chabrières 
+set([&apos;Square&apos;, &apos;Rue&apos;]) 
+
+Bobillot 
+set([&apos;rue&apos;, &apos;Rue&apos;]) 
+
+de l&apos;église 
+set([&apos;place&apos;, &apos;Place&apos;]) 
+
+Marie Curie 
+set([&apos;All\xc3\xa9e&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Blanqui 
+set([&apos;Quai&apos;, &apos;Rue&apos;]) 
+
+des Cerisiers 
+set([&apos;All\xc3\xa9e&apos;, &apos;Avenue&apos;, &apos;Place&apos;, &apos;Villa&apos;, &apos;Rue&apos;]) 
+
+des Catalpas 
+set([&apos;Mail&apos;, &apos;Square&apos;]) 
+
+des Orfèvres 
+set([&apos;Quai&apos;, &apos;Rue&apos;]) 
+
+Jacques Daguerre 
+set([&apos;All\xc3\xa9e&apos;, &apos;Rue&apos;]) 
+
+des Rossignols 
+set([&apos;All\xc3\xa9e&apos;, &apos;Rue&apos;]) 
+
+de Brandebourg 
+set([&apos;Boulevard&apos;, &apos;boulevard&apos;]) 
+
+de Chevreuse 
+set([&apos;Route&apos;, &apos;Rue&apos;]) 
+
+des Ormes 
+set([&apos;All\xc3\xa9e&apos;, &apos;Square&apos;, &apos;Rue&apos;]) 
+
+Fernand Léger 
+set([&apos;All\xc3\xa9e&apos;, &apos;Passage&apos;, &apos;Rue&apos;]) 
+
+Lecourbe 
+set([&apos;rue&apos;, &apos;Rue&apos;]) 
+
+Henri Matisse 
+set([&apos;Square&apos;, &apos;Rue&apos;]) 
+
+La Bruyère 
+set([&apos;Square&apos;, &apos;Rue&apos;]) 
+
+Desnouettes 
+set([&apos;Square&apos;, &apos;Rue&apos;]) 
+
+Gutenberg 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+rue 
+set([&apos;Grande&apos;, &apos;grande&apos;]) 
+
+de l&apos;Abbé Roger Derry 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Racine 
+set([&apos;Impasse&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Albert de Mun 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Pelletan 
+set([&apos;Eug\xc3\xa8ne&apos;, &apos;Rue&apos;]) 
+
+Poirier 
+set([&apos;Villa&apos;, &apos;Rue&apos;]) 
+
+Henri Regnault 
+set([&apos;rue&apos;, &apos;Rue&apos;]) 
+
+d&apos;Auteuil 
+set([&apos;Boulevard&apos;, &apos;Rue&apos;]) 
+
+d&apos;Austerlitz 
+set([&apos;Quai&apos;, &apos;Villa&apos;, &apos;Rue&apos;]) 
+
+Richerand 
+set([&apos;Avenue&apos;, &apos;av&apos;]) 
+
+de Sylvie 
+set([&apos;All\xc3\xa9e&apos;, &apos;Avenue&apos;]) 
+
+Gustave Flaubert 
+set([&apos;rue&apos;, &apos;Rue&apos;]) 
+
+du Pont de Lodi 
+set([&apos;rue&apos;, &apos;Rue&apos;]) 
+
+de la Rivière 
+set([&apos;Cour&apos;, &apos;Rue&apos;]) 
+
+du Coteau 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Jean Jaurès 
+set([&apos;Boulevard&apos;, &apos;avenue&apos;, &apos;rue&apos;, &apos;Cours&apos;, &apos;Place&apos;, &apos;Rue&apos;, &apos;Avenue&apos;]) 
+
+Guy Môquet 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+de l&apos;Aulnaye Dracourt 
+set([&apos;Impasse&apos;, &apos;Rue&apos;]) 
+
+du Centre 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+André Bonnenfant 
+set([&apos;Rue&apos;, &apos;rue&apos;]) 
+
+du Cobalt 
+set([&apos;all\xc3\xa9e&apos;, &apos;rue&apos;]) 
+
+Antoine Petit 
+set([&apos;Rue&apos;, &apos;rue&apos;]) 
+
+Robert Doisneau 
+set([&apos;All\xc3\xa9e&apos;, &apos;Villa&apos;, &apos;Rue&apos;]) 
+
+de l&apos;Ermitage 
+set([&apos;All\xc3\xa9e&apos;, &apos;rue&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+du Bel Air 
+set([&apos;Square&apos;, &apos;Avenue&apos;, &apos;R\xc3\xa9sidence&apos;, &apos;rue&apos;, &apos;Rue&apos;]) 
+
+de Chambord 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+de l&apos;Oise 
+set([&apos;boulevard&apos;, &apos;Boulevard&apos;, &apos;Quai&apos;]) 
+
+Henri Barbusse 
+set([&apos;Boulevard&apos;, &apos;rue&apos;, &apos;Place&apos;, &apos;place&apos;, &apos;Rue&apos;, &apos;Avenue&apos;]) 
+
+de Paris 
+set([&apos;Route&apos;, &apos;rue&apos;, &apos;Place&apos;, &apos;All\xc3\xa9e&apos;, &apos;Chemin&apos;, &apos;Rue&apos;, &apos;Avenue&apos;]) 
+
+de Valois 
+set([&apos;Avenue&apos;, &apos;Place&apos;, &apos;Rue&apos;]) 
+
+Léo Ferré 
+set([&apos;All\xc3\xa9e&apos;, &apos;Place&apos;]) 
+
+Joseph Bara 
+set([&apos;Boulevard&apos;, &apos;Rue&apos;]) 
+
+des Hêtres 
+set([&apos;All\xc3\xa9e&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+de Fleury 
+set([&apos;Route&apos;, &apos;Rue&apos;]) 
+
+de l&apos;Église 
+set([&apos;Avenue&apos;, &apos;Place&apos;, &apos;Impasse&apos;, &apos;Rue&apos;]) 
+
+du Colonel Rozanoff 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Raynouard 
+set([&apos;Square&apos;, &apos;Rue&apos;]) 
+
+de l&apos;Abbaye 
+set([&apos;Route&apos;, &apos;Rue&apos;]) 
+
+Bertrand 
+set([&apos;Cit\xc3\xa9&apos;, &apos;Villa&apos;]) 
+
+de Précy 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Georges Mandel 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Alphonse Karr 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Irène et Frédéric Joliot-Curie 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+des Sports 
+set([&apos;All\xc3\xa9e&apos;, &apos;Place&apos;, &apos;Rue&apos;]) 
+
+de la Porte de Châtillon 
+set([&apos;Place&apos;, &apos;Avenue&apos;]) 
+
+Joseph Kessel 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Maurice Thorez 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+de l&apos;industrie 
+set([&apos;Rue&apos;, &apos;rue&apos;]) 
+
+Léon Bourgeois 
+set([&apos;Rue&apos;, &apos;rue&apos;]) 
+
+Cousin de Méricourt 
+set([&apos;Avenue&apos;, &apos;avenue&apos;]) 
+
+du Verger 
+set([&apos;Promenade&apos;, &apos;All\xc3\xa9e&apos;, &apos;Rue&apos;]) 
+
+de Viarmes 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+de la Plesse 
+set([&apos;Chemin&apos;, &apos;Avenue&apos;]) 
+
+de la Boulangerie 
+set([&apos;Rue&apos;, &apos;rue&apos;]) 
+
+du Louvre 
+set([&apos;Place&apos;, &apos;Quai&apos;, &apos;Rue&apos;]) 
+
+des Tilleuls 
+set([&apos;All\xc3\xa9e&apos;, &apos;Impasse&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+des Barres 
+set([&apos;Rue&apos;, &apos;rue&apos;]) 
+
+Louis Blériot 
+set([&apos;All\xc3\xa9e&apos;, &apos;Square&apos;, &apos;Quai&apos;, &apos;Rue&apos;]) 
+
+Montgallet 
+set([&apos;Passage&apos;, &apos;Rue&apos;]) 
+
+Circulaire 
+set([&apos;boulevard&apos;, &apos;Rue&apos;]) 
+
+Anatole France 
+set([&apos;Bd&apos;, &apos;Boulevard&apos;, &apos;avenue&apos;, &apos;Rue&apos;, &apos;Square&apos;, &apos;Place&apos;, &apos;Quai&apos;, &apos;Avenue&apos;]) 
+
+de Valenciennes 
+set([&apos;Place&apos;, &apos;Rue&apos;]) 
+
+des Cévennes 
+set([&apos;rue&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Saint-Paul 
+set([&apos;Passage&apos;, &apos;Rue&apos;]) 
+
+Laugier 
+set([&apos;Villa&apos;, &apos;Rue&apos;]) 
+
+de l&apos;Ecole 
+set([&apos;All\xc3\xa9e&apos;, &apos;rue&apos;]) 
+
+François Mitterand 
+set([&apos;Place&apos;, &apos;Avenue&apos;]) 
+
+Desgenettes 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+de l&apos;Europe 
+set([&apos;Boulevard&apos;, &apos;Rond-Point&apos;, &apos;avenue&apos;, &apos;Impasse&apos;, &apos;Square&apos;, &apos;Place&apos;, &apos;Mail&apos;, &apos;Avenue&apos;]) 
+
+de Varenne 
+set([&apos;Cit\xc3\xa9&apos;, &apos;Rue&apos;]) 
+
+Saint-Eustache 
+set([&apos;Impasse&apos;, &apos;Rue&apos;]) 
+
+André Citroën 
+set([&apos;Boulevard&apos;, &apos;Quai&apos;]) 
+
+Rodin 
+set([&apos;Place&apos;, &apos;Boulevard&apos;, &apos;Avenue&apos;]) 
+
+Beaumarchais 
+set([&apos;Avenue&apos;, &apos;Boulevard&apos;, &apos;Place&apos;]) 
+
+Curie 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+des Aubépines 
+set([&apos;Place&apos;, &apos;Rue&apos;]) 
+
+des Trois Noyers 
+set([&apos;rue&apos;, &apos;Rue&apos;]) 
+
+Pierre Mendès-France 
+set([&apos;All\xc3\xa9e&apos;, &apos;Mail&apos;, &apos;Rue&apos;, &apos;rue&apos;]) 
+
+Adolphe Chérioux 
+set([&apos;Place&apos;, &apos;Rue&apos;]) 
+
+Bellevue 
+set([&apos;Impasse&apos;, &apos;Square&apos;]) 
+
+Falaise 
+set([&apos;Cit\xc3\xa9&apos;, &apos;cit\xc3\xa9&apos;]) 
+
+Gérard Philipe 
+set([&apos;Mail&apos;, &apos;Rue&apos;]) 
+
+Jean-Jacques Rousseau 
+set([&apos;Avenue&apos;, &apos;Villa&apos;, &apos;Rue&apos;]) 
+
+du Clos du Village 
+set([&apos;Impasse&apos;, &apos;Rue&apos;]) 
+
+Lamartine 
+set([&apos;Avenue&apos;, &apos;Square&apos;, &apos;Place&apos;, &apos;rue&apos;, &apos;Rue&apos;]) 
+
+Jean-Baptiste Pigalle 
+set([&apos;Cit\xc3\xa9&apos;, &apos;Rue&apos;]) 
+
+Louis Armand 
+set([&apos;boulevard&apos;, &apos;Rue&apos;]) 
+
+Gaillon 
+set([&apos;Place&apos;, &apos;Rue&apos;]) 
+
+Garibaldi 
+set([&apos;Boulevard&apos;, &apos;Rue&apos;]) 
+
+des Pyrénées 
+set([&apos;Boulevard&apos;, &apos;Place&apos;, &apos;rue&apos;, &apos;Rue&apos;]) 
+
+des Joueries 
+set([&apos;rue&apos;, &apos;Rue&apos;]) 
+
+de Provins 
+set([&apos;Route&apos;, &apos;rue&apos;]) 
+
+Saint-Ambroise 
+set([&apos;Rue&apos;, &apos;Passage&apos;]) 
+
+Jean Racine 
+set([&apos;Chemin&apos;, &apos;Rue&apos;]) 
+
+de Fouilleuse 
+set([&apos;avenue&apos;, &apos;Avenue&apos;]) 
+
+Pierre Beregovoy 
+set([&apos;Place&apos;, &apos;Rue&apos;]) 
+
+Diderot 
+set([&apos;boulevard&apos;, &apos;Boulevard&apos;, &apos;avenue&apos;, &apos;Rue&apos;, &apos;rue&apos;]) 
+
+Sadi Carnot 
+set([&apos;Avenue&apos;, &apos;Villa&apos;, &apos;Rue&apos;]) 
+
+François Villon 
+set([&apos;All\xc3\xa9e&apos;, &apos;Square&apos;, &apos;Rue&apos;]) 
+
+des Anciennes Mairies 
+set([&apos;rue&apos;, &apos;Rue&apos;]) 
+
+Sébastopol 
+set([&apos;Boulevard&apos;, &apos;Rue&apos;]) 
+
+Honoré d&apos;Estienne d&apos;Orves 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+de la Mairie 
+set([&apos;Square&apos;, &apos;Villa&apos;, &apos;Rue&apos;, &apos;Impasse&apos;, &apos;Cour&apos;, &apos;Place&apos;]) 
+
+Paul Gauguin 
+set([&apos;Place&apos;, &apos;Rue&apos;]) 
+
+du Lac 
+set([&apos;Promenade&apos;, &apos;Rue&apos;]) 
+
+des Bourdonnais 
+set([&apos;rue&apos;, &apos;Rue&apos;]) 
+
+des Célestins 
+set([&apos;Quai&apos;, &apos;Passage&apos;]) 
+
+de Nevers 
+set([&apos;Impasse&apos;, &apos;Rue&apos;]) 
+
+des Italiens 
+set([&apos;Boulevard&apos;, &apos;Place&apos;, &apos;Rue&apos;]) 
+
+Fragonard 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+des Réservoirs 
+set([&apos;Rue&apos;, &apos;rue&apos;]) 
+
+Dupleix 
+set([&apos;Place&apos;, &apos;Rue&apos;]) 
+
+du Maréchal Joffre 
+set([&apos;Boulevard&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Beauséjour 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+de Rivoli 
+set([&apos;rue&apos;, &apos;Rue&apos;]) 
+
+de Bourbon 
+set([&apos;All\xc3\xa9e&apos;, &apos;Quai&apos;]) 
+
+Joliot-Curie 
+set([&apos;avenue&apos;, &apos;rue&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Feydeau 
+set([&apos;Galerie&apos;, &apos;Rue&apos;]) 
+
+des Buissons 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Edgar Quinet 
+set([&apos;Boulevard&apos;, &apos;Rue&apos;]) 
+
+de Gibraltar 
+set([&apos;Place&apos;, &apos;Rue&apos;]) 
+
+des Grands Augustins 
+set([&apos;rue&apos;, &apos;Quai&apos;, &apos;Rue&apos;]) 
+
+de Londres 
+set([&apos;Cit\xc3\xa9&apos;, &apos;Rue&apos;]) 
+
+Julien Masselier 
+set([&apos;Rue&apos;, &apos;rue&apos;]) 
+
+des Cerfs 
+set([&apos;All\xc3\xa9e&apos;, &apos;Rue&apos;]) 
+
+des Bouleaux 
+set([&apos;All\xc3\xa9e&apos;, &apos;Avenue&apos;, &apos;avenue&apos;, &apos;Sente&apos;, &apos;Rue&apos;]) 
+
+Charles Gounod 
+set([&apos;Square&apos;, &apos;Place&apos;, &apos;Rue&apos;]) 
+
+de Meaux 
+set([&apos;Route&apos;, &apos;Rue&apos;]) 
+
+Boucher 
+set([&apos;Sentier&apos;, &apos;Rue&apos;]) 
+
+du Tage 
+set([&apos;Cours&apos;, &apos;Rue&apos;]) 
+
+Guerin 
+set([&apos;Camille&apos;, &apos;Rue&apos;]) 
+
+de Longjumeau 
+set([&apos;Route&apos;, &apos;Rue&apos;]) 
+
+du Rendez-Vous 
+set([&apos;Cit\xc3\xa9&apos;, &apos;Rue&apos;]) 
+
+de la Liberté 
+set([&apos;Boulevard&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+du Maréchal Leclerc 
+set([&apos;Avenue&apos;, &apos;Boulevard&apos;, &apos;Place&apos;, &apos;rue&apos;, &apos;Rue&apos;]) 
+
+Stendhal 
+set([&apos;Villa&apos;, &apos;Rue&apos;]) 
+
+des Pins 
+set([&apos;All\xc3\xa9e&apos;, &apos;Rue&apos;]) 
+
+Colbert 
+set([&apos;Galerie&apos;, &apos;Rue&apos;]) 
+
+de la Tourelle 
+set([&apos;Chemin&apos;, &apos;Quai&apos;, &apos;Villa&apos;]) 
+
+de la Providence 
+set([&apos;rue&apos;, &apos;Rue&apos;]) 
+
+de Neuilly 
+set([&apos;Boulevard&apos;, &apos;Route&apos;, &apos;Porte&apos;, &apos;Rue&apos;]) 
+
+Rue 
+set([&apos;Grande&apos;, &apos;grande&apos;]) 
+
+Paul Cézanne 
+set([&apos;All\xc3\xa9e&apos;, &apos;Boulevard&apos;, &apos;Rue&apos;]) 
+
+de la Libération 
+set([&apos;Avenue&apos;, &apos;boulevard&apos;, &apos;Boulevard&apos;, &apos;Place&apos;, &apos;Rue&apos;]) 
+
+des Frères Lumière 
+set([&apos;rue&apos;, &apos;Rue&apos;]) 
+
+Dupressoir 
+set([&apos;rue&apos;, &apos;Rue&apos;]) 
+
+de Rambouillet 
+set([&apos;Route&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+de Savoie 
+set([&apos;Place&apos;, &apos;Rue&apos;]) 
+
+Danton 
+set([&apos;All\xc3\xa9e&apos;, &apos;Place&apos;, &apos;Rue&apos;]) 
+
+d&apos;Aubervilliers 
+set([&apos;Impasse&apos;, &apos;Rue&apos;]) 
+
+Alfred Rouzé 
+set([&apos;Impasse&apos;, &apos;Rue&apos;]) 
+
+Jean Jacques Rousseau 
+set([&apos;All\xc3\xa9e&apos;, &apos;Rue&apos;]) 
+
+de Maubeuge 
+set([&apos;Square&apos;, &apos;Rue&apos;]) 
+
+de la Noue 
+set([&apos;Route&apos;, &apos;Rue&apos;]) 
+
+Chaptal 
+set([&apos;Cit\xc3\xa9&apos;, &apos;Villa&apos;, &apos;Rue&apos;]) 
+
+du Moulin à Vent 
+set([&apos;Impasse&apos;, &apos;Boulevard&apos;, &apos;Place&apos;, &apos;Rue&apos;]) 
+
+Jean Goujon 
+set([&apos;rue&apos;, &apos;Rue&apos;]) 
+
+Surcouf 
+set([&apos;Square&apos;, &apos;Rue&apos;]) 
+
+de Nogent 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Guillaume Tell 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+de l&apos;Espérance 
+set([&apos;Boulevard&apos;, &apos;Villa&apos;, &apos;Rue&apos;]) 
+
+de Pontoise 
+set([&apos;Route&apos;, &apos;Boulevard&apos;, &apos;Avenue&apos;, &apos;rue&apos;, &apos;Rue&apos;]) 
+
+de Verdun 
+set([&apos;Square&apos;, &apos;avenue&apos;, &apos;Rue&apos;, &apos;Impasse&apos;, &apos;Boulevard&apos;, &apos;Place&apos;, &apos;Passage&apos;, &apos;Avenue&apos;]) 
+
+Piver 
+set([&apos;Impasse&apos;, &apos;Passage&apos;]) 
+
+de Magenta 
+set([&apos;Cit\xc3\xa9&apos;, &apos;Boulevard&apos;]) 
+
+Simone de Beauvoir 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+des Champs-Élysées 
+set([&apos;All\xc3\xa9e&apos;, &apos;avenue&apos;, &apos;Boulevard&apos;, &apos;Avenue&apos;, &apos;Place&apos;]) 
+
+Saint-André des Arts 
+set([&apos;Place&apos;, &apos;Rue&apos;]) 
+
+de la Bastille 
+set([&apos;Place&apos;, &apos;Boulevard&apos;, &apos;place&apos;, &apos;rue&apos;, &apos;Rue&apos;]) 
+
+Jean Moulin 
+set([&apos;All\xc3\xa9e&apos;, &apos;Square&apos;, &apos;Avenue&apos;, &apos;Esplanade&apos;, &apos;Rue&apos;]) 
+
+Galliéni 
+set([&apos;Boulevard&apos;, &apos;boulevard&apos;, &apos;rue&apos;, &apos;Rue&apos;]) 
+
+du Caire 
+set([&apos;Galerie&apos;, &apos;Passage&apos;, &apos;Place&apos;, &apos;Rue&apos;]) 
+
+Haute 
+set([&apos;Place&apos;, &apos;Rue&apos;]) 
+
+Johann Strauss 
+set([&apos;Avenue&apos;, &apos;Place&apos;]) 
+
+du Temple 
+set([&apos;Boulevard&apos;, &apos;Rue&apos;]) 
+
+de la Defense 
+set([&apos;place&apos;, &apos;Place&apos;]) 
+
+de Colmar 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Charles Floquet 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+François Arago 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+de la Glacière 
+set([&apos;Chemin&apos;, &apos;Rue&apos;]) 
+
+Olivier de Serres 
+set([&apos;Passage&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Maurice Utrillo 
+set([&apos;Square&apos;, &apos;Rue&apos;]) 
+
+du Potager 
+set([&apos;All\xc3\xa9e&apos;, &apos;Rue&apos;]) 
+
+Alphonse Laveran 
+set([&apos;place&apos;, &apos;Place&apos;]) 
+
+Albert Camus 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Marc Sangnier 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Paul Valéry 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+de la Défense 
+set([&apos;place&apos;, &apos;Rue&apos;]) 
+
+Pierre Dupont 
+set([&apos;Impasse&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+des Marchands 
+set([&apos;Galerie&apos;, &apos;Impasse&apos;, &apos;Rue&apos;]) 
+
+de Messine 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+de la Rapée 
+set([&apos;Quai&apos;, &apos;Port&apos;]) 
+
+de la Porte de Montmartre 
+set([&apos;avenue&apos;, &apos;Avenue&apos;]) 
+
+des Mimosas 
+set([&apos;All\xc3\xa9e&apos;, &apos;Square&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Saint-Sébastien 
+set([&apos;Impasse&apos;, &apos;Passage&apos;, &apos;Rue&apos;]) 
+
+Saint-Claude 
+set([&apos;Impasse&apos;, &apos;Rue&apos;]) 
+
+de Morsang 
+set([&apos;Route&apos;, &apos;rue&apos;, &apos;Rue&apos;]) 
+
+du Muguet 
+set([&apos;Cour&apos;, &apos;Rue&apos;]) 
+
+du Fort 
+set([&apos;Route&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+de la Paix 
+set([&apos;Boulevard&apos;, &apos;Avenue&apos;, &apos;Villa&apos;, &apos;rue&apos;, &apos;Rue&apos;]) 
+
+Lagarde 
+set([&apos;Square&apos;, &apos;Rue&apos;]) 
+
+de la Vallée 
+set([&apos;Chemin&apos;, &apos;Rue&apos;]) 
+
+Georges Clemenceau 
+set([&apos;Place&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+d&apos;Ivry 
+set([&apos;avenue&apos;, &apos;Avenue&apos;]) 
+
+Raymond Losserand 
+set([&apos;rue&apos;, &apos;Rue&apos;]) 
+
+du Marché 
+set([&apos;Passage&apos;, &apos;Place&apos;, &apos;Rue&apos;]) 
+
+du Maréchal Lyautey 
+set([&apos;rue&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Saint-Joseph 
+set([&apos;Cour&apos;, &apos;Rue&apos;]) 
+
+de l&apos;Aunette 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+des Gâtines 
+set([&apos;Impasse&apos;, &apos;Route&apos;]) 
+
+d&apos;orion 
+set([&apos;Place&apos;, &apos;place&apos;]) 
+
+Wagner 
+set([&apos;Impasse&apos;, &apos;Rue&apos;]) 
+
+Saint-Bernard 
+set([&apos;Passage&apos;, &apos;Quai&apos;, &apos;Rue&apos;]) 
+
+du Château 
+set([&apos;Boulevard&apos;, &apos;Domaine&apos;, &apos;Rue&apos;, &apos;Chemin&apos;, &apos;domaine&apos;, &apos;Clos&apos;, &apos;rue&apos;, &apos;Avenue&apos;, &apos;Ruelle&apos;]) 
+
+de Bouvines 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Maréchal Leclerc 
+set([&apos;Place&apos;, &apos;place&apos;]) 
+
+Pierre et Marie Curie 
+set([&apos;rue&apos;, &apos;Rue&apos;]) 
+
+du Chemin de Fer 
+set([&apos;Avenue&apos;, &apos;Villa&apos;, &apos;Rue&apos;]) 
+
+des Deux Portes 
+set([&apos;Passage&apos;, &apos;Rue&apos;]) 
+
+Saint-Denis 
+set([&apos;Impasse&apos;, &apos;Boulevard&apos;, &apos;Rue&apos;]) 
+
+de la Maison Rouge 
+set([&apos;Rue&apos;, &apos;rue&apos;]) 
+
+19 
+set([&apos;D&apos;, &apos;CD&apos;]) 
+
+Raspail 
+set([&apos;avenue&apos;, &apos;Boulevard&apos;, &apos;Avenue&apos;, &apos;rue&apos;, &apos;Rue&apos;]) 
+
+Duhesme 
+set([&apos;Passage&apos;, &apos;Rue&apos;]) 
+
+Desaix 
+set([&apos;Square&apos;, &apos;Rue&apos;]) 
+
+de Vincennes 
+set([&apos;Cours&apos;, &apos;Rue&apos;]) 
+
+Gambetta 
+set([&apos;Avenue&apos;, &apos;Boulevard&apos;, &apos;Place&apos;, &apos;rue&apos;, &apos;Rue&apos;]) 
+
+du Stade 
+set([&apos;Chemin&apos;, &apos;Rue&apos;]) 
+
+Louis Aragon 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+des Pâquerettes 
+set([&apos;All\xc3\xa9e&apos;, &apos;Rue&apos;]) 
+
+Séverine 
+set([&apos;Rue&apos;, &apos;Passage&apos;]) 
+
+de Brunoy 
+set([&apos;rue&apos;, &apos;Rue&apos;]) 
+
+de la Muette 
+set([&apos;Chauss\xc3\xa9e&apos;, &apos;Rue&apos;]) 
+
+Barbusse 
+set([&apos;Avenue&apos;, &apos;Henri&apos;]) 
+
+du 8 Mai 1945 
+set([&apos;Boulevard&apos;, &apos;Voie&apos;, &apos;rue&apos;, &apos;Place&apos;, &apos;Quai&apos;, &apos;Rue&apos;, &apos;Avenue&apos;]) 
+
+de Breteuil 
+set([&apos;Avenue&apos;, &apos;Place&apos;]) 
+
+Le Nôtre 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+du 11 Novembre 1918 
+set([&apos;Place&apos;, &apos;Rue&apos;]) 
+
+du Président François Mitterrand 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Gassendi 
+set([&apos;Rue&apos;, &apos;rue&apos;]) 
+
+Beaubourg 
+set([&apos;Impasse&apos;, &apos;Rue&apos;]) 
+
+Auguste Rodin 
+set([&apos;Place&apos;, &apos;Avenue&apos;]) 
+
+de l&apos;Essonne 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Avenue 
+set([&apos;11e&apos;, &apos;7e&apos;, &apos;6e&apos;, &apos;Septi\xc3\xa8me&apos;, &apos;Quatri\xc3\xa8me&apos;, &apos;9e&apos;, &apos;10e&apos;, &apos;Premi\xc3\xa8re&apos;, &apos;8e&apos;, &apos;2e&apos;, &apos;14e&apos;, &apos;15e&apos;, &apos;5e&apos;, &apos;1re&apos;, &apos;4e&apos;, &apos;Deuxi\xc3\xa8me&apos;, &apos;Troisi\xc3\xa8me&apos;, &apos;3e&apos;, &apos;12e&apos;]) 
+
+René Panhard 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Henri Bergson 
+set([&apos;Boulevard&apos;, &apos;Place&apos;, &apos;Square&apos;]) 
+
+Balard 
+set([&apos;rue&apos;, &apos;Rue&apos;]) 
+
+des Plantes 
+set([&apos;Villa&apos;, &apos;Rue&apos;]) 
+
+Maurice Ravel 
+set([&apos;Place&apos;, &apos;Square&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Marcel Cachin 
+set([&apos;Avenue&apos;, &apos;Boulevard&apos;, &apos;Place&apos;, &apos;Rue&apos;]) 
+
+Georges Bernanos 
+set([&apos;Square&apos;, &apos;Avenue&apos;]) 
+
+Saint-Antoine 
+set([&apos;Boulevard&apos;, &apos;Passage&apos;, &apos;Rue&apos;]) 
+
+de la Bataille de Stalingrad 
+set([&apos;Quai&apos;, &apos;Place&apos;, &apos;Rue&apos;]) 
+
+Hélène Boucher 
+set([&apos;All\xc3\xa9e&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Ney 
+set([&apos;boulevard&apos;, &apos;Boulevard&apos;]) 
+
+Pasteur 
+set([&apos;Boulevard&apos;, &apos;Villa&apos;, &apos;Passage&apos;, &apos;Impasse&apos;, &apos;Square&apos;, &apos;Quai&apos;, &apos;Rue&apos;, &apos;Avenue&apos;, &apos;rue&apos;]) 
+
+Saint-Charles 
+set([&apos;Square&apos;, &apos;Place&apos;, &apos;Rue&apos;]) 
+
+Saint-Michel 
+set([&apos;Quai&apos;, &apos;Boulevard&apos;, &apos;Place&apos;, &apos;Rue&apos;]) 
+
+de Rueil 
+set([&apos;Route&apos;, &apos;Rue&apos;]) 
+
+de Ménilmontant 
+set([&apos;Boulevard&apos;, &apos;Rue&apos;, &apos;Passage&apos;]) 
+
+de Melun 
+set([&apos;Route&apos;, &apos;Rue&apos;]) 
+
+des Bordes 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Nouvelle 
+set([&apos;Impasse&apos;, &apos;Voie&apos;, &apos;Rue&apos;]) 
+
+de Marseille 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+de Châteaudun 
+set([&apos;rue&apos;, &apos;Rue&apos;]) 
+
+du Trône 
+set([&apos;Avenue&apos;, &apos;Passage&apos;]) 
+
+des Ruelles 
+set([&apos;Villa&apos;, &apos;Rue&apos;]) 
+
+de Thorigny 
+set([&apos;Place&apos;, &apos;Rue&apos;]) 
+
+Jean Allemane 
+set([&apos;Boulevard&apos;, &apos;Place&apos;, &apos;Rue&apos;]) 
+
+Alphonse Daudet 
+set([&apos;Place&apos;, &apos;Rue&apos;]) 
+
+Buffon 
+set([&apos;All\xc3\xa9e&apos;, &apos;Rue&apos;]) 
+
+Murat 
+set([&apos;Boulevard&apos;, &apos;Villa&apos;]) 
+
+de Montesson 
+set([&apos;C.C.&apos;, &apos;Route&apos;, &apos;Rue&apos;]) 
+
+Léon Gambetta 
+set([&apos;Avenue&apos;, &apos;All\xc3\xa9es&apos;]) 
+
+Frochot 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+du Flamant Rose 
+set([&apos;Rue&apos;, &apos;rue&apos;]) 
+
+de la Demi-Lune 
+set([&apos;Avenue&apos;, &apos;Esplanade&apos;]) 
+
+de l’Europe 
+set([&apos;Mail&apos;, &apos;Avenue&apos;]) 
+
+Henri Martin 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+de Villeneuve 
+set([&apos;rue&apos;, &apos;Rue&apos;]) 
+
+de Bezons 
+set([&apos;Boulevard&apos;, &apos;Rue&apos;]) 
+
+Becquerel 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Saint-Sulpice 
+set([&apos;Place&apos;, &apos;Rue&apos;]) 
+
+National 
+set([&apos;Boulevard&apos;, &apos;Passage&apos;]) 
+
+Berthier 
+set([&apos;Boulevard&apos;, &apos;Rue&apos;]) 
+
+Jussieu 
+set([&apos;Place&apos;, &apos;Rue&apos;]) 
+
+Georges Buffon 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+de la Reine 
+set([&apos;Route&apos;, &apos;Boulevard&apos;, &apos;Avenue&apos;]) 
+
+Louis Breguet 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Léon Geffroy 
+set([&apos;rue&apos;, &apos;Rue&apos;]) 
+
+de la libération 
+set([&apos;place&apos;, &apos;Place&apos;, &apos;Rue&apos;]) 
+
+Péreire 
+set([&apos;rue&apos;, &apos;Rue&apos;]) 
+
+du Souvenir 
+set([&apos;Place&apos;, &apos;Rue&apos;]) 
+
+de la Commune de Paris 
+set([&apos;Place&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Cels 
+set([&apos;Impasse&apos;, &apos;Rue&apos;]) 
+
+de la Garenne 
+set([&apos;All\xc3\xa9e&apos;, &apos;Place&apos;, &apos;rue&apos;, &apos;Chemin&apos;, &apos;Rue&apos;]) 
+
+des Bruyères 
+set([&apos;All\xc3\xa9e&apos;, &apos;Square&apos;, &apos;Rue&apos;]) 
+
+de la Justice 
+set([&apos;All\xc3\xa9e&apos;, &apos;Chemin&apos;, &apos;Sente&apos;, &apos;Rue&apos;]) 
+
+de Wissous 
+set([&apos;Voie&apos;, &apos;Rue&apos;]) 
+
+Victor Schoelcher 
+set([&apos;Avenue&apos;, &apos;Boulevard&apos;, &apos;Place&apos;, &apos;Rue&apos;]) 
+
+de la Gare 
+set([&apos;Avenue&apos;, &apos;Boulevard&apos;, &apos;Place&apos;, &apos;Rue&apos;]) 
+
+des Roitelets 
+set([&apos;Impasse&apos;, &apos;Place&apos;]) 
+
+du 19 Mars 1962 
+set([&apos;Avenue&apos;, &apos;Place&apos;, &apos;Rue&apos;]) 
+
+de Champagne 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Saint-Vincent 
+set([&apos;Impasse&apos;, &apos;Cours&apos;, &apos;Rue&apos;]) 
+
+Henri Poincaré 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+de l&apos;Yser 
+set([&apos;Boulevard&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Louise Michel 
+set([&apos;rue&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Saint-Sabin 
+set([&apos;Passage&apos;, &apos;Rue&apos;]) 
+
+Léon Jouhaux 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Pierre Midrin 
+set([&apos;Rue&apos;, &apos;rue&apos;]) 
+
+Jean Rostand 
+set([&apos;All\xc3\xa9e&apos;, &apos;Promenade&apos;, &apos;Rue&apos;]) 
+
+de la Voûte 
+set([&apos;Passage&apos;, &apos;Rue&apos;]) 
+
+des Lilas 
+set([&apos;All\xc3\xa9e&apos;, &apos;Residence&apos;, &apos;Villa&apos;, &apos;Rue&apos;]) 
+
+du Bureau 
+set([&apos;Impasse&apos;, &apos;Passage&apos;]) 
+
+du Général Koenig 
+set([&apos;Boulevard&apos;, &apos;Place&apos;]) 
+
+de la Révolution 
+set([&apos;Quai&apos;, &apos;Rue&apos;]) 
+
+Voltaire 
+set([&apos;Boulevard&apos;, &apos;Cit\xc3\xa9&apos;, &apos;Rue&apos;, &apos;Impasse&apos;, &apos;Quai&apos;, &apos;Place&apos;, &apos;Avenue&apos;]) 
+
+de la Main d&apos;Or 
+set([&apos;Rue&apos;, &apos;Passage&apos;]) 
+
+Marie Laurencin 
+set([&apos;Impasse&apos;, &apos;Rue&apos;]) 
+
+Barrault 
+set([&apos;Rue&apos;, &apos;Passage&apos;]) 
+
+Claude Monet 
+set([&apos;Square&apos;, &apos;Rue&apos;, &apos;Place&apos;, &apos;rue&apos;]) 
+
+Félix Faure 
+set([&apos;Boulevard&apos;, &apos;Avenue&apos;, &apos;Villa&apos;, &apos;Rue&apos;]) 
+
+Rouget de Lisle 
+set([&apos;Boulevard&apos;, &apos;Rue&apos;]) 
+
+Victor Hugo 
+set([&apos;Boulevard&apos;, &apos;Villa&apos;, &apos;avenue&apos;, &apos;Rue&apos;, &apos;Place&apos;, &apos;All\xc3\xa9e&apos;, &apos;place&apos;, &apos;rue&apos;, &apos;Avenue&apos;]) 
+
+du Bas Saut 
+set([&apos;Quai&apos;, &apos;Rue&apos;]) 
+
+du Puits 
+set([&apos;All\xc3\xa9e&apos;, &apos;Rue&apos;]) 
+
+François Mauriac 
+set([&apos;Quai&apos;, &apos;Rue&apos;]) 
+
+Camille Desmoulins 
+set([&apos;All\xc3\xa9e&apos;, &apos;Rue&apos;]) 
+
+Poissonnière 
+set([&apos;Boulevard&apos;, &apos;Rue&apos;]) 
+
+de Rennes 
+set([&apos;All\xc3\xa9e&apos;, &apos;Rue&apos;]) 
+
+Gérard de Nerval 
+set([&apos;All\xc3\xa9e&apos;, &apos;Rue&apos;]) 
+
+de Rome 
+set([&apos;Cours&apos;, &apos;Rue&apos;]) 
+
+Bernard Palissy 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Paul Bert 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Gabriel Fauré 
+set([&apos;Square&apos;, &apos;Place&apos;, &apos;Rue&apos;]) 
+
+des Marais 
+set([&apos;Avenue&apos;, &apos;Rue&apos;, &apos;Chemin&apos;, &apos;Passage&apos;]) 
+
+du Val 
+set([&apos;R\xc3\xa9sidence&apos;, &apos;Rue&apos;]) 
+
+des Charmilles 
+set([&apos;All\xc3\xa9e&apos;, &apos;Villa&apos;]) 
+
+de Ségur 
+set([&apos;Avenue&apos;, &apos;Villa&apos;]) 
+
+de la paix 
+set([&apos;rue&apos;, &apos;Rue&apos;]) 
+
+du Cheval Blanc 
+set([&apos;Rue&apos;, &apos;Passage&apos;]) 
+
+de Saint-Germain 
+set([&apos;Square&apos;, &apos;Avenue&apos;, &apos;Route&apos;, &apos;Rue&apos;, &apos;avenue&apos;, &apos;Ruelle&apos;]) 
+
+Pablo Picasso 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Pétrelle 
+set([&apos;Square&apos;, &apos;Rue&apos;]) 
+
+Saint-Augustin 
+set([&apos;Place&apos;, &apos;Rue&apos;]) 
+
+Paul Painlevé 
+set([&apos;Place&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Watteau 
+set([&apos;Square&apos;, &apos;Rue&apos;]) 
+
+de la Fontaine 
+set([&apos;All\xc3\xa9e&apos;, &apos;Place&apos;, &apos;Rue&apos;]) 
+
+Louis Castel 
+set([&apos;rue&apos;, &apos;Rue&apos;]) 
+
+de la Convention 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+des Trois Bornes 
+set([&apos;Cit\xc3\xa9&apos;, &apos;Rue&apos;]) 
+
+Berryer 
+set([&apos;Cit\xc3\xa9&apos;, &apos;Rue&apos;]) 
+
+Weber 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+des Fêtes 
+set([&apos;Place&apos;, &apos;Rue&apos;]) 
+
+Antoine Mauny 
+set([&apos;place&apos;, &apos;Place&apos;]) 
+
+des Petites Écuries 
+set([&apos;Passage&apos;, &apos;Cour&apos;, &apos;Rue&apos;]) 
+
+de la Guyane 
+set([&apos;Impasse&apos;, &apos;Boulevard&apos;]) 
+
+Sainte-Opportune 
+set([&apos;Place&apos;, &apos;Rue&apos;]) 
+
+des Ternes 
+set([&apos;Avenue&apos;, &apos;Place&apos;, &apos;avenue&apos;]) 
+
+Martre 
+set([&apos;rue&apos;, &apos;Rue&apos;]) 
+
+Oudinot 
+set([&apos;Impasse&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+d&apos;Auvergne 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Jules Ferry 
+set([&apos;All\xc3\xa9e&apos;, &apos;Place&apos;, &apos;Boulevard&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Pierre Lefaucheux 
+set([&apos;avenue&apos;, &apos;Avenue&apos;]) 
+
+des Pyramides 
+set([&apos;Avenue&apos;, &apos;place&apos;, &apos;Place&apos;, &apos;Rue&apos;]) 
+
+des Archives 
+set([&apos;rue&apos;, &apos;Rue&apos;]) 
+
+de Corbeil 
+set([&apos;Route&apos;, &apos;Rue&apos;]) 
+
+de Charonne 
+set([&apos;boulevard&apos;, &apos;Boulevard&apos;, &apos;Rue&apos;]) 
+
+des Minimes 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Maurice Berteaux 
+set([&apos;Quai&apos;, &apos;Boulevard&apos;, &apos;Avenue&apos;, &apos;Place&apos;, &apos;Rue&apos;]) 
+
+Richard Lenoir 
+set([&apos;Boulevard&apos;, &apos;Rue&apos;]) 
+
+Du Guesclin 
+set([&apos;Rue&apos;, &apos;Passage&apos;]) 
+
+du Général Guilhem 
+set([&apos;Passage&apos;, &apos;Rue&apos;]) 
+
+Alain 
+set([&apos;Square&apos;, &apos;Rue&apos;]) 
+
+des Écoles 
+set([&apos;All\xc3\xa9e&apos;, &apos;Avenue&apos;, &apos;Place&apos;, &apos;Rue&apos;]) 
+
+Boileau 
+set([&apos;Villa&apos;, &apos;Rue&apos;]) 
+
+Camille Saint-Saëns 
+set([&apos;All\xc3\xa9e&apos;, &apos;Place&apos;, &apos;Square&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+des Cytises 
+set([&apos;All\xc3\xa9e&apos;, &apos;Rue&apos;]) 
+
+de Budapest 
+set([&apos;Place&apos;, &apos;Rue&apos;]) 
+
+Gaston Philippe 
+set([&apos;Rue&apos;, &apos;rue&apos;]) 
+
+des Églantines 
+set([&apos;All\xc3\xa9e&apos;, &apos;Place&apos;]) 
+
+Émile Zola 
+set([&apos;Impasse&apos;, &apos;rue&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+du Front Populaire 
+set([&apos;Place&apos;, &apos;Avenue&apos;]) 
+
+de la Travée 
+set([&apos;Impasse&apos;, &apos;Rue&apos;]) 
+
+Marcelin Berthelot 
+set([&apos;All\xc3\xa9e&apos;, &apos;rue&apos;, &apos;Place&apos;, &apos;Rue&apos;]) 
+
+Guichard 
+set([&apos;rue&apos;, &apos;Rue&apos;]) 
+
+de l&apos;Industrie 
+set([&apos;Cour&apos;, &apos;Rue&apos;, &apos;Passage&apos;, &apos;Cit\xc3\xa9&apos;, &apos;Quai&apos;, &apos;rue&apos;]) 
+
+Jules Vallès 
+set([&apos;All\xc3\xa9e&apos;, &apos;Place&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Saint-Rémy 
+set([&apos;Avenue&apos;, &apos;Place&apos;]) 
+
+de l&apos;Estrapade 
+set([&apos;Place&apos;, &apos;Rue&apos;]) 
+
+Charles De Gaulle 
+set([&apos;Avenue&apos;, &apos;Place&apos;]) 
+
+des Platanes 
+set([&apos;All\xc3\xa9e&apos;, &apos;Avenue&apos;]) 
+
+André Ampère 
+set([&apos;All\xc3\xa9e&apos;, &apos;rue&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Michel-Ange 
+set([&apos;Hameau&apos;, &apos;Rue&apos;]) 
+
+de la Roseraie 
+set([&apos;Impasse&apos;, &apos;Residence&apos;]) 
+
+du Progrès 
+set([&apos;Villa&apos;, &apos;Rue&apos;]) 
+
+Barbès 
+set([&apos;Boulevard&apos;, &apos;rue&apos;, &apos;Rue&apos;]) 
+
+Bontemps 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Charlemagne 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+des Saussaies 
+set([&apos;Place&apos;, &apos;Rue&apos;]) 
+
+du Général Beuret 
+set([&apos;Place&apos;, &apos;Rue&apos;]) 
+
+Berlioz 
+set([&apos;Impasse&apos;, &apos;Rue&apos;]) 
+
+de Copenhague 
+set([&apos;Place&apos;, &apos;Rue&apos;]) 
+
+du Calvaire 
+set([&apos;Impasse&apos;, &apos;Place&apos;, &apos;Rue&apos;]) 
+
+Paul Vaillant-Couturier 
+set([&apos;Boulevard&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+François Mitterrand 
+set([&apos;Boulevard&apos;, &apos;avenue&apos;, &apos;Rue&apos;, &apos;Quai&apos;, &apos;Place&apos;, &apos;Avenue&apos;]) 
+
+Georges Millandy 
+set([&apos;rue&apos;, &apos;Rue&apos;]) 
+
+Montaigne 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+de la Concorde 
+set([&apos;place&apos;, &apos;Place&apos;, &apos;Rue&apos;]) 
+
+Victoria 
+set([&apos;Parc&apos;, &apos;Avenue&apos;]) 
+
+Lebouis 
+set([&apos;Impasse&apos;, &apos;Rue&apos;]) 
+
+de Magny 
+set([&apos;Route&apos;, &apos;Rue&apos;]) 
+
+de Fontenay 
+set([&apos;Sentier&apos;, &apos;Villa&apos;, &apos;Rue&apos;]) 
+
+Sergent 
+set([&apos;Villa&apos;, &apos;Rue&apos;]) 
+
+du Pavé des Gardes 
+set([&apos;route&apos;, &apos;Route&apos;]) 
+
+Louise Bruneau 
+set([&apos;All\xc3\xa9e&apos;, &apos;Rue&apos;]) 
+
+Niel 
+set([&apos;Avenue&apos;, &apos;Villa&apos;]) 
+
+Nungesser et Coli 
+set([&apos;rue&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Vauvenargues 
+set([&apos;Villa&apos;, &apos;Rue&apos;]) 
+
+de la Division Leclerc 
+set([&apos;avenue&apos;, &apos;Avenue&apos;, &apos;Place&apos;, &apos;Rue&apos;]) 
+
+du Vieil Abreuvoir 
+set([&apos;rue&apos;, &apos;Rue&apos;]) 
+
+Alsace Lorraine 
+set([&apos;Boulevard&apos;, &apos;Rue&apos;]) 
+
+César Franck 
+set([&apos;Place&apos;, &apos;Rue&apos;]) 
+
+Parmentier 
+set([&apos;place&apos;, &apos;Avenue&apos;, &apos;Villa&apos;, &apos;Place&apos;, &apos;Rue&apos;]) 
+
+de l&apos;Odéon 
+set([&apos;Place&apos;, &apos;Rue&apos;]) 
+
+de la Guadeloupe 
+set([&apos;Impasse&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Saint-Jacques 
+set([&apos;Boulevard&apos;, &apos;Villa&apos;, &apos;Rue&apos;]) 
+
+Albert 1er 
+set([&apos;Cours&apos;, &apos;Avenue&apos;]) 
+
+du Colonel Fabien 
+set([&apos;Avenue&apos;, &apos;e&apos;, &apos;Place&apos;, &apos;place&apos;, &apos;Rue&apos;]) 
+
+Nelaton 
+set([&apos;Boulevard&apos;, &apos;Rue&apos;]) 
+
+d&apos;Orsay 
+set([&apos;Quai&apos;, &apos;Rue&apos;]) 
+
+du Douanier Rousseau 
+set([&apos;All\xc3\xa9e&apos;, &apos;Rue&apos;]) 
+
+des Champs 
+set([&apos;All\xc3\xa9e&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+des Tournelles 
+set([&apos;All\xc3\xa9e&apos;, &apos;Rue&apos;]) 
+
+de la Réunion 
+set([&apos;All\xc3\xa9e&apos;, &apos;Place&apos;, &apos;Rue&apos;]) 
+
+de la Vauve 
+set([&apos;avenue&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Herran 
+set([&apos;Villa&apos;, &apos;Rue&apos;]) 
+
+Dunois 
+set([&apos;Square&apos;, &apos;Rue&apos;]) 
+
+des Peupliers 
+set([&apos;Square&apos;, &apos;Villa&apos;, &apos;Avenue&apos;, &apos;Rue&apos;, &apos;All\xc3\xa9e&apos;, &apos;avenue&apos;]) 
+
+Victorien Sardou 
+set([&apos;Villa&apos;, &apos;Rue&apos;]) 
+
+Pinel 
+set([&apos;Place&apos;, &apos;Rue&apos;]) 
+
+Dupin 
+set([&apos;Impasse&apos;, &apos;Rue&apos;]) 
+
+Ardouin 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+des Coquelicots 
+set([&apos;Residence&apos;, &apos;Impasse&apos;, &apos;Rue&apos;]) 
+
+du Président Pompidou 
+set([&apos;Avenue&apos;, &apos;avenue&apos;]) 
+
+Beauregard 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Royer-Collard 
+set([&apos;Impasse&apos;, &apos;Rue&apos;]) 
+
+de la gare 
+set([&apos;Avenue&apos;, &apos;Rue&apos;, &apos;Place&apos;, &apos;rue&apos;]) 
+
+de la Tour 
+set([&apos;Place&apos;, &apos;Villa&apos;, &apos;Rue&apos;]) 
+
+Jacquard 
+set([&apos;All\xc3\xa9e&apos;, &apos;Rue&apos;]) 
+
+Guynemer 
+set([&apos;All\xc3\xa9e&apos;, &apos;Boulevard&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+du Béarn 
+set([&apos;All\xc3\xa9e&apos;, &apos;Rue&apos;]) 
+
+Puvis de Chavannes 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Raymond Aron 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Blériot 
+set([&apos;All\xc3\xa9e&apos;, &apos;Rue&apos;]) 
+
+d&apos;Athènes 
+set([&apos;Place&apos;, &apos;Rue&apos;]) 
+
+Pierre Mendès France 
+set([&apos;Place&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+du Chemin Vert 
+set([&apos;Passage&apos;, &apos;Rue&apos;]) 
+
+de la Bourse 
+set([&apos;Place&apos;, &apos;Rue&apos;]) 
+
+Jean Dormoy 
+set([&apos;Rue&apos;, &apos;rue&apos;]) 
+
+George Sand 
+set([&apos;Square&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+du Tilleul 
+set([&apos;All\xc3\xa9e&apos;, &apos;Mail&apos;]) 
+
+Saint-Saëns 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Henri Dubois 
+set([&apos;All\xc3\xa9e&apos;, &apos;Rue&apos;]) 
+
+des Grands Moulins 
+set([&apos;rue&apos;, &apos;Rue&apos;]) 
+
+de Wattignies 
+set([&apos;Impasse&apos;, &apos;Rue&apos;]) 
+
+du Danube 
+set([&apos;Villa&apos;, &apos;Hameau&apos;]) 
+
+du Panthéon 
+set([&apos;place&apos;, &apos;Place&apos;]) 
+
+de Mont-Louis 
+set([&apos;Impasse&apos;, &apos;Rue&apos;]) 
+
+Gustave Eiffel 
+set([&apos;All\xc3\xa9e&apos;, &apos;Avenue&apos;]) 
+
+des Fauvettes 
+set([&apos;All\xc3\xa9e&apos;, &apos;Rue&apos;, &apos;Ruelle&apos;]) 
+
+des Arpents 
+set([&apos;Boulevard&apos;, &apos;Clos&apos;]) 
+
+Fénelon 
+set([&apos;Cit\xc3\xa9&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Galilée 
+set([&apos;Place&apos;, &apos;Rue&apos;]) 
+
+Nationale 
+set([&apos;Avenue&apos;, &apos;Impasse&apos;, &apos;Route&apos;, &apos;Place&apos;, &apos;Rue&apos;]) 
+
+Léon Menu 
+set([&apos;rue&apos;, &apos;Rue&apos;]) 
+
+du Maréchal Foch 
+set([&apos;avenue&apos;, &apos;Boulevard&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+de la Plaine 
+set([&apos;All\xc3\xa9e&apos;, &apos;Impasse&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+du Vieux Marché 
+set([&apos;Montagne&apos;, &apos;Ruelle&apos;, &apos;Rue&apos;]) 
+
+du général Leclerc 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+des Frères Voisin 
+set([&apos;All\xc3\xa9e&apos;, &apos;Boulevard&apos;]) 
+
+Gay-Lussac 
+set([&apos;rue&apos;, &apos;Rond-Point&apos;, &apos;Rue&apos;]) 
+
+Alice 
+set([&apos;Square&apos;, &apos;Rue&apos;]) 
+
+de la Boële 
+set([&apos;Impasse&apos;, &apos;Rue&apos;]) 
+
+du 11 Novembre 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Vercingétorix 
+set([&apos;rue&apos;, &apos;Rue&apos;]) 
+
+d&apos;Enghien 
+set([&apos;Route&apos;, &apos;Rue&apos;]) 
+
+de Chalon 
+set([&apos;All\xc3\xa9e&apos;, &apos;Rue&apos;]) 
+
+Daumesnil 
+set([&apos;avenue&apos;, &apos;Avenue&apos;, &apos;Villa&apos;]) 
+
+Galignani 
+set([&apos;Place&apos;, &apos;place&apos;]) 
+
+Ernest Renan 
+set([&apos;rue&apos;, &apos;Rue&apos;]) 
+
+Romain Rolland 
+set([&apos;Square&apos;, &apos;Boulevard&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Germaine 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Falguière 
+set([&apos;Cit\xc3\xa9&apos;, &apos;Rue&apos;]) 
+
+des Roses 
+set([&apos;Voie&apos;, &apos;Rue&apos;, &apos;place&apos;, &apos;All\xc3\xa9e&apos;, &apos;Place&apos;, &apos;Avenue&apos;]) 
+
+de la Plage 
+set([&apos;Avenue&apos;, &apos;Chemin&apos;]) 
+
+Dareau 
+set([&apos;Passage&apos;, &apos;Rue&apos;]) 
+
+du Moulin 
+set([&apos;Avenue&apos;, &apos;Impasse&apos;, &apos;Chemin&apos;, &apos;R\xc3\xa9sidence&apos;, &apos;Rue&apos;]) 
+
+Hoche 
+set([&apos;Rue&apos;, &apos;Passage&apos;, &apos;Impasse&apos;, &apos;Place&apos;, &apos;All\xc3\xa9e&apos;, &apos;rue&apos;, &apos;Avenue&apos;]) 
+
+Rabelais 
+set([&apos;Place&apos;, &apos;Villa&apos;, &apos;Rue&apos;]) 
+
+Camille Claudel 
+set([&apos;All\xc3\xa9e&apos;, &apos;Rue&apos;]) 
+
+de Valmy 
+set([&apos;Impasse&apos;, &apos;Quai&apos;]) 
+
+Constant Coquelin 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Coste 
+set([&apos;All\xc3\xa9e&apos;, &apos;Rue&apos;]) 
+
+Chateaubriand 
+set([&apos;All\xc3\xa9e&apos;, &apos;Rue&apos;]) 
+
+Émile Bergerat 
+set([&apos;Avenue&apos;, &apos;Villa&apos;]) 
+
+Marcel Dassault 
+set([&apos;Quai&apos;, &apos;Rue&apos;]) 
+
+Édouard Branly 
+set([&apos;Impasse&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Erard 
+set([&apos;Impasse&apos;, &apos;Rue&apos;]) 
+
+Vavin 
+set([&apos;rue&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Sainte-Élisabeth 
+set([&apos;Passage&apos;, &apos;Rue&apos;]) 
+
+des Closeaux 
+set([&apos;All\xc3\xa9e&apos;, &apos;Rue&apos;]) 
+
+de Fontainebleau 
+set([&apos;avenue&apos;, &apos;Boulevard&apos;, &apos;Avenue&apos;]) 
+
+Ampère 
+set([&apos;Mail&apos;, &apos;Square&apos;, &apos;Avenue&apos;, &apos;rue&apos;, &apos;Rue&apos;]) 
+
+Charles Rouxel 
+set([&apos;Avenus&apos;, &apos;Avenue&apos;]) 
+
+de Villeroy 
+set([&apos;Route&apos;, &apos;Avenue&apos;]) 
+
+Thiers 
+set([&apos;Impasse&apos;, &apos;Square&apos;, &apos;Avenue&apos;, &apos;rue&apos;, &apos;Rue&apos;]) 
+
+d&apos;Amsterdam 
+set([&apos;Impasse&apos;, &apos;Place&apos;, &apos;Rue&apos;]) 
+
+de l&apos;Arrivée 
+set([&apos;Place&apos;, &apos;Rue&apos;]) 
+
+Louis XIII 
+set([&apos;place&apos;, &apos;Place&apos;]) 
+
+Robert Schumann 
+set([&apos;Avenue&apos;, &apos;Rond-Point&apos;, &apos;Rue&apos;]) 
+
+de la Clé des Champs 
+set([&apos;All\xc3\xa9e&apos;, &apos;Rue&apos;]) 
+
+de la Seigneurie 
+set([&apos;Route&apos;, &apos;Avenue&apos;, &apos;Villa&apos;]) 
+
+du Pont de Sèvres 
+set([&apos;Square&apos;, &apos;Rond-Point&apos;]) 
+
+de Dantzig 
+set([&apos;Passage&apos;, &apos;Rue&apos;]) 
+
+de la mairie 
+set([&apos;Place&apos;, &apos;place&apos;]) 
+
+Claude Debussy 
+set([&apos;all\xc3\xa9e&apos;, &apos;Impasse&apos;, &apos;Square&apos;, &apos;Rue&apos;]) 
+
+de Jouy 
+set([&apos;Route&apos;, &apos;Rue&apos;]) 
+
+du Maréchal de Lattre de Tassigny 
+set([&apos;Place&apos;, &apos;Boulevard&apos;, &apos;Avenue&apos;, &apos;avenue&apos;, &apos;Rue&apos;]) 
+
+de Rochechouart 
+set([&apos;Boulevard&apos;, &apos;Rue&apos;]) 
+
+du Puits de l&apos;Ermite 
+set([&apos;Place&apos;, &apos;Rue&apos;]) 
+
+Jean Mermoz 
+set([&apos;All\xc3\xa9e&apos;, &apos;Boulevard&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+du Miroir 
+set([&apos;Place&apos;, &apos;Rue&apos;]) 
+
+d&apos;Alsace-Lorraine 
+set([&apos;Boulevard&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+des Impressionnistes 
+set([&apos;Ile&apos;, &apos;place&apos;, &apos;Clos&apos;]) 
+
+Henry Farman 
+set([&apos;Rue&apos;, &apos;rue&apos;]) 
+
+d&apos;Iéna 
+set([&apos;Avenue&apos;, &apos;Place&apos;]) 
+
+du Roule 
+set([&apos;avenue&apos;, &apos;Square&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+des Lauriers 
+set([&apos;All\xc3\xa9e&apos;, &apos;Rue&apos;]) 
+
+Taine 
+set([&apos;rue&apos;, &apos;Rue&apos;]) 
+
+des Bleuets 
+set([&apos;All\xc3\xa9e&apos;, &apos;Passage&apos;, &apos;Rue&apos;]) 
+
+Saulnier 
+set([&apos;rue&apos;, &apos;Rue&apos;]) 
+
+Hittorf 
+set([&apos;Cit\xc3\xa9&apos;, &apos;Rue&apos;]) 
+
+de l&apos;Écluse 
+set([&apos;Route&apos;, &apos;Quai&apos;, &apos;Rue&apos;]) 
+
+Faidherbe 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Raymond Nègre 
+set([&apos;all\xc3\xa9e&apos;, &apos;All\xc3\xa9e&apos;]) 
+
+Nathalie Lemel 
+set([&apos;Square&apos;, &apos;Place&apos;]) 
+
+Jean Jaures 
+set([&apos;Boulevard&apos;, &apos;Rue&apos;]) 
+
+des Chardonnerets 
+set([&apos;Place&apos;, &apos;Rue&apos;]) 
+
+de la Victoire 
+set([&apos;Avenue&apos;, &apos;rue&apos;, &apos;Place&apos;, &apos;Rue&apos;]) 
+
+d&apos;Alésia 
+set([&apos;rue&apos;, &apos;Villa&apos;, &apos;Rue&apos;]) 
+
+Auguste Renoir 
+set([&apos;Square&apos;, &apos;Rue&apos;]) 
+
+Saint-Pierre 
+set([&apos;rue&apos;, &apos;Place&apos;, &apos;Villa&apos;, &apos;Rue&apos;]) 
+
+Jules Gévelot 
+set([&apos;Place&apos;, &apos;place&apos;]) 
+
+Sainte-Foy 
+set([&apos;Galerie&apos;, &apos;Passage&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Jacques Dulud 
+set([&apos;Rue&apos;, &apos;rue&apos;]) 
+
+Saint-Maur 
+set([&apos;Passage&apos;, &apos;rue&apos;, &apos;Rue&apos;]) 
+
+Darblay 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Beaugrenelle 
+set([&apos;C.C.&apos;, &apos;Rue&apos;]) 
+
+des Bois 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+d&apos;Alfortville 
+set([&apos;Quai&apos;, &apos;Avenue&apos;, &apos;Digue&apos;]) 
+
+Roger Salengro 
+set([&apos;Avenu&apos;, &apos;avenue&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Vauban 
+set([&apos;Boulevard&apos;, &apos;Place&apos;]) 
+
+Paul Demange 
+set([&apos;rue&apos;, &apos;Place&apos;, &apos;Rue&apos;]) 
+
+du Maroc 
+set([&apos;Place&apos;, &apos;Rue&apos;]) 
+
+du Saule Trapu 
+set([&apos;Rue&apos;, &apos;rue&apos;]) 
+
+Jean-Baptiste Corot 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Auguste Bartholdi 
+set([&apos;Villa&apos;, &apos;Rue&apos;]) 
+
+des Merisiers 
+set([&apos;All\xc3\xa9e&apos;, &apos;Square&apos;, &apos;Avenue&apos;]) 
+
+de Lattre de Tassigny 
+set([&apos;Mar\xc3\xa9chal&apos;, &apos;Avenue&apos;]) 
+
+Che Guevara 
+set([&apos;all\xc3\xa9e&apos;, &apos;All\xc3\xa9e&apos;]) 
+
+de la Montjoie 
+set([&apos;Clos&apos;, &apos;Rue&apos;]) 
+
+Marat 
+set([&apos;Promen\xc3\xa9e&apos;, &apos;promen\xc3\xa9e&apos;, &apos;Rue&apos;]) 
+
+de la Fraternité 
+set([&apos;rue&apos;, &apos;Rue&apos;]) 
+
+des Filles du Calvaire 
+set([&apos;Boulevard&apos;, &apos;Rue&apos;]) 
+
+de la Porte de Vanves 
+set([&apos;Avenue&apos;, &apos;Square&apos;, &apos;Place&apos;]) 
+
+Frédéric Chopin 
+set([&apos;All\xc3\xa9e&apos;, &apos;Rue&apos;]) 
+
+du Cardinal Lemoine 
+set([&apos;Cit\xc3\xa9&apos;, &apos;Rue&apos;]) 
+
+de Montebello 
+set([&apos;Quai&apos;, &apos;Rue&apos;]) 
+
+de Chartres 
+set([&apos;Route&apos;, &apos;Rue&apos;]) 
+
+du Parc 
+set([&apos;Chemin&apos;, &apos;Avenue&apos;, &apos;Villa&apos;, &apos;Rue&apos;]) 
+
+Sully 
+set([&apos;All\xc3\xa9e&apos;, &apos;Rue&apos;]) 
+
+Morland 
+set([&apos;Pont&apos;, &apos;Boulevard&apos;]) 
+
+de Provence 
+set([&apos;Cours&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+des Fleurs 
+set([&apos;Cit\xc3\xa9&apos;, &apos;Villa&apos;, &apos;Rue&apos;]) 
+
+de Courcelles 
+set([&apos;Boulevard&apos;, &apos;Rue&apos;]) 
+
+Blanche 
+set([&apos;Cit\xc3\xa9&apos;, &apos;Place&apos;, &apos;Rue&apos;]) 
+
+de Villoison 
+set([&apos;Route&apos;, &apos;Hameau&apos;]) 
+
+Marie Louise 
+set([&apos;All\xc3\xa9e&apos;, &apos;Rue&apos;]) 
+
+de l&apos;Annonciation 
+set([&apos;rue&apos;, &apos;Rue&apos;]) 
+
+Singer 
+set([&apos;Passage&apos;, &apos;Rue&apos;]) 
+
+Condorcet 
+set([&apos;Cit\xc3\xa9&apos;, &apos;rue&apos;, &apos;Avenue&apos;, &apos;Villa&apos;, &apos;Rue&apos;]) 
+
+Albert Sarraut 
+set([&apos;Rue&apos;, &apos;rue&apos;]) 
+
+du Clos aux Pois 
+set([&apos;ZAC&apos;, &apos;Rue&apos;]) 
+
+Keller 
+set([&apos;rue&apos;, &apos;Rue&apos;]) 
+
+de Poissy 
+set([&apos;Route&apos;, &apos;rue&apos;, &apos;Rue&apos;]) 
+
+du Velay 
+set([&apos;Square&apos;, &apos;Rue&apos;]) 
+
+Edison 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+de Brie 
+set([&apos;Chemin&apos;, &apos;rue&apos;]) 
+
+Charles Michels 
+set([&apos;Place&apos;, &apos;Rue&apos;]) 
+
+de l&apos;Effort Mutuel 
+set([&apos;Parc&apos;, &apos;Rue&apos;]) 
+
+de Montmorency 
+set([&apos;Boulevard&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Georges Clémenceau 
+set([&apos;Boulevard&apos;, &apos;Avenue&apos;]) 
+
+des Thuyas 
+set([&apos;All\xc3\xa9e&apos;, &apos;Mail&apos;]) 
+
+Jules César 
+set([&apos;Chauss\xc3\xa9e&apos;, &apos;Rue&apos;]) 
+
+des Sapins 
+set([&apos;All\xc3\xa9e&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+des Myosotis 
+set([&apos;All\xc3\xa9e&apos;, &apos;Rue&apos;]) 
+
+de Limours 
+set([&apos;Route&apos;, &apos;Rue&apos;]) 
+
+de la Renaissance 
+set([&apos;Villa&apos;, &apos;Rue&apos;]) 
+
+de la Sorbonne 
+set([&apos;Place&apos;, &apos;Rue&apos;]) 
+
+du marché 
+set([&apos;Place&apos;, &apos;place&apos;]) 
+
+Laplace 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+des Anglais 
+set([&apos;Impasse&apos;, &apos;Rue&apos;]) 
+
+de Trévise 
+set([&apos;Cit\xc3\xa9&apos;, &apos;Rue&apos;]) 
+
+Clément Ader 
+set([&apos;All\xc3\xa9e&apos;, &apos;Rue&apos;]) 
+
+Arthur Rimbaud 
+set([&apos;All\xc3\xa9e&apos;, &apos;Square&apos;, &apos;Place&apos;, &apos;Rue&apos;]) 
+
+Marcel Pagnol 
+set([&apos;All\xc3\xa9e&apos;, &apos;Avenue&apos;, &apos;Place&apos;, &apos;Rue&apos;]) 
+
+Saint-Lambert 
+set([&apos;Square&apos;, &apos;rue&apos;, &apos;Rue&apos;]) 
+
+de la Closerie 
+set([&apos;All\xc3\xa9e&apos;, &apos;Rue&apos;]) 
+
+des Alliés 
+set([&apos;Boulevard&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+du Levant 
+set([&apos;Boulevard&apos;, &apos;Rue&apos;]) 
+
+Simon Vouet 
+set([&apos;Avenue&apos;, &apos;avenue&apos;]) 
+
+Paul Claudel 
+set([&apos;Place&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Alphand 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Vivienne 
+set([&apos;Galerie&apos;, &apos;Rue&apos;]) 
+
+Trousseau 
+set([&apos;rue&apos;, &apos;Rue&apos;]) 
+
+de Maintenon 
+set([&apos;All\xc3\xa9e&apos;, &apos;Avenue&apos;]) 
+
+des Acacias 
+set([&apos;avenue&apos;, &apos;Passage&apos;, &apos;Place&apos;, &apos;All\xc3\xa9e&apos;, &apos;Rue&apos;, &apos;Avenue&apos;]) 
+
+du Docteur Bourneville 
+set([&apos;rue&apos;, &apos;Rue&apos;]) 
+
+de la Porte d&apos;Italie 
+set([&apos;avenue&apos;, &apos;Avenue&apos;]) 
+
+de Levis 
+set([&apos;Impasse&apos;, &apos;Rue&apos;]) 
+
+Hervet 
+set([&apos;rue&apos;, &apos;Rue&apos;]) 
+
+de la Courtille 
+set([&apos;Quai&apos;, &apos;Rue&apos;]) 
+
+de l&apos;Orée du Bois 
+set([&apos;All\xc3\xa9e&apos;, &apos;Rue&apos;]) 
+
+de Charenton 
+set([&apos;rue&apos;, &apos;Rue&apos;]) 
+
+de la Prairie 
+set([&apos;Aire&apos;, &apos;Rue&apos;]) 
+
+Erlanger 
+set([&apos;rue&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Lafayette 
+set([&apos;Place&apos;, &apos;Rue&apos;]) 
+
+de Rungis 
+set([&apos;Place&apos;, &apos;Rue&apos;]) 
+
+Auguste Blanqui 
+set([&apos;Boulevard&apos;, &apos;Avenue&apos;, &apos;Villa&apos;, &apos;rue&apos;, &apos;Rue&apos;]) 
+
+du Landy 
+set([&apos;rue&apos;, &apos;Rue&apos;]) 
+
+de Verneuil 
+set([&apos;Route&apos;, &apos;Rue&apos;]) 
+
+Paul Doumer 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+des Graviers 
+set([&apos;Sentier&apos;, &apos;Rue&apos;]) 
+
+d&apos;Eylau 
+set([&apos;Avenue&apos;, &apos;Villa&apos;]) 
+
+Bourvil 
+set([&apos;All\xc3\xa9e&apos;, &apos;all\xc3\xa9e&apos;]) 
+
+Louis Jouvet 
+set([&apos;All\xc3\xa9e&apos;, &apos;Rue&apos;]) 
+
+Georges Pompidou 
+set([&apos;Avenue&apos;, &apos;Place&apos;, &apos;avenue&apos;, &apos;Rue&apos;]) 
+
+Alfred Dehodencq 
+set([&apos;Square&apos;, &apos;Rue&apos;]) 
+
+de la Cité 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+de la Santé 
+set([&apos;Impasse&apos;, &apos;Rue&apos;]) 
+
+Massenet 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+de Stalingrad 
+set([&apos;Boulevard&apos;, &apos;Rond-Point&apos;, &apos;Rue&apos;, &apos;Place&apos;, &apos;place&apos;, &apos;Avenue&apos;]) 
+
+Jacques Prévert 
+set([&apos;All\xc3\xa9e&apos;, &apos;square&apos;, &apos;rue&apos;, &apos;Rue&apos;]) 
+
+Émile Augier 
+set([&apos;Boulevard&apos;, &apos;Rue&apos;]) 
+
+du Général Leclerc 
+set([&apos;boulevard&apos;, &apos;avenue&apos;, &apos;Rue&apos;, &apos;Boulevard&apos;, &apos;Place&apos;, &apos;Avenue&apos;]) 
+
+de la Faisanderie 
+set([&apos;Villa&apos;, &apos;Rue&apos;]) 
+
+des Glaises 
+set([&apos;Chemin&apos;, &apos;Rue&apos;]) 
+
+de l&apos;Égalité 
+set([&apos;rue&apos;, &apos;Rue&apos;]) 
+
+Jean Cocteau 
+set([&apos;Square&apos;, &apos;Rue&apos;]) 
+
+Crozatier 
+set([&apos;Impasse&apos;, &apos;Rue&apos;]) 
+
+des Saules 
+set([&apos;All\xc3\xa9e&apos;, &apos;rue&apos;, &apos;Rue&apos;]) 
+
+Nansouty 
+set([&apos;Impasse&apos;, &apos;Rue&apos;]) 
+
+de Rigny 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+d&apos;Artois 
+set([&apos;All\xc3\xa9e&apos;, &apos;Rue&apos;]) 
+
+du Bassin Fosse 
+set([&apos;Rue&apos;, &apos;rue&apos;]) 
+
+Belle Epine 
+set([&apos;C.C.&apos;, &apos;C.C&apos;]) 
+
+de la Brèche aux Loups 
+set([&apos;All\xc3\xa9e&apos;, &apos;Place&apos;, &apos;Rue&apos;]) 
+
+des Marguerites 
+set([&apos;All\xc3\xa9e&apos;, &apos;Place&apos;, &apos;Rue&apos;]) 
+
+du Ponceau 
+set([&apos;Passage&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+de Compiègne 
+set([&apos;Voie&apos;, &apos;Rue&apos;]) 
+
+de Pesaro 
+set([&apos;boulevard&apos;, &apos;Boulevard&apos;]) 
+
+des Mésanges 
+set([&apos;All\xc3\xa9e&apos;, &apos;Rue&apos;]) 
+
+Aristide Briand 
+set([&apos;Boulevard&apos;, &apos;avenue&apos;, &apos;Rue&apos;, &apos;Place&apos;, &apos;All\xc3\xa9e&apos;, &apos;Avenue&apos;]) 
+
+Robert Schuman 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+de Naples 
+set([&apos;rue&apos;, &apos;Rue&apos;]) 
+
+du Commandant Barré 
+set([&apos;All\xc3\xa9e&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+de Clichy 
+set([&apos;Avenue&apos;, &apos;Boulevard&apos;, &apos;Place&apos;, &apos;Chemin&apos;, &apos;Rue&apos;]) 
+
+Sainte-Croix de la Bretonnerie 
+set([&apos;Square&apos;, &apos;Rue&apos;]) 
+
+des Rosiers 
+set([&apos;All\xc3\xa9e&apos;, &apos;Square&apos;, &apos;Allee&apos;, &apos;rue&apos;, &apos;Rue&apos;]) 
+
+Raffet 
+set([&apos;Impasse&apos;, &apos;Rue&apos;]) 
+
+Colette 
+set([&apos;All\xc3\xa9e&apos;, &apos;Avenue&apos;, &apos;Place&apos;]) 
+
+Baudin 
+set([&apos;Impasse&apos;, &apos;Rue&apos;]) 
+
+Hardy 
+set([&apos;rue&apos;, &apos;Rue&apos;]) 
+
+d&apos;Estienne d&apos;Orves 
+set([&apos;Avenue&apos;, &apos;rue&apos;, &apos;Place&apos;, &apos;Rue&apos;]) 
+
+Trudaine 
+set([&apos;Square&apos;, &apos;Avenue&apos;]) 
+
+Rameau 
+set([&apos;Jean-Philippe&apos;, &apos;Rue&apos;]) 
+
+Camille Pelletan 
+set([&apos;rue&apos;, &apos;Rue&apos;]) 
+
+des Fosses Rouges 
+set([&apos;Impasse&apos;, &apos;Sentier&apos;]) 
+
+du Président Roosevelt 
+set([&apos;avenue&apos;, &apos;Rue&apos;]) 
+
+de la Garonne 
+set([&apos;Cours&apos;, &apos;Quai&apos;]) 
+
+de Chateaubriand 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Grégoire de Tours 
+set([&apos;rue&apos;, &apos;Rue&apos;]) 
+
+René Clair 
+set([&apos;Place&apos;, &apos;Rue&apos;]) 
+
+de Presles 
+set([&apos;Impasse&apos;, &apos;Rue&apos;]) 
+
+de la Beaune 
+set([&apos;Rue&apos;, &apos;rue&apos;]) 
+
+de la Princesse 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Ambroise Croizat 
+set([&apos;rue&apos;, &apos;Place&apos;, &apos;Rue&apos;]) 
+
+Verte 
+set([&apos;All\xc3\xa9e&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Joseph Lemarchand 
+set([&apos;rue&apos;, &apos;Rue&apos;]) 
+
+de la Martinique 
+set([&apos;Impasse&apos;, &apos;Rue&apos;]) 
+
+Bonaparte 
+set([&apos;rue&apos;, &apos;Rue&apos;]) 
+
+du Commerce 
+set([&apos;Avenue&apos;, &apos;Place&apos;, &apos;Rue&apos;]) 
+
+de Corbeville 
+set([&apos;Chemin&apos;, &apos;Rue&apos;]) 
+
+Saint-Thomas d&apos;Aquin 
+set([&apos;Place&apos;, &apos;Rue&apos;]) 
+
+des Quatre Rainettes 
+set([&apos;Chemin&apos;, &apos;Rue&apos;]) 
+
+de la Terrasse 
+set([&apos;Impasse&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Réaumur 
+set([&apos;rue&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Molitor 
+set([&apos;Villa&apos;, &apos;Rue&apos;]) 
+
+Leblanc 
+set([&apos;Villa&apos;, &apos;Rue&apos;]) 
+
+Marcel Sembat 
+set([&apos;Place&apos;, &apos;Boulevard&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+des Pinsons 
+set([&apos;Impasse&apos;, &apos;Avenue&apos;, &apos;Place&apos;, &apos;Rue&apos;]) 
+
+Soufflot 
+set([&apos;boulevard&apos;, &apos;Rue&apos;]) 
+
+Eugène Mathieu 
+set([&apos;Impasse&apos;, &apos;Rue&apos;]) 
+
+Georges Méliès 
+set([&apos;rue&apos;, &apos;Rue&apos;]) 
+
+Léon Bollée 
+set([&apos;avenue&apos;, &apos;Avenue&apos;]) 
+
+du Pavillon 
+set([&apos;Place&apos;, &apos;Avenue&apos;]) 
+
+Scheffer 
+set([&apos;Villa&apos;, &apos;Rue&apos;]) 
+
+Vincent Van Gogh 
+set([&apos;All\xc3\xa9e&apos;, &apos;Rue&apos;]) 
+
+de Luynes 
+set([&apos;Square&apos;, &apos;Rue&apos;]) 
+
+de Barcelone 
+set([&apos;Place&apos;, &apos;Rue&apos;]) 
+
+de Bucarest 
+set([&apos;Place&apos;, &apos;Rue&apos;]) 
+
+des Martyrs 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+des Vergers 
+set([&apos;All\xc3\xa9e&apos;, &apos;Villa&apos;, &apos;Rue&apos;]) 
+
+Raoul Dautry 
+set([&apos;Avenue&apos;, &apos;Place&apos;]) 
+
+Regnault 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+du Pont 
+set([&apos;Place&apos;, &apos;Rue&apos;]) 
+
+de Villiers 
+set([&apos;Sentier&apos;, &apos;avenue&apos;, &apos;Route&apos;, &apos;Rue&apos;, &apos;Chemin&apos;, &apos;Avenue&apos;]) 
+
+des Chaumes 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+de Malakoff 
+set([&apos;Impasse&apos;, &apos;Avenue&apos;]) 
+
+de la Chartreuse 
+set([&apos;Impasse&apos;, &apos;Rue&apos;]) 
+
+Bourgoin 
+set([&apos;Impasse&apos;, &apos;Passage&apos;]) 
+
+de l&apos;Orangerie 
+set([&apos;All\xc3\xa9e&apos;, &apos;Passage&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+de Madrid 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+de l&apos;Arche 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+Ramey 
+set([&apos;Passage&apos;, &apos;Rue&apos;]) 
+
+de Calais 
+set([&apos;Route&apos;, &apos;Rue&apos;]) 
+
+des Vignoles 
+set([&apos;Impasse&apos;, &apos;Rue&apos;]) 
+
+Georges Duhamel 
+set([&apos;Square&apos;, &apos;Rue&apos;]) 
+
+Robespierre 
+set([&apos;All\xc3\xa9e&apos;, &apos;Rue&apos;]) 
+
+Laferrière 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+du Bois 
+set([&apos;All\xc3\xa9e&apos;, &apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+de l&apos;Yerres 
+set([&apos;Boulevard&apos;, &apos;Place&apos;]) 
+
+des Pervenches 
+set([&apos;All\xc3\xa9e&apos;, &apos;Residence&apos;, &apos;Rue&apos;]) 
+
+de la Poste 
+set([&apos;Place&apos;, &apos;Rue&apos;]) 
+
+Denis Papin 
+set([&apos;Avenue&apos;, &apos;Rue&apos;]) 
+
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>It appears that a lot of similar street names have different qualifiers. Most of them are only mispelled, which will be corrected later before exporting the dataset in JSON format.</p>
+<p>But some of them are really different (rue / boulevard / avenue / quai, etc.). This can be due to a consistency issue, but it is also possible that an avenue and a street have the same name in the same city in France. In our case, this situation is most probably due to the fact that several cities are included in this dataset. Hence, it is highly possible that one city has a way named 'Boulevard de Strasbourg', and another has one named 'Rue de Strasbourg'. For that reason I will not try to correct this aspect of my dataset.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h5 id="Auditing-hyphens-in-street-names">Auditing hyphens in street names<a class="anchor-link" href="#Auditing-hyphens-in-street-names">&#182;</a></h5>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[7]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span class="kn">import</span> <span class="nn">xml.etree.cElementTree</span> <span class="kn">as</span> <span class="nn">ET</span>
+<span class="kn">import</span> <span class="nn">pprint</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
+
+<span class="n">hyphens</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+
+<span class="c"># this process looks for similar street names with different qualifiers</span>
+<span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">element</span> <span class="ow">in</span> <span class="n">ET</span><span class="o">.</span><span class="n">iterparse</span><span class="p">(</span><span class="s">&#39;data</span><span class="se">\\</span><span class="s">paris_france.osm&#39;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">element</span><span class="o">.</span><span class="n">tag</span> <span class="ow">in</span> <span class="p">[</span><span class="s">&#39;way&#39;</span><span class="p">,</span> <span class="s">&#39;node&#39;</span><span class="p">,</span> <span class="s">&#39;relation&#39;</span><span class="p">]:</span> 
+            <span class="k">for</span> <span class="n">subel</span> <span class="ow">in</span> <span class="n">element</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">subel</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;k&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s">&#39;addr:street&#39;</span> <span class="ow">and</span> <span class="n">subel</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;v&#39;</span><span class="p">)</span> <span class="o">!=</span> <span class="bp">None</span><span class="p">:</span>
+                    <span class="n">k_value</span> <span class="o">=</span> <span class="n">subel</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;k&#39;</span><span class="p">)</span>
+                    <span class="n">v_value</span> <span class="o">=</span> <span class="n">subel</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;v&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s">&#39;utf-8&#39;</span><span class="p">)</span>
+                    <span class="n">m</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s">&#39;\w+-\w+&#39;</span><span class="p">,</span> <span class="n">v_value</span><span class="p">)</span> <span class="c"># looking for hyphens in the street name</span>
+                    <span class="k">if</span> <span class="n">m</span><span class="p">:</span>
+                        <span class="n">hyphens</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">v_value</span><span class="p">)</span>
+            <span class="n">element</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+
+<span class="k">print</span> <span class="nb">len</span><span class="p">(</span><span class="n">hyphens</span><span class="p">)</span>
+
+<span class="c"># printing only the street names with several different qualifiers</span>
+<span class="k">for</span> <span class="n">el</span> <span class="ow">in</span> <span class="n">hyphens</span><span class="p">:</span>
+    <span class="k">print</span> <span class="n">el</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area"><div class="prompt"></div>
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>573
+rue Joliot-Curie
+Place des États-Unis
+Rue Saint-Bon
+Rue Marie Pape-Carpantier
+Place Saint-André des Arts
+Rue Saint-Denis
+Rue Saint-Spire
+Impasse de Mont-Louis
+Rue Saint-Lazare
+Rue Viollet-le-Duc
+Rue des Cinq-Diamants
+Av. Gabriel-Péri
+Rue Saint-Nicolas
+Avenue Paul Vailland-Couturier
+Passage Saint-Ange
+Allée Santos-Dumont
+Rue Waldeck-Rousseau
+Rue de Sainte-Geneviève-des-Bois
+Quai Saint-Michel
+Rue Jean-Marie Tjibaou
+Rue Saint-Dominique
+Rue de Fort-l&apos;Oiseau
+Rue Irène et Frédéric Joliot-Curie
+Passage Sainte-Avoie
+Rue Saint-Vincent de Paul
+Allée Robert-Doisneau
+Rue Saint-Pol Roux
+Rue de Saint-Antoine
+Rue Saint-Ferdinand
+Rue Saint-Sulpice
+Rue du Lieutenant-Colonel Deport
+Jean-Philippe Rameau
+Avenue Le Jour-Se-Lève
+Passage du Buisson Saint-Louis
+Rond-Point Henry Dunant
+Place Denfert-Rochereau
+Rue Royer-Collard
+Rue Saint-Roch
+Place Camille Saint-Saëns
+Impasse Royer-Collard
+Rue Saint-Julien
+Rue Jeanne-d&apos;Arc
+Avenue du Bel-Air
+Rue Saint-Barthelemy
+Rue Sainte-Opportune
+Square Sainte-Croix de la Bretonnerie
+Rue du Saule Saint-Jacques
+Rue Jean-Marie Poulmarch
+Cours Saint-Vincent
+Boulevard Victor-Hugo
+Rue Villebois-Mareuil
+Rue Saint-Sébastien
+Avenue de Villeneuve-Saint-Georges
+Avenue Saint-Honoré d&apos;Eylau
+Rue Gaston de Saint-Paul
+Avenue du Régiment Normandie-Niémen
+Mail Pierre Mendès-France
+Rue Camille Saint-Saëns
+Rue Sainte-Claire Deville
+Rue Saint-Ambroise
+Boulevard Saint-Martin
+Passage Saint-Bernard
+Allée de Saint-Cucufa
+Galerie Véro-Dodat
+Rue de Sainte-Hélène
+Rue Saint-Saëns
+Parvis Notre-Dame - Place Jean-Paul II
+Rue Marie-Louise
+Rue de Saint-Quentin
+Rue Sainte-Anne
+Rue Saint-Exupéry
+Rue du Général-Foy
+CENTRE COMMERCIAL AUCHAN MY PLACE-CELLULE C02
+Rue Cognacq-Jay
+Rue de Franche-Comté
+Rue des Fonds-Huguenots
+Rue Frédéric Joliot-Curie
+Rond-Point Rhin et Danube
+Route de Saint-Germain Rd 947
+Rue Alexandra David-Neel
+Avenue Ledru-Rollin
+Rue Marie-Louise Dubreil-Jacotin
+Rue Saint-Gilles
+Galerie Sainte-Foy
+Rue des Beaux-Arts
+Place des Rouges-Gorges
+Avenue Sully-Prudhomme
+Esplanade Pierre-Yves Cosnier
+Rue de Noisy-le-Sec
+Rue Guérin-Boisseau
+Rue du Faubourg Saint-Honoré
+Rue des Fossés Saint-Jacques
+Rue du Bois Saint-Denis
+Boulevard Paul Vaillant-Couturier
+Rue Saint-Thomas d&apos;Aquin
+Square Saint-Charles
+Avenue Jean-Baptiste Corot
+Place de l&apos;Escadrille Normandie-Niemen
+Cité Jean-Baptiste Pigalle
+Avenue Franco-Russe
+Allée Alexandra David-Neel
+Rue Saint-Séverin
+Rond-Point de l&apos;Europe
+Avenue Joliot-Curie
+Rue Abel-Rabaud
+Passage Saint-Sabin
+Cloitre Saint-Spire
+Forum Des Halles - Niveau-3 - 7/9 Rue De La Boucle - B.P.293
+rue Jean-Poulmarch
+Rue Jean-François Gerbillon
+Rue Marie-Rose
+Allée Saint-Hubert
+Rue Sainte-Genevière
+Avenue Saint-Exupéry
+Allée du Clos Saint-Martin
+Rue de Mont-Louis
+Rue Geoffroy Saint-Hilaire
+Rue d&apos;Alsace-Lorraine
+Rue Michel-Ange
+Rue Antoine-Julien Hénard
+Rue Sainte-Apolline
+Rue de Terre-Neuve
+Rue de la Paroisse Quartier Notre-Dame
+Boulevard Saint-Michel
+Rue Saint-Sabin
+Avenue Guy-Môquet
+Rue Saint-Médéric
+Rue du Marché Saint-Honoré
+Rue Neuve Saint-Pierre
+Rue Saint-Jean-Baptiste de la Salle
+Rue Jean-Baptiste Baudin
+Ruelle de Saint-Germain
+Avenue Irène et Frédéric Joliot-Curie
+Avenue Robert-André Vivien
+Avenue de Saint-Maurice
+Avenue Sainte-Foy
+Rue Jacques Louvel-Tessier
+Rue Michel-ange 
+Rue Jean-François de La Pérouse
+Rue des Demoiselles de Saint-Cyr
+Rue Marie-Hélène Lefaucheux
+Rue Neuve Notre-Dame
+Rond-Point du Docteur Laurent Schwartz
+Villa Saint-Jacques
+Avenue de la Demi-Lune
+Place du Père-André-Jarland
+Rue Saint-Médard
+Rue Notre-Dame de Recouvrance
+Rue Saint-Germain
+Rue de Saint-Germain
+Rue Saint-Yves
+Rue Jean-Pierre Timbaud
+Rue des Filles Saint-Thomas
+Rue des Fossés Saint-Bernard
+Rue Saint-Louis en l&apos;Île
+Rue Jean-Baptiste Preux
+Rue Saint-Maur
+Rue Saint-Vincent
+Rue des Prêtres Saint-Séverin
+Impasse Saint-Sébastien
+Allée Saint-Martin
+Rue Charles-Bernard Metman
+Rue Caruel de Saint-Martin
+Rue Jean-Jacques Rousseau
+Rue Saint-Florentin
+Résidence Jean-Claude Binet
+Rue Saint-Martin
+Villa Dietz-Monnin
+Rue Saint-Jacques
+Square Jean-Paul Laurens
+Côte de l&apos;Entre-Deux
+Rue Saint-Honoré
+Place de Moro-Giafferi
+rue Saint-Martin
+rue François-Debergue
+Rue Léon-Maurice Nordmann
+Avenue Denfert-Rochereau
+Rue Saint-Sauveur
+Rue Sainte-Léonie
+Place du Marché Saint-Honoré
+Rue Saint-Louis
+Rue Carrier-Belleuse
+Rue Jacques-Henri Lartigue
+Rue Saint-Hippolyte
+Place de l&apos;Hôtel-de-Ville
+Impasse Saint-Claude
+Rue Sainte-Croix de la Bretonnerie
+Rue Saint-Eustache
+Rue Jean-Pierre Plicque
+Boulevard Saint-Marcel
+Place du Pas de Saint-Cloud
+Quai Saint-Exupéry
+Rue du Grenier Saint-Lazare
+Place Jean-Michel Basquiat
+Rue George-Messer
+Place Saint-Sulpice
+Rue Boyer-Barret
+Rue du Clos-Battant
+Avenue Sainte-Marie
+Place Saint-Antoine de Padoue
+Esplanade de la Demi-Lune
+Rue du Marché des Blancs-Manteaux
+Rue Gager-Gabillot
+Rue du Faubourg Saint-Denis
+avenue du Général-de-Gaulle
+Impasse Saint-Vincent
+Rue des Écluses Saint-Martin
+Avenue de la Porte de Saint-Ouen
+Rond-Point de Stalingrad
+Rue des Saints-Pères
+rue Saint-Lambert
+Rue Louis-Philippe
+Rue Saint-Victor
+Centre commercial des 7-Mares
+Rue Gardenat-Lapostol
+Rue Sainte-Isaure
+Place Gérard-Nevers
+Rue Notre-Dame de Lorette
+Rue du Clos Saint-Jean
+Place Saint-Germain des Prés
+Espace Saint-Quentin
+Rue Didot Saint-Leger
+Rue Saint-James
+Route de Saint-Leu
+Rue Saint-Fargeau
+Rue Jean-Baptiste Pigalle
+rue Saint-Honoré
+Avenue Mac-Mahon
+rue du Faubourg Saint-Denis
+rue de Saint-Thibaud
+Rue Santos-Dumont
+Allée Saint-Francois
+Rue Joliot-Curie
+Rue Saint-Laurent
+Rue des Prêtres Saint-Germain l&apos;Auxerrois
+rue de Saint-Cloud
+rue du Bel-Air
+Avenue Gabriel-Péri
+Avenue Saint-Germain
+Rue Saint-André des Arts
+Rue des Jardins Saint-Paul
+Rue des Lavandières Sainte-Opportune
+Rue de Saint-Pétersbourg
+Rue des Coutures Saint-Gervais
+Boulevard de Port-Royal
+Rue Gaston-Gallimard
+Rue Henri Rol-Tanguy
+Place Marie-Madeleine Fourcade
+Rue de l&apos;Hôtel Saint-Paul
+Rue Mousset-Robert
+Rue Jean-Philippe Rameau
+Rue de Boissy-Saint-Léger
+Impasse Saint-Alphonse
+rue Gay-Lussac
+Place Saint-Jean
+Impasse Saint-Eustache
+Rue Saint-Hyacinthe
+Rue Gay-Lussac
+Rue Franc-Nohain
+Square de Port-Royal
+Avenue Émile-Boutroux
+Rue Saint-Claude
+Rue de Combs-la-Ville
+Place de la Fontaine Saint-Gilles
+Rue de Saint-Simon
+Rue Jacques-Ange Gabriel
+Avenue Lucien-René Duchesne
+Place Saint-Rémy
+rue des Saints-Pères
+Place Jean-Spire-Lemaître
+Rue Pierre Mendès-France
+Rue Saint-Benoît
+Rue Sainte-Marguerite
+Rue Paul Vaillant-Couturier
+Allée Jean-Ferrat
+Rue Sainte-Beuve
+Rond-Point Robert Schumann
+Quai de Saint-Ouen
+Rue Sainte-Colombe
+Rue du Moulin-Joly
+Rond-Point des Champs-Élysées - Marcel Dassault
+Rue Jean-Baptiste Say
+Villa de Saint-Mandé
+Cour du Marché Saint-Antoine
+Rue Saint-Hilaire
+Rue du Chevalier de Saint-George
+Rond-point de l&apos;Espace
+Route de Saint-Germain
+Avenue de Saint-Germain
+Rue de l&apos;Hôpital Saint-Louis
+Avenue Vion-Whitcomb
+Passage Saint-Paul
+Rue Saint-Charles
+Route de Vert-le-Grand
+Boulevard Saint-Denis
+Rue Geneviève Anthonioz-de Gaulle
+Avenue de Saint-Mandé
+Avenue Jean-Jaurès
+Rue Vigée-Lebrun
+Rue Saint-Caprais
+Allée Sainte-Lucie
+Rue Dupetit-Thouars
+Avenue du Clos Saint-Georges
+Quai Saint-Bernard
+Avenue Camille Saint-Saëns
+Rue Saint-Marc
+Rue Jean-Claude Arnould
+Rue Jean-Sébastien Bach
+Rue Saint-Lambert
+Avenue de New-York
+Chemin de Saint-Denis
+Rue Saint-Amand
+Rue Roger-François
+Rue Saint-Simon
+Boulevard d&apos;Alsace-Lorraine
+Rue de Port-Royal
+Rue Degly-Maillot
+Rue Jean-Baptiste Corot
+Rue de la Folie-Méricourt
+Rue Borgnis-Desbordes
+Rue Paul-Adolphe Souriau
+rue Saint-Pierre
+Rue Saint-Augustin
+Place Saint-Charles
+Rue Pierre-Scheringa
+Rue du Docteur Jean-Philippe Bertrand
+Place Rothenburg-ob-der-Tauber
+Rue Duguay-Trouin
+Rond-Point Saint-James
+Rue Saint-Blaise
+Rue du Cloître Notre-Dame
+Rue Eugène-Hénaff
+Avenue des Etats-Unis
+Rue Saint-Bernard
+Promenade Claude Lévi-Strauss
+Villa du Bel-Air
+Rond-Point Jaroslaw Dombrowski
+Place de la Porte de Saint-Cloud
+Rue Desbordes-Valmore
+Rue Paul-François Avet
+rue Ledru-Rollin
+Rue Saint-Stenay
+Place du Marché Sainte-Catherine
+Rue des Prés Saint-Martin
+Cité Dupetit-Thouars
+Villa Wagram - Saint-Honoré
+Rue de la Croix-Faubin
+Place Saint-Michel
+Avenue Georges-pompidou
+Avenue Saint-Laurent
+Place Saint-Thomas d&apos;Aquin
+Square de Saint-Germain
+Place Jean-Baptiste Clément
+Avenue de la Celle Saint-Cloud
+Rue Saint-Fiacre
+Boulevard Saint-Germain
+Villa Dury-Vasselon
+Place de Port-au-Prince
+Rue Jean-F Pilatre de Rozier
+Boulevard Saint-Antoine
+Place Bir-Hakeim
+Rue Notre-Dame des Champs
+Place des Prés-Hauts
+Rue des Hospitalières Saint-Gervais
+Rue Sainte-Claire
+Rue Jean-Baptiste Berlier
+Rue Sainte-Cécile
+rue Gabriel-Péri
+avenue du Clos Saint-Georges
+Rue Saint-Placide
+Place Sainte-Opportune
+Avenue du Parc Saint-James
+Passage Trubert-Bellier
+Rue Bois-le-Vent
+Boulevard Saint-Jacques
+Rue de Port-Marly
+Rue Saint-Michel
+Avenue de la Motte-Picquet
+Allée Perce-Neige
+Rue Louis-Auguste Blanqui
+Rue du Faubourg-Saint-Martin
+Galerie Saint-Marc
+Rue Chauveau-Lagarde
+Rue Prévost-Paradol
+Rue Saint-Just
+Rue Chasseloup-Laubat
+Rond-Point Gay-Lussac
+Passage Saint-Roch
+Rue Saint-Barthélémy
+Rue Saint-Christophe
+Rue du Saint-Gothard
+Rue des Fossés Saint-Marcel
+Rue Jean-Marie Jégo
+avenue Paul-Vaillant Couturier
+Rue de Sèvres, 92100 Boulogne-Billancourt
+Rue Marie-Andrée Lagroua Weill-Hallé
+Rue Saint-Paul
+Square Camille Saint-Saëns
+Rue Toulouse-Lautrec
+Rue Monte-Cristo
+N.4 ZAC de la Croix St Nicolas-6 rue André Citroën
+route de Saint-Aubin
+Rue Saint-Guillaume
+Rue du Prieuré Saint-Nicolas
+Passage Saint-Vivant
+Passage de la Ferme Saint-Lazare
+Avenue Saint-Rémy
+Avenue Jean-Lolive
+Avenue de Saint-Cloud
+Avenue Paul Vaillant-Couturier
+Avenue du Château-de-Bertin
+Avenue Jean-Jacques Rousseau
+Passage de la Folie-Regnault
+Passage Saint-Sébastien
+Rond-Point des Condamines
+N 4 - Direction Paris, Lieu-dit &apos;&apos;Les Rables&apos;&apos;
+Ruelle de la demi-lune
+Avenue d&apos;Alsace-Lorraine
+Rue Sainte-Foy
+Rue de Saulx-Les-Chartreux
+rond-point du pont Mirabeau
+rue Lefèvre-Utile
+Place Notre-Dame
+Avenue de Saint-Ouen
+Avenue de la Paix - Clarissa Jean-Philippe
+Villa Santos-Dumont
+Impasse du Pont-Pierre
+Rue Notre-Dame des Victoires
+Place Saint-Ferdinand
+Avenue Saint-Marc
+Rue des Docks de Saint-Ouen
+Boulevard Gouvion-Saint-Cyr
+Rue du Cherche-Midi
+Rue Saint-Philippe du Roule
+Avenue Pierre-et-Marie-Curie
+avenue Joliot-Curie
+Avenue de Sainte-Geneviève
+Cité Saint-Martin
+Jean-Baptiste Clément
+Passage du Grand-Cerf
+Villa des Buttes-Chaumont
+Rue Alfred Durand-Claye
+avenue de Saint-Germain
+Avenue des Trois-Peuples
+Rue Saint-Didier
+Rue de Saint-Cloud
+Rue du Bel-Air
+Passage Saint-Philippe du Roule
+Avenue Jean-Baptiste Lully
+Rue Jean-Charles Persil
+Rue du Pré-Saint-Gervais
+Place Saint-Augustin
+Allée Geoffroy Saint-Hilaire
+Rue Sainte-Anastase
+Rue Jean-Claude Mary
+Rue du Général Malleret-Joinville
+Boulevard Marcel-Pourtout
+Rue du Rendez-Vous
+Rue du Faubourg Saint-Martin
+Villa Jean-Jacques Rousseau
+Rue Saint-Aubin
+Rue Geneviève Anthonioz-de-Gaulle
+Rue Sainte-Sophie
+Rue de Saint-Senoch
+Square Saint-Lambert
+Rond-point de Roccasecca
+Rue Basse-Poignet
+Place Saint-Gervais
+Quai Jean-Baptiste Clément
+Rue Berbier-du-Mets
+Rue Georges-Marcel Burgun
+Rue Toussaint-Féron
+Passage Sainte-Foy
+Allée Pierre Mendès-France
+Rue Saint-Hubert
+Rue Jean-Roger Thorelle
+Rue Saint-Julien Le Pauvre
+Rue des Lions Saint-Paul
+Chemin de Villeneuve Saint-Georges
+Rue du Cloître Saint-Merri
+Impasse du 49 Faubourg Saint-Martin
+Rue des Quatre-Vents
+Rue Elisabeth Vigee-Lebrun
+Rue Saint-Philippe
+Passage Saint-Pierre Amelot
+Rue Gît-le-Coeur
+Mail du Clos Saint-Vincent
+rue Saint-Maur
+Boulevard du Sud-Est
+Rue du Buisson Saint-Louis
+Rue du Moulin-des-Prés
+Rue Saint-Léger
+Passage Sainte-Anne Popincourt
+Rue des États-Unis
+Rond-Point du Pont de Sèvres
+Rond-Point Youri Gagarine
+Rue Paul-Henri Grauwin
+Rue du Faubourg Saint-Jacques
+Place Saint-Roch
+Rue Sainte-Félicité
+Rue des Blancs-Manteaux
+Rue Bourdarie-Lefure
+rue Paul-Langevin
+Rue Ledru-Rollin
+Hameau Michel-Ange
+Promenade Saint-Leufroy
+Rue François Bloch-Lainé
+Rue Saint-Merri
+Rue Sainte-Marie
+Rue de Sainte-Geneviève des Bois
+Rue Saint-Georges
+Allée Camille Saint-Saëns
+Cour Saint-Joseph
+Cité du Rendez-Vous
+Rue Jean-Baptiste Charcot
+Avenue Paul-Vaillant-Couturier
+Rue Sainte-Marthe
+Avenue Saint-Saëns
+Rue Charles-François Dupuis
+Rue Bellier-Dedouvre
+Rue Jean-Baptiste Clément
+Allée du Val-Fleury
+Rue Saint-Pierre
+Avenue Sainte-Eugénie
+Passage Saint-Ambroise
+Rue Saussier-Leroy
+Villa Saint-Pierre
+Rue Saint-Germain l&apos;Auxerrois
+Rue de Pali-Kao
+Rue Chardon-Lagache
+Avenue du Vieux Chemin de Saint-Denis
+rue Pierre Mendès-France
+rue Sainte-Geneviève
+Rue du Faubourg Saint-Antoine
+Square Leroy-Beaulieu
+Route des Petits-Ponts
+CENTRE COMMERCIAL LE MILLENAIRE - CELLULE 39 A-RUE DE LA GARE
+Rue Julie-Victore Daubié
+Passage Louis-Philippe
+Avenue du Bas-Meudon
+Rue Saint-Antoine
+Place Paul-Emile Victor
+Rue Sainte-Geneviève
+Rue Mallet-Stevens
+Avenue Mathurin-Moreau
+Allée Jean-Olivier Nicolas
+Rue Boy-Zelenski
+Rue Saint-Romain
+Passage Saint-Antoine
+Route de Saint-Vrain
+Rue du mont-Cenis
+Rue Pierre-Sergent
+Avenue Jean-Baptiste Clément
+Rue Robert Esnault-Pelterie
+Passage Saint-Maur
+Cour de la Ferme Saint-Lazare
+Sidi-Brahim
+Rue du Plateau Saint-Antoine
+Rue Notre-Dame de Nazareth
+Place Saint-Pierre
+Métro Richelieu-Drouot
+Chemin de la Croix-Saint-Jacques
+Rue Jean-Baptiste Tubi
+Rue Notre-Dame de Bonne Nouvelle
+Rue Paul-Langevin
+Impasse Saint-Denis
+Place Moreau-David
+Av Jean-Baptiste Clément
+Rue Saint-Joseph
+Rue Saint-Paulin
+Rue Brillat-Savarin
+square Rosny-Aîné
+Rue Marie-Thérèse
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>It appears that most of the hyphens are correctly used. In French, the standard rule is to use an hyphen to link the words when describing a location (like Viollet-le-Duc), especially when it comes to proper nouns. Another test that could be done is to look for entries that may not have an hyphen to link two proper nouns. But that sounds like a time extensive task, and the gain in data quality can be discussed.</p>
+<p>Following the 3 previous auditing, I adapted the pre-processing code that produces the json file to be stored in the database in order to force the first street name letter into an uppercase and correct mispelled qualifiers. I also checked if some street names got different qualifiers, which is the case. Hence, I implemented a function that replace a mispelled qualifiers by a more standard version of it.</p>
+<p>There might be more small uniformity issues (like using uppercase or for link words, like 'de', 'des', 'de la', or using lowercase for proper nouns etc.), but the previous corrections should ensure a relatively high data quality level for the MongoDB database import.</p>
 
 </div>
 </div>
@@ -491,7 +5777,7 @@ Boulevard Saint-Germain
 <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
 <span class="n">i_max</span> <span class="o">=</span> <span class="mi">250</span>
 
-<span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">element</span> <span class="ow">in</span> <span class="n">ET</span><span class="o">.</span><span class="n">iterparse</span><span class="p">(</span><span class="s">&#39;data</span><span class="se">\\</span><span class="s">paris_france_extract.osm&#39;</span><span class="p">):</span>
+<span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">element</span> <span class="ow">in</span> <span class="n">ET</span><span class="o">.</span><span class="n">iterparse</span><span class="p">(</span><span class="s">&#39;data</span><span class="se">\\</span><span class="s">paris_france.osm&#39;</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">element</span><span class="o">.</span><span class="n">tag</span> <span class="ow">in</span> <span class="p">[</span><span class="s">&#39;way&#39;</span><span class="p">,</span> <span class="s">&#39;node&#39;</span><span class="p">,</span> <span class="s">&#39;relation&#39;</span><span class="p">]:</span> 
         <span class="k">for</span> <span class="n">subel</span> <span class="ow">in</span> <span class="n">element</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">i_max</span><span class="p">:</span>
@@ -1513,7 +6799,46 @@ crossing_ref :  zebra
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[24]:</div>
+<div class="prompt input_prompt">In&nbsp;[28]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s">&#39;\w+&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area"><div class="prompt"></div>
+<div class="output_subarea output_text output_error">
+<pre>
+<span class="ansired">---------------------------------------------------------------------------</span>
+<span class="ansired">TypeError</span>                                 Traceback (most recent call last)
+<span class="ansigreen">&lt;ipython-input-28-cf8afc7f0c54&gt;</span> in <span class="ansicyan">&lt;module&gt;</span><span class="ansiblue">()</span>
+<span class="ansigreen">----&gt; 1</span><span class="ansiyellow"> </span>re<span class="ansiyellow">.</span>match<span class="ansiyellow">(</span><span class="ansiblue">&apos;\w+&apos;</span><span class="ansiyellow">,</span> None<span class="ansiyellow">)</span><span class="ansiyellow"></span>
+
+<span class="ansigreen">e:\Programmes\Anaconda\envs\py27\lib\re.pyc</span> in <span class="ansicyan">match</span><span class="ansiblue">(pattern, string, flags)</span>
+<span class="ansigreen">    139</span>     &quot;&quot;&quot;Try to apply the pattern at the start of the string, returning
+<span class="ansigreen">    140</span>     a match object, or None if no match was found.&quot;&quot;&quot;
+<span class="ansigreen">--&gt; 141</span><span class="ansiyellow">     </span><span class="ansigreen">return</span> _compile<span class="ansiyellow">(</span>pattern<span class="ansiyellow">,</span> flags<span class="ansiyellow">)</span><span class="ansiyellow">.</span>match<span class="ansiyellow">(</span>string<span class="ansiyellow">)</span><span class="ansiyellow"></span>
+<span class="ansigreen">    142</span> <span class="ansiyellow"></span>
+<span class="ansigreen">    143</span> <span class="ansigreen">def</span> search<span class="ansiyellow">(</span>pattern<span class="ansiyellow">,</span> string<span class="ansiyellow">,</span> flags<span class="ansiyellow">=</span><span class="ansicyan">0</span><span class="ansiyellow">)</span><span class="ansiyellow">:</span><span class="ansiyellow"></span>
+
+<span class="ansired">TypeError</span>: expected string or buffer</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[29]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span class="c">#!/usr/bin/env python</span>
@@ -1540,6 +6865,16 @@ crossing_ref :  zebra
            <span class="s">&#39;frequency&#39;</span><span class="p">,</span> <span class="s">&#39;emergency&#39;</span><span class="p">,</span> <span class="s">&#39;network&#39;</span><span class="p">,</span> <span class="s">&#39;tunnel&#39;</span><span class="p">,</span> <span class="s">&#39;capacity&#39;</span><span class="p">,</span> <span class="s">&#39;junction&#39;</span><span class="p">,</span> <span class="s">&#39;parking&#39;</span><span class="p">,</span> <span class="s">&#39;area&#39;</span><span class="p">,</span> <span class="s">&#39;seats&#39;</span><span class="p">,</span> <span class="s">&#39;usage&#39;</span><span class="p">,</span>
            <span class="s">&#39;waterway&#39;</span><span class="p">,</span> <span class="s">&#39;sidewalk&#39;</span><span class="p">,</span> <span class="s">&#39;tracktype&#39;</span><span class="p">,</span> <span class="s">&#39;tactile_paving&#39;</span><span class="p">,</span> <span class="s">&#39;material&#39;</span><span class="p">,</span> <span class="s">&#39;bench&#39;</span><span class="p">]</span>
 
+<span class="c"># the following dictionary contains the mispelled qualifiers with their associated correct spelling</span>
+<span class="n">qual_mispelled</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;rte&#39;</span><span class="p">:</span><span class="s">&#39;Route&#39;</span><span class="p">,</span> <span class="s">&#39;bd&#39;</span><span class="p">:</span><span class="s">&#39;Boulevard&#39;</span><span class="p">,</span> <span class="s">&#39;centre&#39;</span><span class="p">:</span><span class="s">&#39;Centre&#39;</span><span class="p">,</span> <span class="s">&#39;ctre&#39;</span><span class="p">:</span><span class="s">&#39;Centre&#39;</span><span class="p">,</span> <span class="s">&#39;allee&#39;</span><span class="p">:</span><span class="s">&#39;Allée&#39;</span><span class="p">,</span> <span class="s">&#39;pl&#39;</span><span class="p">:</span><span class="s">&#39;Place&#39;</span><span class="p">,</span> 
+ <span class="s">&#39;rte&#39;</span><span class="p">:</span><span class="s">&#39;Route&#39;</span><span class="p">,</span> <span class="s">&#39;galerie&#39;</span><span class="p">:</span><span class="s">&#39;Galerie&#39;</span><span class="p">,</span> <span class="s">&#39;allées&#39;</span><span class="p">:</span><span class="s">&#39;Allée&#39;</span><span class="p">,</span> <span class="s">&#39;c.cial&#39;</span><span class="p">:</span><span class="s">&#39;Centre commercial&#39;</span><span class="p">,</span> <span class="s">&#39;avenus&#39;</span><span class="p">:</span><span class="s">&#39;Avenue&#39;</span><span class="p">,</span> <span class="s">&#39;ïle&#39;</span><span class="p">:</span><span class="s">&#39;Île&#39;</span><span class="p">,</span>
+ <span class="s">&#39;ccial&#39;</span><span class="p">:</span><span class="s">&#39;Centre commercial&#39;</span><span class="p">,</span> <span class="s">&#39;cc&#39;</span><span class="p">:</span><span class="s">&#39;Centre commercial&#39;</span><span class="p">,</span> <span class="s">&#39;c.c&#39;</span><span class="p">:</span><span class="s">&#39;Centre commercial&#39;</span><span class="p">,</span> <span class="s">&#39;cc&#39;</span><span class="p">:</span><span class="s">&#39;Centre commercial&#39;</span><span class="p">,</span> <span class="s">&#39;c.cial&#39;</span><span class="p">:</span><span class="s">&#39;Centre commercial&#39;</span><span class="p">,</span>
+ <span class="s">&#39;av.&#39;</span><span class="p">:</span><span class="s">&#39;Avenue&#39;</span><span class="p">,</span> <span class="s">&#39;bouleverd&#39;</span><span class="p">:</span><span class="s">&#39;Boulevard&#39;</span><span class="p">,</span> <span class="s">&#39;avenur&#39;</span><span class="p">:</span><span class="s">&#39;Avenue&#39;</span><span class="p">,</span> <span class="s">&#39;rue&#39;</span><span class="p">:</span><span class="s">&#39;Rue&#39;</span><span class="p">,</span> <span class="s">&#39;r&#39;</span><span class="p">:</span><span class="s">&#39;Rue&#39;</span><span class="p">,</span><span class="s">&#39;bouleard&#39;</span><span class="p">:</span><span class="s">&#39;Boulevard&#39;</span><span class="p">,</span> <span class="s">&#39;che&#39;</span><span class="p">:</span><span class="s">&#39;Chemin&#39;</span><span class="p">,</span> 
+ <span class="s">&#39;ctre&#39;</span><span class="p">:</span><span class="s">&#39;Centre&#39;</span><span class="p">,</span> <span class="s">&#39;av&#39;</span><span class="p">:</span><span class="s">&#39;Avenue&#39;</span><span class="p">,</span> <span class="s">&#39;ile&#39;</span><span class="p">:</span><span class="s">&#39;Île&#39;</span><span class="p">,</span> <span class="s">&#39;c.c.&#39;</span><span class="p">:</span><span class="s">&#39;Centre commercial&#39;</span><span class="p">,</span> <span class="s">&#39;avenu&#39;</span><span class="p">:</span><span class="s">&#39;Avenue&#39;</span><span class="p">,</span> <span class="s">&#39;z.a.c.&#39;</span><span class="p">:</span><span class="s">&#39;ZAC&#39;</span><span class="p">,</span> <span class="s">&#39;residence&#39;</span><span class="p">:</span><span class="s">&#39;Résidence&#39;</span><span class="p">}</span>
+
+<span class="c"># the following list contains the French department numbers that are relevant to the Paris Metroline area</span>
+<span class="n">metroline_dept</span> <span class="o">=</span> <span class="p">[</span><span class="mi">75</span><span class="p">,</span> <span class="mi">92</span><span class="p">,</span> <span class="mi">93</span><span class="p">,</span> <span class="mi">94</span><span class="p">,</span> <span class="mi">95</span><span class="p">,</span> <span class="mi">77</span><span class="p">,</span> <span class="mi">91</span><span class="p">,</span><span class="mi">78</span><span class="p">,</span> <span class="mi">60</span><span class="p">,</span> <span class="mi">62</span><span class="p">]</span>
+
 <span class="k">def</span> <span class="nf">shape_geodata</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">    This function creates a tuple with the geographical coordonates for future indexing</span>
@@ -1558,12 +6893,37 @@ crossing_ref :  zebra
             <span class="n">node</span><span class="p">[</span><span class="s">&#39;pos&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>    
     <span class="k">return</span> <span class="n">node</span>
 
+<span class="k">def</span> <span class="nf">shape_postcode</span><span class="p">(</span><span class="n">t_value</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    This function processes postcode entries to return standardized postcodes relevant to the metroline area.</span>
+<span class="sd">    If the postcode is to far away from Paris, the None type is returned.</span>
+<span class="sd">    If several postcodes separated by ; are given, a list is returned. </span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">postcodes_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">postcodes</span> <span class="o">=</span> <span class="n">t_value</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;;&#39;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">el</span> <span class="ow">in</span> <span class="n">postcodes</span><span class="p">:</span>
+        <span class="n">m</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s">&#39;\d{5}&#39;</span><span class="p">,</span> <span class="n">el</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">m</span><span class="p">:</span>
+            <span class="n">el</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">el</span><span class="o">/</span><span class="mi">1000</span> <span class="ow">in</span> <span class="n">metroline_dept</span><span class="p">:</span> 
+                <span class="n">postcodes_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">el</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">pass</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">pass</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">postcodes_list</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">None</span>
+    <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">postcodes_list</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">postcodes_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">postcodes_list</span>
 
 <span class="k">def</span> <span class="nf">shape_element</span><span class="p">(</span><span class="n">element</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">    This function processes an ETREE element in order to reshape it into a json-like format. </span>
 <span class="sd">    It only transfers the most frequent and relevant entries spotted with the previous analysis.</span>
 <span class="sd">    It calls the shape_geodata() function and uses the CREATED and INCLUDE global variables.</span>
+<span class="sd">    Several corrections are done in order to correct some data uniformity issues.</span>
 <span class="sd">    &#39;&#39;&#39;</span>
     <span class="n">node</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="n">node</span><span class="p">[</span><span class="s">&#39;created&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
@@ -1599,8 +6959,18 @@ crossing_ref :  zebra
                     <span class="k">pass</span>                
                 <span class="k">else</span><span class="p">:</span>
                     <span class="k">if</span> <span class="n">t_key</span> <span class="o">==</span> <span class="s">&#39;addr:street&#39;</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s">&#39;\w+&#39;</span><span class="p">,</span><span class="n">t_value</span><span class="p">):</span>   <span class="c"># replace mispelled qualifiers</span>
+                            <span class="n">street_name</span> <span class="o">=</span> <span class="n">t_value</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+                            <span class="n">qualifier</span> <span class="o">=</span> <span class="n">street_name</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s">&#39;utf-8&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+                            <span class="k">if</span> <span class="n">qualifier</span> <span class="ow">in</span> <span class="n">qual_mispelled</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                                <span class="n">street_name</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">qual_mispelled</span><span class="p">[</span><span class="n">qualifier</span><span class="p">]</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s">&#39;utf-8&#39;</span><span class="p">)</span>
+                                <span class="n">t_value</span> <span class="o">=</span> <span class="s">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">street_name</span><span class="p">)</span>
                         <span class="k">if</span> <span class="n">t_value</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">islower</span><span class="p">():</span>
                             <span class="n">t_value</span> <span class="o">=</span> <span class="n">t_value</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">+</span> <span class="n">t_value</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="c"># replace first letter by uppercase</span>
+                    <span class="k">elif</span> <span class="n">t_key</span> <span class="o">==</span> <span class="s">&#39;addr:postcode&#39;</span><span class="p">:</span>   <span class="c"># reshaping or verifying postcodes</span>
+                        <span class="n">t_value</span> <span class="o">=</span> <span class="n">shape_postcode</span><span class="p">(</span><span class="n">t_value</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="n">t_value</span> <span class="o">==</span> <span class="bp">None</span><span class="p">:</span>
+                            <span class="k">return</span> <span class="bp">None</span>
                     <span class="k">try</span><span class="p">:</span>
                         <span class="n">node</span><span class="p">[</span><span class="s">&#39;address&#39;</span><span class="p">][</span><span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="s">&#39;addr:&#39;</span><span class="p">,</span><span class="s">&#39;&#39;</span><span class="p">,</span><span class="n">t_key</span><span class="p">)]</span> <span class="o">=</span> <span class="n">t_value</span>   
                     <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
@@ -1629,7 +6999,6 @@ crossing_ref :  zebra
         <span class="k">return</span> <span class="bp">None</span>    
 
 
-
 <span class="k">def</span> <span class="nf">process_map</span><span class="p">(</span><span class="n">file_in</span><span class="p">):</span>
     <span class="n">file_out</span> <span class="o">=</span> <span class="s">&quot;{0}.json&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">file_in</span><span class="p">)</span>
     
@@ -1650,8 +7019,7 @@ crossing_ref :  zebra
                 <span class="n">el</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
                 <span class="n">element</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">pass</span>
-            
+                <span class="k">pass</span>            
     <span class="k">return</span> <span class="bp">None</span>
 
 
@@ -1790,7 +7158,7 @@ crossing_ref :  zebra
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[25]:</div>
+<div class="prompt input_prompt">In&nbsp;[30]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span class="kn">from</span> <span class="nn">pymongo</span> <span class="kn">import</span> <span class="n">MongoClient</span>
@@ -1869,7 +7237,7 @@ crossing_ref :  zebra
 <div class="output_area"><div class="prompt"></div>
 <div class="output_subarea output_stream output_stdout output_text">
 <pre>counting the number of lines in the file...
-data\paris_france.osm.json contains 21683305 lines.
+data\paris_france.osm.json contains 21683283 lines.
 1.0 % of original file has been processed
 2.0 % of original file has been processed
 3.0 % of original file has been processed
@@ -1971,7 +7339,7 @@ data\paris_france.osm.json contains 21683305 lines.
 99.0 % of original file has been processed
 100.0 % of original file has been processed
 Number of elements
-21683305
+21683283
 </pre>
 </div>
 </div>
@@ -2519,8 +7887,7 @@ Rue Winston Churchill
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>As we saw earlier, the entries show a very high Data Quality. The only uniformity issue that I found was that some street name began with a lower case, instead of an uppercase. I corrected my python code that pre-process the OSM data in order to correct this issue. Now, we can see that the data shows a very high degree of uniformity and validity.</p>
-<p>I wonder if some process in the original OSM database has already been done to correct automatically street entries from human in order to increase overall data quality.</p>
+<p>Now, we can see that the data shows a very high degree of uniformity and validity.</p>
 <p>But how complete are these entries in our dataset ?</p>
 
 </div>
@@ -4662,9 +10029,11 @@ gzx+ua8HAAAAAElFTkSuQmCC
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Conclusions">Conclusions<a class="anchor-link" href="#Conclusions">&#182;</a></h2><p>Throughout this work I was able to use OSM data from the Paris Metroline to learn how to assess data quality, clean data if need be, and store it in a MongoDB database.</p>
+<h2 id="Conclusions">Conclusions<a class="anchor-link" href="#Conclusions">&#182;</a></h2><h3 id="Process">Process<a class="anchor-link" href="#Process">&#182;</a></h3><p>Throughout this work I was able to use OSM data from the Paris Metroline to learn how to assess data quality, clean data if need be, and store it in a MongoDB database.</p>
 <p>The first part of my work enabled me to see what the OSM data structure looked like and what were the main data quality issues to be dealt with before importing it in the MongoDB database. It was also the occasion to select the most frequent and useful fields from the entire OSM dataset.</p>
-<p>Once the data was stored into MongoDB, it was very easy to access. Pymongo makes the interface between Python and MongoDB very easy. Several funny facts could be discovered from the OSM data:</p>
+<p>The second part was focused on parsing the OSM file and restructuring it into a JSON file before importing it to the MongoDB database. Due to the large file size, import in the database had to be done in chunks in order to avoid memory overload.</p>
+<p>Once the data was stored into MongoDB, it was very easy to access. Pymongo makes the interface between Python and MongoDB very easy. The first queries were used to check the data quality of the main entry types, especially for the fields cleaned by the python scripts.</p>
+<p>Several funny facts could be discovered from the OSM data:</p>
 <ul>
 <li>who are the main contributors and how much did they contribute to the dataset?</li>
 <li>What are the main amenities?</li>
@@ -4672,11 +10041,9 @@ gzx+ua8HAAAAAElFTkSuQmCC
 <li>What are the biggest cities in population in the dataset?</li>
 <li>What are the main tree genuses?</li>
 </ul>
-<p>The second part was focused on parsing the OSM file and restructuring it into a JSON file before importing it to the MongoDB database. Due to the large file size, import in the database had to be done in chunks in order to avoid memory overload.</p>
-<p>Once the data stored in the MongoDB database, it was easier to access the entire dataset. The first queries were used to check the data quality of the main entry types, especially for the fields cleaned by the python scripts.</p>
-<p>Then, I played a bit with the database to answer some basic questions related to the city of Paris.</p>
-<p>In general, the data quality level was surprisingly high for a human-filled database. The studied entries did not showed major uniformity or validity issues. Accuracy was difficult to assess, as there was no data available to easily compare the database entries. Consistency was also not an issue here, as there was no visible redundancy inside the data.</p>
-<p>The main challenge in the dataset is the completeness issue. Most of the entries (street name, postcode, etc.) are not available for each amenity, as they are linked via relation elements (members and node). Though this structure keeps the overall dataset weight fairly low, it complicates our work for now. A next step could be to build an index listing the different elements related to the same postcode and street name.</p>
+<h3 id="Data-Quality">Data Quality<a class="anchor-link" href="#Data-Quality">&#182;</a></h3><p>I spent some time auditing the street names. At first, it could appear that the entries are uniformly filled and that the data quality is high, but when looking on the entire dataset, some issues were spotted. I focused my work on assuring that the main street qualifiers were uniformly spelled, and looked at the consistency problem when several qualifiers were given for the same name. I also had a look at the specific case of hyphens and how they can create uniformity issues. Accuracy was difficult to assess, as there was no data available to easily compare the database entries.</p>
+<p>The main challenge in the dataset is the completeness issue. Most of the entries (street name, postcode, etc.) are not available for each amenity, as they are linked via relation elements (members and node). Though this structure keeps the overall dataset weight fairly low, it complicates our work for now. A next step could be to build an index listing the different elements related to the same postcode and street name. To improve the data quality for amenities, it could be possible to add address entries based on the relationship elements (members and node) that are linked to this amenity.</p>
+<p>If all the amenities had their address entries correctly filled, it would be possible to do a more detailed analysis by cities, or by arrondissement. For instance, it could be possible to check which arrondissements are the most touristy by looking at the number of restaurants they have compared to their area, or population. The main challenge to achieve this improvement is to find a way to transit the address information (postcodes, street names) from high level relation element (cities, arrondissements, ways, etc.) to all the relevant amenities in the related area.</p>
 
 </div>
 </div>
