@@ -14,11 +14,12 @@ The goal of this work is to use data from the Open Street Map community to learn
 - Process data from very large files that can not be cleaned with spreadsheet programs
 - Learn how to store, query, and aggregate data using MongoDB
 
-The first part of my work is focused on getting some first clues about data quality of the OSM file. The idea was to find out which treatment has to be done to the data before importing it to the database. 
+The first part of my work is focused on getting some first clues about data quality of the OSM file. The idea is to find out which treatment has to be done to the data in order to improve its quality before importing it to the database. The main focus is on postcodes, streetnames, and population.
 
-But as the file size is very big, it was not very handy to do all the auditing via the OSM file. This is why, after having imported the data into MongoDB, I started with some further auditing in order to check the data quality level. 
+As the file size is very big, it is not very handy to do all the auditing via the OSM file. This is why, after having imported the data into MongoDB, I start with some further auditing in order to check the data quality level. 
 
-Once satisfied with the MongoDB database, I used some queries to analyze the OSM data further and tried to find out interesting numbers or trends with the Paris Metroline data.
+When satisfied with the MongoDB database, I use some queries to analyze the OSM data further and try to find out interesting numbers or trends with the Paris Metroline data.
+
 
 
 ##Jupyter Notebook
