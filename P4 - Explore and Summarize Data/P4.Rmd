@@ -44,10 +44,14 @@ The following plots display the distribution of the main dataset features.
 ## Quality score distribution
 
 ```{r echo=FALSE}
-ggplot(data = df, aes(quality)) + geom_histogram(binwidth = 1)
+ggplot(data = df, aes(factor(quality))) + geom_bar()
 summary(df$quality)
-df$quality.class <- cut(df$quality,c(0,4,6,10)) # new variable to group wine quality levels 
-df$quality.fac <- factor(df$quality) # factoring the quality rates in order to use boxplots
+
+# new variable to group wine quality levels
+df$quality.class <- cut(df$quality,c(0,4,6,10))  
+
+# factoring the quality rates in order to use boxplots
+df$quality.fac <- factor(df$quality) 
 table(df$quality.class)
 ```
 
@@ -96,12 +100,14 @@ Out of curiosity, I created a new variable free.sulfur.dioxide.ratio to characte
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 df$free.sulfur.dioxide.ratio <- ifelse(df$total.sulfur.dioxide>0,
-                                       df$free.sulfur.dioxide/df$total.sulfur.dioxide, NA)
+                                       df$free.sulfur.dioxide/
+                                         df$total.sulfur.dioxide, NA)
 p1 <- ggplot(data = df, aes(free.sulfur.dioxide)) + geom_histogram() 
 p2 <- ggplot(data = df, aes(total.sulfur.dioxide)) + geom_histogram()
 p3 <- ggplot(data = df, aes(free.sulfur.dioxide.ratio)) + geom_histogram()
 grid.arrange(p1,p2,p3, ncol = 1)
-summary(df[c("free.sulfur.dioxide","total.sulfur.dioxide","free.sulfur.dioxide.ratio")])
+summary(df[c("free.sulfur.dioxide","total.sulfur.dioxide",
+             "free.sulfur.dioxide.ratio")])
 ```
 
 
@@ -179,10 +185,15 @@ df.subset <- df[, !(colnames(df) %in% c("X",
                                         "quality.class", 
                                         "quality.fac", 
                                         "free.sulfur.dioxide.ratio"))]
-names(df.subset)
+
+new_names <- c("fix.ac", "vol.ac", "cit.ac", "res.sug", 
+               "chlor.", "free.sulf", "total.sulf", "density", 
+               "pH", "sulph.", "alcohol", "quality")
+
+names(df.subset) <- new_names
 
 # Plotting features 2 by 2
-ggpairs(df.subset)
+ggpairs(df.subset) + theme(axis.text = element_blank())
 
 ```
 
@@ -212,12 +223,24 @@ Looking at the wine quality rates box plots, this feature seems to be correlated
 ## Acidity concentration vs quality ratings
 
 ```{r echo=FALSE}
-p1 <- ggplot(data = df, aes(x = quality.fac, y = fixed.acidity)) + geom_boxplot()
-p2 <- ggplot(data = df, aes(x = quality.fac, y = volatile.acidity)) + geom_boxplot()
-p3 <- ggplot(data = df, aes(x = quality.fac, y = citric.acid)) + geom_boxplot()
+p1 <- ggplot(data = df, aes(x = quality.fac, y = fixed.acidity)) + 
+  geom_boxplot() + geom_jitter(alpha=0.1) +  
+  geom_smooth(aes(quality-2, fixed.acidity),
+              method = "lm", se = FALSE,size=1)
+p2 <- ggplot(data = df, aes(x = quality.fac, y = volatile.acidity)) + 
+  geom_boxplot() + geom_jitter(alpha=0.1) +  
+  geom_smooth(aes(quality-2, volatile.acidity),
+              method = "lm", se = FALSE,size=1)
+p3 <- ggplot(data = df, aes(x = quality.fac, y = citric.acid)) + 
+  geom_boxplot() + geom_jitter(alpha=0.1) +  
+  geom_smooth(aes(quality-2, citric.acid),
+              method = "lm", se = FALSE,size=1)
 grid.arrange(p1,p2,p3,ncol=1)
 
-by(df[, c("fixed.acidity","volatile.acidity","citric.acid")],df$quality,summary)
+by(df[, c("fixed.acidity",
+          "volatile.acidity",
+          "citric.acid")],
+   df$quality,summary)
 ```
 
 There is a clear trend that links the different acidity concentration with wine quality.
@@ -229,8 +252,10 @@ There is a clear trend that links the different acidity concentration with wine 
 ## Density vs quality ratings
 
 ```{r echo=FALSE}
-ggplot(data = df, aes(x = quality.fac, y = density)) + geom_boxplot()
-
+ggplot(data = df, aes(x = quality.fac, y = density)) + 
+  geom_boxplot() + geom_jitter(alpha=0.2) +  
+  geom_smooth(aes(quality-2, density),
+              method = "lm", se = FALSE,size=1)
 by(df$density, df$quality, summary)
 ```
 
@@ -241,8 +266,10 @@ There seems to be a trend that negatively links the density with wine quality ra
 ## Alcohol vs quality ratings
 
 ```{r echo=FALSE}
-ggplot(data = df, aes(x = quality.fac, y = alcohol)) + geom_boxplot()
-
+ggplot(data = df, aes(x = quality.fac, y = alcohol)) +
+  geom_boxplot() + geom_jitter(alpha=0.2) +  
+  geom_smooth(aes(quality-2, alcohol),
+              method = "lm", se = FALSE,size=1)
 by(df$alcohol, df$quality, summary)
 ```
 
@@ -254,7 +281,10 @@ There seems to be a trend that positively links the alcohol concentration with w
 ## Sulphates vs quality ratings
 
 ```{r echo=FALSE}
-ggplot(data = df, aes(x = quality.fac, y = sulphates)) + geom_boxplot()
+ggplot(data = df, aes(x = quality.fac, y = sulphates)) + 
+  geom_boxplot() + geom_jitter(alpha=0.2) +  
+  geom_smooth(aes(quality-2, sulphates),
+              method = "lm", se = FALSE,size=1)
 
 by(df$sulphates, df$quality, summary)
 ```
@@ -267,9 +297,13 @@ There seems to be a trend that positively links the sulphates concentration with
 ## Acidity concentration vs pH
 
 ```{r, echo=FALSE}
-p1 <- ggplot(data = df, aes(x = pH, y = fixed.acidity)) + geom_point() + geom_smooth()
-p2 <- ggplot(data = df, aes(x = pH, y = volatile.acidity)) + geom_point() + geom_smooth()
-p3 <- ggplot(data = df, aes(x = pH, y = citric.acid)) + geom_point() + geom_smooth()
+p1 <- ggplot(data = df, aes(x = pH, y = fixed.acidity)) + 
+  geom_point(alpha=0.1) + geom_smooth()
+p2 <- ggplot(data = df, aes(x = pH, y = volatile.acidity)) + 
+  geom_point(alpha=0.1) + geom_smooth()
+p3 <- ggplot(data = df, aes(x = pH, y = citric.acid)) + 
+  geom_point(alpha=0.1) + geom_smooth()
+
 grid.arrange(p1,p2,p3,ncol=1)
 ```
 
@@ -279,7 +313,8 @@ Volatile acidity, on the other hand, does not seem to play an important role on 
 
 ## Fixed acidity and citric acidity
 ```{r echo=FALSE}
-ggplot(data = df, aes(x = fixed.acidity, y = citric.acid)) + geom_point() + geom_smooth()
+ggplot(data = df, aes(x = fixed.acidity, y = citric.acid)) + 
+  geom_point(alpha=0.2) + geom_smooth()
 cor.test(df$fixed.acidity,df$citric.acid)
 ```
 
@@ -287,7 +322,8 @@ As expected, citric acidity and fixed acidity are positively correlated. Maybe t
 
 ## Fixed acidity and density
 ```{r echo=FALSE}
-ggplot(data = df, aes(x = density, y = fixed.acidity)) + geom_point() + geom_smooth()
+ggplot(data = df, aes(x = density, y = fixed.acidity)) + 
+  geom_point(alpha=0.2) + geom_smooth()
 cor.test(df$fixed.acidity,df$density)
 ```
 
@@ -296,7 +332,8 @@ As expected, density and fixed acidity are positively correlated. The fixed acid
 
 ## Density vs Alcohol
 ```{r echo=FALSE}
-ggplot(data = df, aes(x = alcohol, y = density)) + geom_point() + geom_smooth()
+ggplot(data = df, aes(x = alcohol, y = density)) + 
+  geom_point(alpha=0.2) + geom_smooth()
 cor.test(df$alcohol, df$density)
 ```
 
@@ -304,7 +341,7 @@ As expected, alcohol concentration and density are negatively correlated. As alc
 
 ## Density vs Residual sugars
 ```{r echo=FALSE}
-ggplot(data = df, aes(x = residual.sugar, y = density)) + geom_point() + geom_smooth()
+ggplot(data = df, aes(x = residual.sugar, y = density)) + geom_point(alpha=0.2) + geom_smooth()
 cor.test(df$residual.sugar, df$density)
 ```
 
@@ -314,7 +351,8 @@ The correlation here is a bit more difficult to see, especialy in the densily po
 df.subset <- subset(df,
                     residual.sugar > quantile(df$residual.sugar,0.05) &
                       residual.sugar < quantile(df$residual.sugar,0.95))
-ggplot(data = df.subset, aes(x = residual.sugar, y = density)) + geom_point() + geom_smooth() 
+ggplot(data = df.subset, aes(x = residual.sugar, y = density)) + 
+  geom_point(alpha=0.2) + geom_smooth() 
 with(df.subset, cor.test(residual.sugar, density))
 ```
 
@@ -325,24 +363,26 @@ When focusing on the most frequent residual sugar observations, the correlation 
 ## Chloride and sulfates ?
 
 ```{r echo=FALSE}
-ggplot(data = df, aes(x = chlorides, y = sulphates)) + geom_point() + geom_smooth()
+ggplot(data = df, aes(x = chlorides, y = sulphates)) + 
+  geom_point(alpha=0.2) + geom_smooth()
 cor.test(df$chlorides, df$sulphates)
 ```
 
 The correlation here is difficult to see, especialy in the densily populated area. Let's use a log10 transformation to see it clearer.
 
 ```{r echo=FALSE}
-ggplot(data = df, aes(x = chlorides, y = sulphates)) + geom_point() + geom_smooth() +
-  scale_x_log10()
+ggplot(data = df, aes(x = chlorides, y = sulphates)) + 
+  geom_point(alpha=0.2) + geom_smooth() +  scale_x_log10()
 ```
 
 The correlation does not seem to be strong in the densely populated area. Let's focus on observations within the 5% / 95% quantiles.
 
 ```{r echo=FALSE}
-df.subset <- subset(df, 
-                    chlorides > quantile(df$chlorides,0.05) & chlorides < quantile(df$chlorides,0.95))
-ggplot(data = df.subset, aes(x = chlorides, y = sulphates)) + geom_point() + geom_smooth() + 
-  scale_x_log10()
+df.subset <- subset(df, chlorides > quantile(df$chlorides,0.05) & 
+                      chlorides < quantile(df$chlorides,0.95))
+ggplot(data = df.subset, aes(x = chlorides, y = sulphates)) + 
+  geom_point(alpha=0.2) + geom_smooth() + scale_x_log10()
+
 with(df.subset, cor.test(chlorides, sulphates))
 ```
 
@@ -394,9 +434,11 @@ The previous graphs were illustrating the different correlation existing between
 
 ## Volatile acidity, Citric acidity and Wine quality class
 
-```{r echo=FALSE}
-ggplot(data = df, aes(x = df$volatile.acidity, y = df$citric.acid)) + 
-  geom_point(aes(color=quality.class)) 
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(data = df, aes(volatile.acidity, citric.acid, color=quality.class)) + 
+  geom_point(alpha=0.5) +
+  geom_smooth(method = "lm", se = FALSE,size=1) +
+  ylim(c(0,0.8)) + xlim(c(0,1.2))
 ```
 
 Most of the best rated wines are located in the upper left corner of the graph, which could have been expected,  according to the correlations calculated in the previous chapter. 
@@ -406,9 +448,11 @@ But there is no clear separation to see between the well rated wines and the oth
 
 ## Alcohol concentration, Sulphates and Wine quality class
 
-```{r echo=FALSE}
-ggplot(data = df, aes(x = df$alcohol, y = df$sulphates)) + 
-  geom_point(aes(color=quality.class)) 
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(data = df, aes(alcohol, sulphates, color=quality.class)) + 
+  geom_point(alpha=0.5) +
+  geom_smooth(method = "lm", se = FALSE,size=1) +
+  ylim(c(0.25,1.25))
 ```
 
 Most of the best rated wines are located in the upper right corner of the graph, which could have been expected, according to the correlations calculated in the previous chapter.
@@ -418,9 +462,11 @@ But there is no clear separation to see between the well rated wines and the oth
 
 ## Density, Residual sugars and Wine quality class
 
-```{r echo=FALSE}
-ggplot(data = df, aes(x = df$density, y = df$residual.sugar)) + 
-  geom_point(aes(color=quality.class)) 
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(data = df, aes(density, residual.sugar, color=quality.class)) + 
+  geom_point(alpha=0.5) +
+  geom_smooth(method = "lm", se = FALSE,size=1) +
+  ylim(c(1,7.5))
 ```
 
 No clear distinction can be see here to split the good wines from the bad wines. This illustrates the relatively low correlation factors calculated in the previous chapter.
@@ -452,7 +498,10 @@ mtable(m1, m2, m3, m4, m5, m6)
 
 # Test the model on the test set
 truth <- factor(df_test$quality)
-prediction <- data.frame(round(predict(m6, newdata = df_test, interval="prediction", level = .95)))$fit
+prediction <- data.frame(round(predict(m6, 
+                                       newdata = df_test, 
+                                       interval="prediction", 
+                                       level = .95)))$fit
 prediction <- factor(prediction, levels=levels(truth))
 
 confusionMatrix(truth,prediction)
@@ -490,10 +539,8 @@ Maybe another model could be useful to handle the low number of observations tha
 
 ### Plot One
 ```{r echo=FALSE, Plot_One}
-ggplot(data = df, aes(quality)) + geom_histogram(binwidth = 1) +
-  xlab("Rating") + ggtitle("Wine Quality Rating Distribution") +
-  scale_x_continuous(breaks = seq(1, 8, 1)) 
-  
+ggplot(data = df, aes(factor(quality))) + geom_bar() +
+  xlab("Rating") + ggtitle("Wine Quality Rating Distribution")
 ```
 
 ### Description One
@@ -503,14 +550,23 @@ These ratings have been made by 3 different experts. As this is a subjective fea
 
 ### Plot Two
 ```{r echo=FALSE, Plot_Two}
-p1 <- ggplot(data = df, aes(x = quality.fac, y = fixed.acidity)) + geom_boxplot() +
+p1 <- ggplot(data = df, aes(x = quality.fac, y = fixed.acidity)) + 
+  geom_boxplot() + geom_jitter(alpha=0.1) + 
+  geom_smooth(aes(quality-2, fixed.acidity), method="lm", se=FALSE, size=1) +
   xlab("Quality rating") + ylab("fixed acidity [g/dm^3]")
-p2 <- ggplot(data = df, aes(x = quality.fac, y = volatile.acidity)) + geom_boxplot()+
+
+p2 <- ggplot(data = df, aes(x = quality.fac, y = volatile.acidity)) + 
+  geom_boxplot() + geom_jitter(alpha=0.1) + 
+  geom_smooth(aes(quality-2, volatile.acidity), method="lm", se=FALSE, size=1) +  
   xlab("Quality rating") + ylab("volatile acidity [g/dm^3]")
-p3 <- ggplot(data = df, aes(x = quality.fac, y = citric.acid)) + geom_boxplot()+
+
+p3 <- ggplot(data = df, aes(x = quality.fac, y = citric.acid)) + 
+  geom_boxplot() + geom_jitter(alpha=0.1) + 
+  geom_smooth(aes(quality-2, citric.acid), method="lm", se=FALSE, size=1) + 
   xlab("Quality rating") + ylab("citric acid [g/dm^3]")
 
-grid.arrange(p1,p2,p3,ncol=1, top="Quality ratings distribution for different acidity types")
+grid.arrange(p1,p2,p3,ncol=1, 
+             top="Quality ratings distribution for different acidity types")
 ```
 
 ### Description Two
@@ -520,12 +576,11 @@ It appears clearly that high quality ratings are generally correlated with high 
 
 ### Plot Three
 ```{r echo=FALSE, Plot_Three}
-ggplot(data = df, aes(x=density, y=alcohol)) + 
-  geom_point(aes(color=quality)) +
-  scale_color_continuous(low = "#DEEBF7", high="#3182BD") +
+ggplot(data = df, aes(x=density, y=alcohol, color=quality.fac)) + 
+  geom_point() + scale_color_brewer(type = "seq", palette = "Blues") +
+  geom_smooth(method="lm", se=FALSE, size=1) +
   xlab("Wine density [g/cm^3]") + ylab("Alcohol level [% by volume]")+
   ggtitle("Relation between Alcohol percentage, wine density, and quality ratings")
-
 
 ```
 
