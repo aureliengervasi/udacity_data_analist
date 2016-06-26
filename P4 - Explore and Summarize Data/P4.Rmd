@@ -24,7 +24,7 @@ df <- read.csv("e:/BigData/MOOC/Udacity - Data Analyst Nanoprogram/P4_Explore an
 
 # Question
 
-The goal of the following work is to explore this wine dataset in order to identify some hints about which chemicals play a role on wine quality ratings. 
+The goal of the following work is to explore the Red Wine Dataset from [Cortez et al., 2009] in order to identify some hints about which chemicals play a role on wine quality ratings. 
 
 # Univariate Plots Section
 
@@ -450,6 +450,7 @@ m5 <- update(m4, ~ . + volatile.acidity)
 m6 <- update(m5, ~ . + fixed.acidity)
 mtable(m1, m2, m3, m4, m5, m6)
 
+# Test the model on the test set
 truth <- factor(df_test$quality)
 prediction <- data.frame(round(predict(m6, newdata = df_test, interval="prediction", level = .95)))$fit
 prediction <- factor(prediction, levels=levels(truth))
