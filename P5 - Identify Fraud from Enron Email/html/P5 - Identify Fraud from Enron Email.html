@@ -180,9 +180,9 @@ div#notebook {
 <h2 id="Dataset">Dataset<a class="anchor-link" href="#Dataset">&#182;</a></h2><p>The dataset used in this project has been extracted by the Udacity team from the huge Enron dataset. The original Enron dataset contains data from about 150 users, mostly senior management of Enron, organized into folders. The corpus contains a total of about 500 000 messages. This data was originally made public, and posted to the web, by the Federal Energy Regulatory Commission during its investigation.</p>
 <p><a href="https://www.cs.cmu.edu/~./enron/">https://www.cs.cmu.edu/~./enron/</a></p>
 <p>The Udacity team extracted some useful features related to email correspondence for 145 users and enhanced it with financial data for these 145 users (salary, stock options, etc.).</p>
-<h2 id="Summary">Summary<a class="anchor-link" href="#Summary">&#182;</a></h2><p>The first part is dedicated to analyze the features, get insights about the dataset, and spot the main outliers. Out of this, a cleaner dataset is created including only the features that will be used by the machine learning algorithms.</p>
-<p>Different basic machine learning algorithms are then tested, with limited success. In order to limit overfitting, manual feature selection is implemented using a decision tree classifier to estimate the different feature importance. After testing, it appears that this manual feature selection has a limited impact on the performance. Hence, another approach is used in the rest of the project to reduce overfitting.</p>
-<p>Machine learning algorithms are very sensible to hyper parameters. These can for instance play a strong role on overfitting. In order to determine the best parameters for this Enron Dataset, a Grid Search Analysis is done on different Classifiers. The Grid Search Analysis is done using a f-score as scorer similar to the one calculated by the tester.py file.</p>
+<h2 id="Summary">Summary<a class="anchor-link" href="#Summary">&#182;</a></h2><p>The first part is dedicated to analyze the features, get insights about the dataset, and spot the main outliers. Some feature engineering is done by adding 3 new features built out of existing ones. Their impact on the classifier performance seems to be positive.</p>
+<p>Tree-based feature selection is implemented to reduce the number of features and limit the risk of overfitting. When calculating the impact of this selection on a RandomForest Classifier, it appears that the performance gain is also limited. As a consequence, the entire feature list is used in the rest of the work, combined with a Principal Component Analysis to reduce its dimensionality.</p>
+<p>Different basic machine learning algorithms are then tested, with limited success. These algorithms are very dependent from hyper parameters. These can for instance play a strong role on overfitting. In order to determine the best parameters for this Enron Dataset, a Grid Search Analysis is done on different Classifiers. The Grid Search Analysis is done using a f-score as scorer similar to the one calculated by the tester.py file.</p>
 <p>In order to take the best out of these Classifiers, feature preparation is integrated in a pipeline estimator. More specifically, features are first scaled with a MinMax Scaler, then their dimension is reduced with a Principal Component Analysis before supplying them to the Classification Algorithm.</p>
 <p>Each classifier performance is calculated with the test_classifier function from the tester.py file. This function conducts a 1000-folds cross validation with the given classifier and the given feature list. It prints out different performance metrics (accuracy, precision, recall, f-scores) that help us assess the Classifier performance.</p>
 <p>In the end, the best classifier that pops out is an optimized Logistic Regression Classifier using a L1 distance penalty. This is the algorithm that has been implemented in my poi_id.py file.</p>
@@ -195,7 +195,7 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[1]:</div>
+<div class="prompt input_prompt">In&nbsp;[15]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="kn">import</span> <span class="nn">sys</span>
@@ -304,10 +304,13 @@ div#notebook {
 
 <span class="c1"># features_list is a list of strings, each of which is a feature name.</span>
 <span class="c1"># The first feature must be &quot;poi&quot;.</span>
-<span class="n">features_list</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;poi&#39;</span><span class="p">,</span> <span class="s1">&#39;salary&#39;</span><span class="p">,</span> <span class="s1">&#39;total_payments&#39;</span><span class="p">,</span> <span class="s2">&quot;total_stock_value&quot;</span><span class="p">,</span> 
-                 <span class="s2">&quot;to_messages&quot;</span><span class="p">,</span> <span class="s2">&quot;shared_receipt_with_poi&quot;</span><span class="p">,</span> <span class="s2">&quot;from_this_person_to_poi&quot;</span><span class="p">,</span> 
-                 <span class="s2">&quot;from_poi_to_this_person&quot;</span><span class="p">,</span> <span class="s2">&quot;from_messages&quot;</span><span class="p">]</span>  
-<span class="k">print</span> <span class="s2">&quot;Features selected to be used by the Classifiers: &quot;</span>
+
+<span class="n">features_list</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;poi&#39;</span><span class="p">]</span>
+<span class="k">for</span> <span class="n">feat</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">feat</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;poi&#39;</span><span class="p">,</span> <span class="s1">&#39;email_address&#39;</span><span class="p">]:</span>
+        <span class="n">features_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">feat</span><span class="p">)</span>
+
+<span class="k">print</span> <span class="s2">&quot;Features selected to be used by the classifiers: &quot;</span>
 <span class="k">print</span> <span class="n">features_list</span>
 </pre></div>
 
@@ -399,8 +402,8 @@ Number of Nan values for long_term_incentive: 80 (54.8%)
 Number of Nan values for email_address: 35 (24.0%)
 Number of Nan values for from_poi_to_this_person: 60 (41.1%)
 
-Features selected to be used by the Classifiers: 
-[&apos;poi&apos;, &apos;salary&apos;, &apos;total_payments&apos;, &apos;total_stock_value&apos;, &apos;to_messages&apos;, &apos;shared_receipt_with_poi&apos;, &apos;from_this_person_to_poi&apos;, &apos;from_poi_to_this_person&apos;, &apos;from_messages&apos;]
+Features selected to be used by the classifiers: 
+[&apos;poi&apos;, &apos;salary&apos;, &apos;to_messages&apos;, &apos;deferral_payments&apos;, &apos;total_payments&apos;, &apos;exercised_stock_options&apos;, &apos;bonus&apos;, &apos;restricted_stock&apos;, &apos;shared_receipt_with_poi&apos;, &apos;restricted_stock_deferred&apos;, &apos;total_stock_value&apos;, &apos;expenses&apos;, &apos;loan_advances&apos;, &apos;from_messages&apos;, &apos;other&apos;, &apos;from_this_person_to_poi&apos;, &apos;director_fees&apos;, &apos;deferred_income&apos;, &apos;long_term_incentive&apos;, &apos;from_poi_to_this_person&apos;]
 </pre>
 </div>
 </div>
@@ -423,13 +426,6 @@ Features selected to be used by the Classifiers:
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <p>There are only 146 observations in the dataset, including potential outliers. Moreover, the classes allocation is skewed, as only 12% of the observations are PoI. It also appears that a lot of values are missing.</p>
-<p>A limited number of feature has been chosen to be used by the coming machine learning classifiers. There are several reasons for that:</p>
-<ul>
-<li>A lot of values are missing. They will be replaced by 0 by the classifiers. But the features having too much missing values may not bring a lot of information to the problem.</li>
-<li>Hence, I chose to use aggregated features, like total_payments or total_stock_value, which show a lower ratio of missing values.</li>
-<li>Also, the feature email address is text based. To process it in the coming classifier, I should transform it into boolean, categorical or numerical value. One option could have been to determine whether the email address is from inside or outside Enron.</li>
-<li>As the number of observation is limited, using too much different feature may not bring much but overfitting</li>
-</ul>
 
 </div>
 </div>
@@ -618,7 +614,7 @@ Name: from_poi_to_this_person, dtype: object
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Create-new-features">Create new features<a class="anchor-link" href="#Create-new-features">&#182;</a></h2>
+<h2 id="Working-on-the-features">Working on the features<a class="anchor-link" href="#Working-on-the-features">&#182;</a></h2><h3 id="Adding-new-features">Adding new features<a class="anchor-link" href="#Adding-new-features">&#182;</a></h3>
 </div>
 </div>
 </div>
@@ -672,16 +668,17 @@ Name: from_poi_to_this_person, dtype: object
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[23]:</div>
+<div class="prompt input_prompt">In&nbsp;[8]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="c1"># initial feature list to be compared with the extended one</span>
-<span class="n">features_list_init</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;poi&#39;</span><span class="p">,</span> <span class="s1">&#39;salary&#39;</span><span class="p">,</span> <span class="s1">&#39;total_payments&#39;</span><span class="p">,</span> <span class="s2">&quot;total_stock_value&quot;</span><span class="p">,</span> 
-                 <span class="s2">&quot;to_messages&quot;</span><span class="p">,</span> <span class="s2">&quot;shared_receipt_with_poi&quot;</span><span class="p">,</span> <span class="s2">&quot;from_this_person_to_poi&quot;</span><span class="p">,</span> 
-                 <span class="s2">&quot;from_poi_to_this_person&quot;</span><span class="p">,</span> <span class="s2">&quot;from_messages&quot;</span><span class="p">]</span>  
+<span class="n">features_list_init</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;poi&#39;</span><span class="p">]</span>
+<span class="k">for</span> <span class="n">feat</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">feat</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;poi&#39;</span><span class="p">,</span> <span class="s1">&#39;email_address&#39;</span><span class="p">]:</span>
+        <span class="n">features_list_init</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">feat</span><span class="p">)</span>
 
-<span class="c1"># Using the standard Logistic Regression classifier to study the impact of adding these new features</span>
-<span class="n">clf</span> <span class="o">=</span> <span class="n">LogisticRegression</span><span class="p">(</span><span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+<span class="c1"># Using a Random Forest Classifier to study the impact of adding these new features</span>
+<span class="n">clf</span> <span class="o">=</span> <span class="n">RandomForestClassifier</span><span class="p">(</span><span class="n">class_weight</span><span class="o">=</span><span class="s1">&#39;balanced&#39;</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
 <span class="k">print</span> <span class="s2">&quot;Classification performance with the initial feature list: &quot;</span>
 <span class="k">print</span> <span class="n">features_list_init</span>
 <span class="n">test_classifier</span><span class="p">(</span><span class="n">clf</span><span class="p">,</span> <span class="n">my_dataset</span><span class="p">,</span> <span class="n">features_list_init</span><span class="p">)</span>
@@ -702,22 +699,24 @@ Name: from_poi_to_this_person, dtype: object
 <div class="output_area"><div class="prompt"></div>
 <div class="output_subarea output_stream output_stdout output_text">
 <pre>Classification performance with the initial feature list: 
-[&apos;poi&apos;, &apos;salary&apos;, &apos;total_payments&apos;, &apos;total_stock_value&apos;, &apos;to_messages&apos;, &apos;shared_receipt_with_poi&apos;, &apos;from_this_person_to_poi&apos;, &apos;from_poi_to_this_person&apos;, &apos;from_messages&apos;]
-LogisticRegression(C=1.0, class_weight=None, dual=False, fit_intercept=True,
-          intercept_scaling=1, max_iter=100, multi_class=&apos;ovr&apos;, n_jobs=1,
-          penalty=&apos;l2&apos;, random_state=42, solver=&apos;liblinear&apos;, tol=0.0001,
-          verbose=0, warm_start=False)
-	Accuracy: 0.62793	Precision: 0.04172	Recall: 0.08150	F1: 0.05519	F2: 0.06845
-	Total predictions: 15000	True positives:  163	False positives: 3744	False negatives: 1837	True negatives: 9256
+[&apos;poi&apos;, &apos;salary&apos;, &apos;to_messages&apos;, &apos;deferral_payments&apos;, &apos;total_payments&apos;, &apos;exercised_stock_options&apos;, &apos;bonus&apos;, &apos;restricted_stock&apos;, &apos;shared_receipt_with_poi&apos;, &apos;restricted_stock_deferred&apos;, &apos;total_stock_value&apos;, &apos;expenses&apos;, &apos;loan_advances&apos;, &apos;from_messages&apos;, &apos;other&apos;, &apos;from_this_person_to_poi&apos;, &apos;director_fees&apos;, &apos;deferred_income&apos;, &apos;long_term_incentive&apos;, &apos;from_poi_to_this_person&apos;]
+RandomForestClassifier(bootstrap=True, class_weight=&apos;balanced&apos;,
+            criterion=&apos;gini&apos;, max_depth=None, max_features=&apos;auto&apos;,
+            max_leaf_nodes=None, min_samples_leaf=1, min_samples_split=2,
+            min_weight_fraction_leaf=0.0, n_estimators=10, n_jobs=1,
+            oob_score=False, random_state=42, verbose=0, warm_start=False)
+	Accuracy: 0.85680	Precision: 0.33772	Recall: 0.07700	F1: 0.12541	F2: 0.09106
+	Total predictions: 15000	True positives:  154	False positives:  302	False negatives: 1846	True negatives: 12698
 
 Classification performance with the extended feature list: 
-[&apos;poi&apos;, &apos;salary&apos;, &apos;total_payments&apos;, &apos;total_stock_value&apos;, &apos;to_messages&apos;, &apos;shared_receipt_with_poi&apos;, &apos;from_this_person_to_poi&apos;, &apos;from_poi_to_this_person&apos;, &apos;from_messages&apos;, &apos;to_messages_poi_ratio&apos;, &apos;from_messages_poi_ratio&apos;, &apos;shared_messages_poi_ratio&apos;]
-LogisticRegression(C=1.0, class_weight=None, dual=False, fit_intercept=True,
-          intercept_scaling=1, max_iter=100, multi_class=&apos;ovr&apos;, n_jobs=1,
-          penalty=&apos;l2&apos;, random_state=42, solver=&apos;liblinear&apos;, tol=0.0001,
-          verbose=0, warm_start=False)
-	Accuracy: 0.62880	Precision: 0.04044	Recall: 0.07850	F1: 0.05338	F2: 0.06607
-	Total predictions: 15000	True positives:  157	False positives: 3725	False negatives: 1843	True negatives: 9275
+[&apos;poi&apos;, &apos;salary&apos;, &apos;to_messages&apos;, &apos;deferral_payments&apos;, &apos;total_payments&apos;, &apos;exercised_stock_options&apos;, &apos;bonus&apos;, &apos;restricted_stock&apos;, &apos;shared_receipt_with_poi&apos;, &apos;restricted_stock_deferred&apos;, &apos;total_stock_value&apos;, &apos;expenses&apos;, &apos;loan_advances&apos;, &apos;from_messages&apos;, &apos;other&apos;, &apos;from_this_person_to_poi&apos;, &apos;director_fees&apos;, &apos;deferred_income&apos;, &apos;long_term_incentive&apos;, &apos;from_poi_to_this_person&apos;, &apos;to_messages_poi_ratio&apos;, &apos;from_messages_poi_ratio&apos;, &apos;shared_messages_poi_ratio&apos;]
+RandomForestClassifier(bootstrap=True, class_weight=&apos;balanced&apos;,
+            criterion=&apos;gini&apos;, max_depth=None, max_features=&apos;auto&apos;,
+            max_leaf_nodes=None, min_samples_leaf=1, min_samples_split=2,
+            min_weight_fraction_leaf=0.0, n_estimators=10, n_jobs=1,
+            oob_score=False, random_state=42, verbose=0, warm_start=False)
+	Accuracy: 0.86540	Precision: 0.48148	Recall: 0.12350	F1: 0.19658	F2: 0.14507
+	Total predictions: 15000	True positives:  247	False positives:  266	False negatives: 1753	True negatives: 12734
 
 </pre>
 </div>
@@ -732,7 +731,202 @@ LogisticRegression(C=1.0, class_weight=None, dual=False, fit_intercept=True,
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Apparently, adding these new features does not seem to provide a lot more of usable information. But tuning the hyper parameters may increase the usefulness of these added features</p>
+<p>Apparently, adding these new features seems to provide more of usable information. Tuning the hyper parameters mayeven increase the usefulness of these added features.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Tree-based-Feature-Selection">Tree-based Feature Selection<a class="anchor-link" href="#Tree-based-Feature-Selection">&#182;</a></h3>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>The following chunk of code runs a random forest classifier to determine each feature importance ratio. I use a 100-folds stratified shuffle split in order to avoid overfitting issues by cross-validating my selection.</p>
+<p>If a feature importance ratio is lower than 1%, the feature is deleted from the features list. Then the algorithm restarts with the new features list, until there are only important features left.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[28]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="c1"># features list to be reduced</span>
+<span class="n">features_list_selected</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">features_list</span><span class="p">)</span>
+<span class="k">print</span> <span class="n">features_list_selected</span>
+
+<span class="c1"># StratifiedShuffleSplit</span>
+
+<span class="n">n_feat_del</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">stop</span> <span class="o">=</span> <span class="bp">False</span>
+<span class="k">while</span> <span class="ow">not</span><span class="p">(</span><span class="n">stop</span><span class="p">):</span>
+    <span class="n">n_feat_del_ini</span> <span class="o">=</span> <span class="n">n_feat_del</span>
+    <span class="c1"># Extract features and labels from dataset for local testing</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">featureFormat</span><span class="p">(</span><span class="n">my_dataset</span><span class="p">,</span> <span class="n">features_list_selected</span><span class="p">,</span> <span class="n">sort_keys</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">labels_sel</span><span class="p">,</span> <span class="n">features_sel</span> <span class="o">=</span> <span class="n">targetFeatureSplit</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    
+    <span class="c1"># Using a 100-folds stratified shuffle split to to feature selection with cross-validation</span>
+    <span class="n">folds</span> <span class="o">=</span> <span class="mi">100</span>
+    <span class="n">cv</span> <span class="o">=</span> <span class="n">StratifiedShuffleSplit</span><span class="p">(</span><span class="n">labels_sel</span><span class="p">,</span> <span class="n">folds</span><span class="p">,</span> <span class="n">random_state</span> <span class="o">=</span> <span class="mi">42</span><span class="p">)</span>
+    
+    <span class="n">feat_imp</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">features_sel</span><span class="p">))]</span>
+    <span class="k">for</span> <span class="n">train_idx</span><span class="p">,</span> <span class="n">test_idx</span> <span class="ow">in</span> <span class="n">cv</span><span class="p">:</span>
+        <span class="n">features_train</span> <span class="o">=</span> <span class="p">[</span><span class="n">features_sel</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">train_idx</span><span class="p">]</span>
+        <span class="n">features_test</span>  <span class="o">=</span> <span class="p">[</span><span class="n">features_sel</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">test_idx</span><span class="p">]</span>
+        <span class="n">labels_train</span>   <span class="o">=</span> <span class="p">[</span><span class="n">labels_sel</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">train_idx</span><span class="p">]</span>
+        <span class="n">labels_test</span>    <span class="o">=</span> <span class="p">[</span><span class="n">labels_sel</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">test_idx</span><span class="p">]</span>
+
+        <span class="c1"># Choose the most important features with a random forest classifier</span>
+        <span class="n">clf</span> <span class="o">=</span> <span class="n">RandomForestClassifier</span><span class="p">(</span><span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+        <span class="n">clf</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">features_train</span><span class="p">,</span> <span class="n">labels_train</span><span class="p">)</span>
+        <span class="n">feat_imp</span> <span class="o">=</span> <span class="p">[</span><span class="n">feat_imp</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">clf</span><span class="o">.</span><span class="n">feature_importances_</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">/</span><span class="n">folds</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">clf</span><span class="o">.</span><span class="n">feature_importances_</span><span class="p">))]</span>
+        
+    <span class="k">print</span>
+    <span class="k">print</span> <span class="s2">&quot;deleting features if their importance is lower than 0.01%&quot;</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">feat_imp</span><span class="p">)):</span>
+        <span class="k">if</span> <span class="n">feat_imp</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mf">0.01</span><span class="p">:</span>
+            <span class="n">n_feat_del</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">print</span> <span class="s2">&quot;deleting &quot;</span><span class="p">,</span> <span class="n">features_list_selected</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">],</span> <span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="n">clf</span><span class="o">.</span><span class="n">feature_importances_</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="k">del</span> <span class="n">features_list_selected</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">n_feat_del_ini</span> <span class="o">==</span> <span class="n">n_feat_del</span><span class="p">:</span>
+        <span class="k">print</span> <span class="s2">&quot;End&quot;</span>
+        <span class="n">stop</span> <span class="o">=</span> <span class="bp">True</span>
+
+<span class="k">print</span>
+<span class="k">print</span> <span class="s2">&quot;Tree-based selected list of features&quot;</span>
+<span class="k">print</span> <span class="n">features_list_selected</span>
+    
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area"><div class="prompt"></div>
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>[&apos;poi&apos;, &apos;salary&apos;, &apos;to_messages&apos;, &apos;deferral_payments&apos;, &apos;total_payments&apos;, &apos;exercised_stock_options&apos;, &apos;bonus&apos;, &apos;restricted_stock&apos;, &apos;shared_receipt_with_poi&apos;, &apos;restricted_stock_deferred&apos;, &apos;total_stock_value&apos;, &apos;expenses&apos;, &apos;loan_advances&apos;, &apos;from_messages&apos;, &apos;other&apos;, &apos;from_this_person_to_poi&apos;, &apos;director_fees&apos;, &apos;deferred_income&apos;, &apos;long_term_incentive&apos;, &apos;from_poi_to_this_person&apos;, &apos;to_messages_poi_ratio&apos;, &apos;from_messages_poi_ratio&apos;, &apos;shared_messages_poi_ratio&apos;]
+
+deleting features if their importance is lower than 0.01%
+deleting  deferral_payments   0.0096149068323
+deleting  total_stock_value   0.0
+deleting  other   0.0
+deleting  from_poi_to_this_person   0.0
+
+deleting features if their importance is lower than 0.01%
+deleting  restricted_stock_deferred   0.0099537037037
+deleting  from_messages   0.0
+deleting  long_term_incentive   0.0
+
+deleting features if their importance is lower than 0.01%
+deleting  loan_advances   0.0076171875
+deleting  deferred_income   0.0
+
+deleting features if their importance is lower than 0.01%
+deleting  director_fees   0.0
+
+deleting features if their importance is lower than 0.01%
+End
+
+Tree-based selected list of features
+[&apos;poi&apos;, &apos;salary&apos;, &apos;to_messages&apos;, &apos;total_payments&apos;, &apos;exercised_stock_options&apos;, &apos;bonus&apos;, &apos;restricted_stock&apos;, &apos;shared_receipt_with_poi&apos;, &apos;expenses&apos;, &apos;from_this_person_to_poi&apos;, &apos;to_messages_poi_ratio&apos;, &apos;from_messages_poi_ratio&apos;, &apos;shared_messages_poi_ratio&apos;]
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>The performance brought by this selected features list is then compared to the one brought by the entire feature list using a Random Forest Classifier.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[29]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">clf</span> <span class="o">=</span> <span class="n">RandomForestClassifier</span><span class="p">(</span><span class="n">class_weight</span><span class="o">=</span><span class="s1">&#39;balanced&#39;</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+<span class="k">print</span> <span class="s2">&quot;testing: &quot;</span><span class="p">,</span> <span class="n">clf</span>
+
+<span class="c1"># test the classifier with the testing function provided</span>
+<span class="k">print</span> <span class="s2">&quot;Random Forest trained with the entire feature list: &quot;</span>
+<span class="n">test_classifier</span><span class="p">(</span><span class="n">clf</span><span class="p">,</span> <span class="n">my_dataset</span><span class="p">,</span> <span class="n">features_list</span><span class="p">)</span>
+
+<span class="k">print</span> <span class="s2">&quot;Random Forest trained with the Tree-based selected feature list: &quot;</span>
+<span class="n">test_classifier</span><span class="p">(</span><span class="n">clf</span><span class="p">,</span> <span class="n">my_dataset</span><span class="p">,</span> <span class="n">features_list_selected</span><span class="p">)</span>
+<span class="k">print</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area"><div class="prompt"></div>
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>testing:  RandomForestClassifier(bootstrap=True, class_weight=&apos;balanced&apos;,
+            criterion=&apos;gini&apos;, max_depth=None, max_features=&apos;auto&apos;,
+            max_leaf_nodes=None, min_samples_leaf=1, min_samples_split=2,
+            min_weight_fraction_leaf=0.0, n_estimators=10, n_jobs=1,
+            oob_score=False, random_state=42, verbose=0, warm_start=False)
+Random Forest trained with the entire feature list: 
+RandomForestClassifier(bootstrap=True, class_weight=&apos;balanced&apos;,
+            criterion=&apos;gini&apos;, max_depth=None, max_features=&apos;auto&apos;,
+            max_leaf_nodes=None, min_samples_leaf=1, min_samples_split=2,
+            min_weight_fraction_leaf=0.0, n_estimators=10, n_jobs=1,
+            oob_score=False, random_state=42, verbose=0, warm_start=False)
+	Accuracy: 0.86540	Precision: 0.48148	Recall: 0.12350	F1: 0.19658	F2: 0.14507
+	Total predictions: 15000	True positives:  247	False positives:  266	False negatives: 1753	True negatives: 12734
+
+Random Forest trained with the Tree-based selected feature list: 
+RandomForestClassifier(bootstrap=True, class_weight=&apos;balanced&apos;,
+            criterion=&apos;gini&apos;, max_depth=None, max_features=&apos;auto&apos;,
+            max_leaf_nodes=None, min_samples_leaf=1, min_samples_split=2,
+            min_weight_fraction_leaf=0.0, n_estimators=10, n_jobs=1,
+            oob_score=False, random_state=42, verbose=0, warm_start=False)
+	Accuracy: 0.86300	Precision: 0.45299	Recall: 0.13250	F1: 0.20503	F2: 0.15434
+	Total predictions: 15000	True positives:  265	False positives:  320	False negatives: 1735	True negatives: 12680
+
+
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Using this feature selection seems to only slightly increase the performance for the standard random forest classifier.</p>
+<p>For the rest of my work, <strong>I will continue with the entire features list</strong>, but I will also implement a Principal Component Analysis to reduce the dimensionnality of my features and tackle the overfitting risk.</p>
 
 </div>
 </div>
@@ -757,11 +951,23 @@ LogisticRegression(C=1.0, class_weight=None, dual=False, fit_intercept=True,
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[7]:</div>
+<div class="prompt input_prompt">In&nbsp;[10]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="k">for</span> <span class="n">clf</span> <span class="ow">in</span> <span class="p">[</span><span class="n">SVC</span><span class="p">(),</span> <span class="n">RandomForestClassifier</span><span class="p">(),</span> <span class="n">LogisticRegression</span><span class="p">()]:</span>
-    <span class="k">print</span> <span class="s2">&quot;testing: &quot;</span><span class="p">,</span> <span class="n">clf</span>
+<div class=" highlight hl-ipython2"><pre><span></span><span class="c1"># Creating a pipeline to include scaling when using SVC</span>
+<span class="n">estimators_svc</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">(</span><span class="s1">&#39;scaler&#39;</span><span class="p">,</span><span class="n">MinMaxScaler</span><span class="p">()),</span>
+    <span class="p">(</span><span class="s1">&#39;svc&#39;</span><span class="p">,</span> <span class="n">SVC</span><span class="p">())]</span>
+<span class="n">pipe_svc</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">(</span><span class="n">estimators_svc</span><span class="p">)</span>
+
+<span class="c1"># Creating a pipeline to include scaling when using Logistic regression</span>
+<span class="n">estimators_logreg</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">(</span><span class="s1">&#39;scaler&#39;</span><span class="p">,</span><span class="n">MinMaxScaler</span><span class="p">()),</span>
+    <span class="p">(</span><span class="s1">&#39;svc&#39;</span><span class="p">,</span> <span class="n">LogisticRegression</span><span class="p">())]</span>
+<span class="n">pipe_logreg</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">(</span><span class="n">estimators_logreg</span><span class="p">)</span>
+
+
+<span class="k">for</span> <span class="n">clf</span> <span class="ow">in</span> <span class="p">[</span><span class="n">pipe_svc</span><span class="p">,</span> <span class="n">RandomForestClassifier</span><span class="p">(),</span> <span class="n">pipe_logreg</span><span class="p">]:</span>
     <span class="c1"># test the classifier with the testing function provided</span>
     <span class="c1"># a 1000-folds cross-validation is done and different metrics are calculated (accuracy, precision, recall, custom f-scores)</span>
     <span class="c1"># to assess the classifier performance.</span>
@@ -780,18 +986,18 @@ LogisticRegression(C=1.0, class_weight=None, dual=False, fit_intercept=True,
 
 <div class="output_area"><div class="prompt"></div>
 <div class="output_subarea output_stream output_stdout output_text">
-<pre>testing:  SVC(C=1.0, cache_size=200, class_weight=None, coef0=0.0,
+<pre>testing:  Pipeline(steps=[(&apos;scaler&apos;, MinMaxScaler(copy=True, feature_range=(0, 1))), (&apos;svc&apos;, SVC(C=1.0, cache_size=200, class_weight=None, coef0=0.0,
   decision_function_shape=None, degree=3, gamma=&apos;auto&apos;, kernel=&apos;rbf&apos;,
   max_iter=-1, probability=False, random_state=None, shrinking=True,
-  tol=0.001, verbose=False)
+  tol=0.001, verbose=False))])
 true negatives:  13000
 false negatives:  2000
 false positives:  0
 true positives:  0
-Got a divide by zero when trying out: SVC(C=1.0, cache_size=200, class_weight=None, coef0=0.0,
+Got a divide by zero when trying out: Pipeline(steps=[(&apos;scaler&apos;, MinMaxScaler(copy=True, feature_range=(0, 1))), (&apos;svc&apos;, SVC(C=1.0, cache_size=200, class_weight=None, coef0=0.0,
   decision_function_shape=None, degree=3, gamma=&apos;auto&apos;, kernel=&apos;rbf&apos;,
   max_iter=-1, probability=False, random_state=None, shrinking=True,
-  tol=0.001, verbose=False)
+  tol=0.001, verbose=False))])
 Precision or recall may be undefined due to a lack of true positive predicitons.
 
 testing:  RandomForestClassifier(bootstrap=True, class_weight=None, criterion=&apos;gini&apos;,
@@ -806,20 +1012,20 @@ RandomForestClassifier(bootstrap=True, class_weight=None, criterion=&apos;gini&a
             min_weight_fraction_leaf=0.0, n_estimators=10, n_jobs=1,
             oob_score=False, random_state=None, verbose=0,
             warm_start=False)
-	Accuracy: 0.85007	Precision: 0.32189	Recall: 0.11250	F1: 0.16673	F2: 0.12933
-	Total predictions: 15000	True positives:  225	False positives:  474	False negatives: 1775	True negatives: 12526
+	Accuracy: 0.86080	Precision: 0.42834	Recall: 0.13150	F1: 0.20122	F2: 0.15266
+	Total predictions: 15000	True positives:  263	False positives:  351	False negatives: 1737	True negatives: 12649
 
 
-testing:  LogisticRegression(C=1.0, class_weight=None, dual=False, fit_intercept=True,
+testing:  Pipeline(steps=[(&apos;scaler&apos;, MinMaxScaler(copy=True, feature_range=(0, 1))), (&apos;svc&apos;, LogisticRegression(C=1.0, class_weight=None, dual=False, fit_intercept=True,
           intercept_scaling=1, max_iter=100, multi_class=&apos;ovr&apos;, n_jobs=1,
           penalty=&apos;l2&apos;, random_state=None, solver=&apos;liblinear&apos;, tol=0.0001,
-          verbose=0, warm_start=False)
-LogisticRegression(C=1.0, class_weight=None, dual=False, fit_intercept=True,
+          verbose=0, warm_start=False))])
+Pipeline(steps=[(&apos;scaler&apos;, MinMaxScaler(copy=True, feature_range=(0, 1))), (&apos;svc&apos;, LogisticRegression(C=1.0, class_weight=None, dual=False, fit_intercept=True,
           intercept_scaling=1, max_iter=100, multi_class=&apos;ovr&apos;, n_jobs=1,
           penalty=&apos;l2&apos;, random_state=None, solver=&apos;liblinear&apos;, tol=0.0001,
-          verbose=0, warm_start=False)
-	Accuracy: 0.62880	Precision: 0.04044	Recall: 0.07850	F1: 0.05338	F2: 0.06607
-	Total predictions: 15000	True positives:  157	False positives: 3725	False negatives: 1843	True negatives: 9275
+          verbose=0, warm_start=False))])
+	Accuracy: 0.86947	Precision: 0.55250	Recall: 0.11050	F1: 0.18417	F2: 0.13155
+	Total predictions: 15000	True positives:  221	False positives:  179	False negatives: 1779	True negatives: 12821
 
 
 </pre>
@@ -835,8 +1041,8 @@ LogisticRegression(C=1.0, class_weight=None, dual=False, fit_intercept=True,
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Using the standard classification algorithms, without scaling, dimensionality reduction ,or hyper parameter tuning does not provide a high level of performance.</p>
-<p>The Random Forest classifier gives the best results, but as it is an ensemble classifier, it is better suited to tackle overfitting per default.</p>
+<p>Using the standard classification algorithms, without scaling, dimensionality reduction ,or hyper parameter tuning does not provide a sufficient level of performance.</p>
+<p>The Random Forest classifier gives the best results when looking at the f1 and f2 scores. But as it is an ensemble classifier, it may be better suited to tackle overfitting per default.</p>
 <p>The SVC classifier is not well performing as it classifies all the users as non-PoI.</p>
 
 </div>
@@ -847,152 +1053,37 @@ LogisticRegression(C=1.0, class_weight=None, dual=False, fit_intercept=True,
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h3 id="Feature-Selection-with-Random-Forest,-Standard-SVC,-Random-Forest-and-Logistic-Regression">Feature Selection with Random Forest, Standard SVC, Random Forest and Logistic Regression<a class="anchor-link" href="#Feature-Selection-with-Random-Forest,-Standard-SVC,-Random-Forest-and-Logistic-Regression">&#182;</a></h3>
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[8]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="c1"># Choose the most important features with a random forest classifier</span>
-<span class="n">clf</span> <span class="o">=</span> <span class="n">RandomForestClassifier</span><span class="p">(</span><span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
-<span class="n">clf</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">features</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span>
-
-<span class="k">print</span> <span class="s2">&quot;feature importance higher than 10%&quot;</span>
-<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">clf</span><span class="o">.</span><span class="n">feature_importances_</span><span class="p">)):</span>
-    <span class="k">if</span> <span class="n">clf</span><span class="o">.</span><span class="n">feature_importances_</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">0.1</span><span class="p">:</span>
-        <span class="k">print</span> <span class="n">i</span><span class="p">,</span> <span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="n">features_list</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">],</span> <span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="n">clf</span><span class="o">.</span><span class="n">feature_importances_</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
-<span class="k">print</span>
-
-
-<span class="n">features_list_selected</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;poi&#39;</span><span class="p">,</span> <span class="s1">&#39;salary&#39;</span><span class="p">,</span> <span class="s2">&quot;total_stock_value&quot;</span><span class="p">,</span> 
-                          <span class="s2">&quot;from_poi_to_this_person&quot;</span><span class="p">,</span> <span class="s2">&quot;to_messages_poi_ratio&quot;</span><span class="p">,</span>
-                          <span class="s2">&quot;shared_messages_poi_ratio&quot;</span><span class="p">]</span> 
-
-
-<span class="k">for</span> <span class="n">clf</span> <span class="ow">in</span> <span class="p">[</span><span class="n">SVC</span><span class="p">(),</span> <span class="n">RandomForestClassifier</span><span class="p">(),</span> <span class="n">LogisticRegression</span><span class="p">()]:</span>
-    <span class="k">print</span> <span class="s2">&quot;testing: &quot;</span><span class="p">,</span> <span class="n">clf</span>
-    <span class="c1"># test the classifier with the testing function provided</span>
-    <span class="c1"># a 1000-folds cross-validation is done and different metrics are calculated (accuracy, precision, recall, custom f-scores)</span>
-    <span class="c1"># to assess the classifier performance.</span>
-    <span class="n">test_classifier</span><span class="p">(</span><span class="n">clf</span><span class="p">,</span> <span class="n">my_dataset</span><span class="p">,</span> <span class="n">features_list_selected</span><span class="p">)</span>
-    <span class="k">print</span>
-     
-</pre></div>
-
-</div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area"><div class="prompt"></div>
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>feature importance higher than 10%
-0   salary   0.138607693197
-2   total_stock_value   0.204590091907
-6   from_poi_to_this_person   0.10834610424
-8   to_messages_poi_ratio   0.110092706325
-10   shared_messages_poi_ratio   0.134299919318
-
-testing:  SVC(C=1.0, cache_size=200, class_weight=None, coef0=0.0,
-  decision_function_shape=None, degree=3, gamma=&apos;auto&apos;, kernel=&apos;rbf&apos;,
-  max_iter=-1, probability=False, random_state=None, shrinking=True,
-  tol=0.001, verbose=False)
-true negatives:  12000
-false negatives:  2000
-false positives:  0
-true positives:  0
-Got a divide by zero when trying out: SVC(C=1.0, cache_size=200, class_weight=None, coef0=0.0,
-  decision_function_shape=None, degree=3, gamma=&apos;auto&apos;, kernel=&apos;rbf&apos;,
-  max_iter=-1, probability=False, random_state=None, shrinking=True,
-  tol=0.001, verbose=False)
-Precision or recall may be undefined due to a lack of true positive predicitons.
-
-testing:  RandomForestClassifier(bootstrap=True, class_weight=None, criterion=&apos;gini&apos;,
-            max_depth=None, max_features=&apos;auto&apos;, max_leaf_nodes=None,
-            min_samples_leaf=1, min_samples_split=2,
-            min_weight_fraction_leaf=0.0, n_estimators=10, n_jobs=1,
-            oob_score=False, random_state=None, verbose=0,
-            warm_start=False)
-RandomForestClassifier(bootstrap=True, class_weight=None, criterion=&apos;gini&apos;,
-            max_depth=None, max_features=&apos;auto&apos;, max_leaf_nodes=None,
-            min_samples_leaf=1, min_samples_split=2,
-            min_weight_fraction_leaf=0.0, n_estimators=10, n_jobs=1,
-            oob_score=False, random_state=None, verbose=0,
-            warm_start=False)
-	Accuracy: 0.83943	Precision: 0.36752	Recall: 0.17200	F1: 0.23433	F2: 0.19248
-	Total predictions: 14000	True positives:  344	False positives:  592	False negatives: 1656	True negatives: 11408
-
-
-testing:  LogisticRegression(C=1.0, class_weight=None, dual=False, fit_intercept=True,
-          intercept_scaling=1, max_iter=100, multi_class=&apos;ovr&apos;, n_jobs=1,
-          penalty=&apos;l2&apos;, random_state=None, solver=&apos;liblinear&apos;, tol=0.0001,
-          verbose=0, warm_start=False)
-LogisticRegression(C=1.0, class_weight=None, dual=False, fit_intercept=True,
-          intercept_scaling=1, max_iter=100, multi_class=&apos;ovr&apos;, n_jobs=1,
-          penalty=&apos;l2&apos;, random_state=None, solver=&apos;liblinear&apos;, tol=0.0001,
-          verbose=0, warm_start=False)
-	Accuracy: 0.58107	Precision: 0.04816	Recall: 0.10300	F1: 0.06564	F2: 0.08390
-	Total predictions: 14000	True positives:  206	False positives: 4071	False negatives: 1794	True negatives: 7929
-
-
-</pre>
-</div>
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>I used the Random Forest classifier to determine the most useful features in order to proceed to a manual feature selection. I only kept the features providing more than 10% of importance.</p>
-<p>Using this feature selection slightly increases the results for the standard random forest classifier and the logistic regression classifier.</p>
-<p>One solution would be to move further with these selected features, but, I preferred to use next a dimensionality reduction approach with Principal Component Analysis to tackle the overfitting risk.</p>
-<p>The SVC classifier is still not well performing as it classifies all the users as non-PoI.</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Hyperparameter-tuning">Hyperparameter tuning<a class="anchor-link" href="#Hyperparameter-tuning">&#182;</a></h2><p>In the following code chunks, I try to optimize hyper parameters of different classification algorithms using the Grid Search function from the Sickit Learn package.</p>
-<p>The Grid Search approach trains a classifier for each hyper parameter combination of values and conducts a 10-folds cross-validation on the provided data set to select the best estimator.  I used then the test_classifier function from the tester.py file to calculate the classifier performance.</p>
+<h2 id="Hyperparameter-tuning">Hyperparameter tuning<a class="anchor-link" href="#Hyperparameter-tuning">&#182;</a></h2><p>Machine Learning algorithms are very dependent from hyper parameters. These paramaters can for instance play a strong role when dealing with overfitting. The goal of this chapter is to optimize the main parameters of the previous algorithms in order to increase the classification performance. In order to determine the best parameters for this Enron Dataset, a Grid Search Analysis is done on different Classifiers.</p>
+<p>The Grid Search approach trains a classifier for each hyper parameter combination of values and conducts a 10-folds cross-validation on the provided data set to select the best estimator. An f-score similar to the one calculated by the tester.py file is used to compare the different classifiers. I used then the test_classifier function from the tester.py file to calculate the classifier performance.</p>
 <p>In addition to optimizing the Classification algorithm itself, I also work on pipeline estimators that also include a MinMax Scaler and a PCA transformation to increase the classification algorithm performance.</p>
-<h3 id="Grid-Search-Optimization:-SVC">Grid Search Optimization: SVC<a class="anchor-link" href="#Grid-Search-Optimization:-SVC">&#182;</a></h3>
+<h3 id="Grid-Search-Optimization:-Scaling-and-SVC">Grid Search Optimization: Scaling and SVC<a class="anchor-link" href="#Grid-Search-Optimization:-Scaling-and-SVC">&#182;</a></h3>
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[9]:</div>
+<div class="prompt input_prompt">In&nbsp;[11]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="k">print</span> <span class="s2">&quot;Fitting the classifier to the training set&quot;</span>
+<div class=" highlight hl-ipython2"><pre><span></span><span class="c1"># Creating a pipeline to include scaling when using SVC</span>
+<span class="n">estimators</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">(</span><span class="s1">&#39;scaler&#39;</span><span class="p">,</span><span class="n">MinMaxScaler</span><span class="p">()),</span>
+    <span class="p">(</span><span class="s1">&#39;svc&#39;</span><span class="p">,</span> <span class="n">SVC</span><span class="p">(</span><span class="n">class_weight</span><span class="o">=</span><span class="s2">&quot;balanced&quot;</span><span class="p">,</span> <span class="n">degree</span><span class="o">=</span><span class="mi">2</span><span class="p">))]</span>
+<span class="n">pipe</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">(</span><span class="n">estimators</span><span class="p">)</span>
+
+<span class="k">print</span> <span class="s2">&quot;Fitting the classifier to the training set&quot;</span>
 <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
 
 <span class="c1"># the linear and polynomial kernels are not included here. After some first tests, the test_classifier function </span>
 <span class="c1"># or the grid search algorythm gets stuck. Without PCA, the classification may not be done properly with linear kernels.</span>
 <span class="c1"># The polynomial kernel was not working either with the PCA</span>
-
 <span class="n">param_grid</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s1">&#39;kernel&#39;</span><span class="p">:[</span><span class="s1">&#39;sigmoid&#39;</span><span class="p">,</span> <span class="s1">&#39;rbf&#39;</span><span class="p">],</span> 
-    <span class="s1">&#39;C&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">7</span><span class="p">),</span>
-    <span class="s1">&#39;gamma&#39;</span><span class="p">:</span><span class="n">np</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">7</span><span class="p">)</span>
+    <span class="s1">&#39;svc__kernel&#39;</span><span class="p">:[</span><span class="s1">&#39;sigmoid&#39;</span><span class="p">,</span> <span class="s1">&#39;rbf&#39;</span><span class="p">],</span> 
+    <span class="s1">&#39;svc__C&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">7</span><span class="p">),</span>
+    <span class="s1">&#39;svc__gamma&#39;</span><span class="p">:</span><span class="n">np</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">7</span><span class="p">)</span>
           <span class="p">}</span>
 
-<span class="n">clf</span> <span class="o">=</span> <span class="n">GridSearchCV</span><span class="p">(</span><span class="n">SVC</span><span class="p">(</span><span class="n">class_weight</span><span class="o">=</span><span class="s1">&#39;balanced&#39;</span><span class="p">),</span> <span class="n">param_grid</span><span class="p">,</span> <span class="n">scoring</span><span class="o">=</span><span class="n">scorer_f</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">clf</span> <span class="o">=</span> <span class="n">GridSearchCV</span><span class="p">(</span><span class="n">pipe</span><span class="p">,</span> <span class="n">param_grid</span><span class="p">,</span> <span class="n">scoring</span><span class="o">=</span><span class="n">scorer_f</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
 <span class="n">clf</span> <span class="o">=</span> <span class="n">clf</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">features</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span>
 <span class="k">print</span> <span class="s2">&quot;done in </span><span class="si">%0.3f</span><span class="s2">s&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">t0</span><span class="p">)</span>
 <span class="k">print</span> <span class="s2">&quot;Best estimator found by grid search:&quot;</span>
@@ -1011,21 +1102,19 @@ LogisticRegression(C=1.0, class_weight=None, dual=False, fit_intercept=True,
 <div class="output_area"><div class="prompt"></div>
 <div class="output_subarea output_stream output_stdout output_text">
 <pre>Fitting the classifier to the training set
-done in 2.228s
+done in 4.076s
 Best estimator found by grid search:
-SVC(C=1.0, cache_size=200, class_weight=&apos;balanced&apos;, coef0=0.0,
-  decision_function_shape=None, degree=3, gamma=0.001, kernel=&apos;rbf&apos;,
+Pipeline(steps=[(&apos;scaler&apos;, MinMaxScaler(copy=True, feature_range=(0, 1))), (&apos;svc&apos;, SVC(C=1.0, cache_size=200, class_weight=&apos;balanced&apos;, coef0=0.0,
+  decision_function_shape=None, degree=2, gamma=1.0, kernel=&apos;rbf&apos;,
   max_iter=-1, probability=False, random_state=None, shrinking=True,
-  tol=0.001, verbose=False)
-true negatives:  13000
-false negatives:  2000
-false positives:  0
-true positives:  0
-Got a divide by zero when trying out: SVC(C=1.0, cache_size=200, class_weight=&apos;balanced&apos;, coef0=0.0,
-  decision_function_shape=None, degree=3, gamma=0.001, kernel=&apos;rbf&apos;,
+  tol=0.001, verbose=False))])
+Pipeline(steps=[(&apos;scaler&apos;, MinMaxScaler(copy=True, feature_range=(0, 1))), (&apos;svc&apos;, SVC(C=1.0, cache_size=200, class_weight=&apos;balanced&apos;, coef0=0.0,
+  decision_function_shape=None, degree=2, gamma=1.0, kernel=&apos;rbf&apos;,
   max_iter=-1, probability=False, random_state=None, shrinking=True,
-  tol=0.001, verbose=False)
-Precision or recall may be undefined due to a lack of true positive predicitons.
+  tol=0.001, verbose=False))])
+	Accuracy: 0.73733	Precision: 0.26167	Recall: 0.53250	F1: 0.35091	F2: 0.44118
+	Total predictions: 15000	True positives: 1065	False positives: 3005	False negatives:  935	True negatives: 9995
+
 </pre>
 </div>
 </div>
@@ -1124,7 +1213,7 @@ done in 13.206s
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[11]:</div>
+<div class="prompt input_prompt">In&nbsp;[20]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="k">print</span> <span class="s2">&quot;Fitting the classifier to the training set&quot;</span>
@@ -1158,23 +1247,23 @@ done in 13.206s
 <div class="output_area"><div class="prompt"></div>
 <div class="output_subarea output_stream output_stdout output_text">
 <pre>Fitting the classifier to the training set
-done in 64.368s
+done in 71.907s
 Best estimator found by grid search:
 RandomForestClassifier(bootstrap=True, class_weight=&apos;balanced&apos;,
             criterion=&apos;gini&apos;, max_depth=None, max_features=&apos;auto&apos;,
             max_leaf_nodes=None, min_samples_leaf=1, min_samples_split=2,
-            min_weight_fraction_leaf=0.0, n_estimators=15, n_jobs=-1,
+            min_weight_fraction_leaf=0.0, n_estimators=5, n_jobs=-1,
             oob_score=False, random_state=42, verbose=0, warm_start=False)
 Testing the best estimator
 RandomForestClassifier(bootstrap=True, class_weight=&apos;balanced&apos;,
             criterion=&apos;gini&apos;, max_depth=None, max_features=&apos;auto&apos;,
             max_leaf_nodes=None, min_samples_leaf=1, min_samples_split=2,
-            min_weight_fraction_leaf=0.0, n_estimators=15, n_jobs=-1,
+            min_weight_fraction_leaf=0.0, n_estimators=5, n_jobs=-1,
             oob_score=False, random_state=42, verbose=0, warm_start=False)
-	Accuracy: 0.85073	Precision: 0.34541	Recall: 0.13350	F1: 0.19257	F2: 0.15217
-	Total predictions: 15000	True positives:  267	False positives:  506	False negatives: 1733	True negatives: 12494
+	Accuracy: 0.85827	Precision: 0.43000	Recall: 0.19350	F1: 0.26690	F2: 0.21742
+	Total predictions: 15000	True positives:  387	False positives:  513	False negatives: 1613	True negatives: 12487
 
-done in 307.026s
+done in 321.735s
 </pre>
 </div>
 </div>
@@ -1188,18 +1277,18 @@ done in 307.026s
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h3 id="Grid-Search-Optimization:-Scaling,-PCA-&amp;-Random-Forest">Grid Search Optimization: Scaling, PCA &amp; Random Forest<a class="anchor-link" href="#Grid-Search-Optimization:-Scaling,-PCA-&amp;-Random-Forest">&#182;</a></h3>
+<h3 id="Grid-Search-Optimization:-PCA-&amp;-Random-Forest">Grid Search Optimization: PCA &amp; Random Forest<a class="anchor-link" href="#Grid-Search-Optimization:-PCA-&amp;-Random-Forest">&#182;</a></h3>
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[12]:</div>
+<div class="prompt input_prompt">In&nbsp;[22]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="n">estimators</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="p">(</span><span class="s1">&#39;scaler&#39;</span><span class="p">,</span><span class="n">MinMaxScaler</span><span class="p">()),</span>
-    <span class="p">(</span><span class="s1">&#39;pca&#39;</span><span class="p">,</span> <span class="n">RandomizedPCA</span><span class="p">(</span><span class="n">whiten</span><span class="o">=</span><span class="bp">True</span><span class="p">)),</span> 
+    <span class="p">((</span><span class="s1">&#39;scaler&#39;</span><span class="p">,</span><span class="n">MinMaxScaler</span><span class="p">()),</span>
+     <span class="s1">&#39;pca&#39;</span><span class="p">,</span> <span class="n">RandomizedPCA</span><span class="p">(</span><span class="n">whiten</span><span class="o">=</span><span class="bp">True</span><span class="p">)),</span> 
     <span class="p">(</span><span class="s1">&#39;randomforest&#39;</span><span class="p">,</span> <span class="n">RandomForestClassifier</span><span class="p">(</span><span class="n">class_weight</span><span class="o">=</span><span class="s1">&#39;balanced&#39;</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=-</span><span class="mi">1</span><span class="p">))]</span>
 <span class="n">pipe</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">(</span><span class="n">estimators</span><span class="p">)</span>
 
@@ -1232,24 +1321,25 @@ done in 307.026s
 
 
 <div class="output_area"><div class="prompt"></div>
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>Fitting the classifier to the training set
-done in 269.658s
-Best estimator found by grid search:
-Pipeline(steps=[(&apos;scaler&apos;, MinMaxScaler(copy=True, feature_range=(0, 1))), (&apos;pca&apos;, RandomizedPCA(copy=True, iterated_power=3, n_components=15, random_state=None,
-       whiten=True)), (&apos;randomforest&apos;, RandomForestClassifier(bootstrap=True, class_weight=&apos;balanced&apos;,
-            criterion=&apos;gini&apos;, max_depth=None...timators=15, n_jobs=-1,
-            oob_score=False, random_state=42, verbose=0, warm_start=False))])
-Testing the best estimator
-Pipeline(steps=[(&apos;scaler&apos;, MinMaxScaler(copy=True, feature_range=(0, 1))), (&apos;pca&apos;, RandomizedPCA(copy=True, iterated_power=3, n_components=15, random_state=None,
-       whiten=True)), (&apos;randomforest&apos;, RandomForestClassifier(bootstrap=True, class_weight=&apos;balanced&apos;,
-            criterion=&apos;gini&apos;, max_depth=None...timators=15, n_jobs=-1,
-            oob_score=False, random_state=42, verbose=0, warm_start=False))])
-	Accuracy: 0.85400	Precision: 0.26601	Recall: 0.05400	F1: 0.08978	F2: 0.06424
-	Total predictions: 15000	True positives:  108	False positives:  298	False negatives: 1892	True negatives: 12702
+<div class="output_subarea output_text output_error">
+<pre>
+<span class="ansired">---------------------------------------------------------------------------</span>
+<span class="ansired">ValueError</span>                                Traceback (most recent call last)
+<span class="ansigreen">&lt;ipython-input-22-f8694cf89072&gt;</span> in <span class="ansicyan">&lt;module&gt;</span><span class="ansiblue">()</span>
+<span class="ansigreen">      3</span>      &apos;pca&apos;, RandomizedPCA(whiten=True)), 
+<span class="ansigreen">      4</span>     (&apos;randomforest&apos;, RandomForestClassifier(class_weight=&apos;balanced&apos;, random_state=42, n_jobs=-1))]
+<span class="ansigreen">----&gt; 5</span><span class="ansiyellow"> </span>pipe <span class="ansiyellow">=</span> Pipeline<span class="ansiyellow">(</span>estimators<span class="ansiyellow">)</span><span class="ansiyellow"></span>
+<span class="ansigreen">      6</span> <span class="ansiyellow"></span>
+<span class="ansigreen">      7</span> param_grid = {
 
-done in 259.008s
-</pre>
+<span class="ansigreen">e:\Programmes\Anaconda\envs\py27\lib\site-packages\sklearn\pipeline.pyc</span> in <span class="ansicyan">__init__</span><span class="ansiblue">(self, steps)</span>
+<span class="ansigreen">     89</span>     <span class="ansigreen">def</span> __init__<span class="ansiyellow">(</span>self<span class="ansiyellow">,</span> steps<span class="ansiyellow">)</span><span class="ansiyellow">:</span><span class="ansiyellow"></span>
+<span class="ansigreen">     90</span>         names<span class="ansiyellow">,</span> estimators <span class="ansiyellow">=</span> zip<span class="ansiyellow">(</span><span class="ansiyellow">*</span>steps<span class="ansiyellow">)</span><span class="ansiyellow"></span>
+<span class="ansigreen">---&gt; 91</span><span class="ansiyellow">         </span><span class="ansigreen">if</span> len<span class="ansiyellow">(</span>dict<span class="ansiyellow">(</span>steps<span class="ansiyellow">)</span><span class="ansiyellow">)</span> <span class="ansiyellow">!=</span> len<span class="ansiyellow">(</span>steps<span class="ansiyellow">)</span><span class="ansiyellow">:</span><span class="ansiyellow"></span>
+<span class="ansigreen">     92</span>             <span class="ansigreen">raise</span> ValueError<span class="ansiyellow">(</span><span class="ansiblue">&quot;Provided step names are not unique: %s&quot;</span> <span class="ansiyellow">%</span> <span class="ansiyellow">(</span>names<span class="ansiyellow">,</span><span class="ansiyellow">)</span><span class="ansiyellow">)</span><span class="ansiyellow"></span>
+<span class="ansigreen">     93</span> <span class="ansiyellow"></span>
+
+<span class="ansired">ValueError</span>: dictionary update sequence element #0 has length 3; 2 is required</pre>
 </div>
 </div>
 
@@ -1268,19 +1358,22 @@ done in 259.008s
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[22]:</div>
+<div class="prompt input_prompt">In&nbsp;[18]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="k">print</span> <span class="s2">&quot;Fitting the classifier to the training set&quot;</span>
+<div class=" highlight hl-ipython2"><pre><span></span><span class="c1"># Creating a pipeline to include scaling when using Logistic regression</span>
+<span class="n">estimators</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;scaler&#39;</span><span class="p">,</span><span class="n">MinMaxScaler</span><span class="p">()),</span>
+              <span class="p">(</span><span class="s1">&#39;logreg&#39;</span><span class="p">,</span> <span class="n">LogisticRegression</span><span class="p">(</span><span class="n">class_weight</span><span class="o">=</span><span class="s2">&quot;balanced&quot;</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">))]</span>
+<span class="n">pipe</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">(</span><span class="n">estimators</span><span class="p">)</span>
+
+<span class="k">print</span> <span class="s2">&quot;Fitting the classifier to the training set&quot;</span>
 <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
 <span class="n">param_grid</span> <span class="o">=</span> <span class="p">{</span>
-         <span class="s1">&#39;C&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span><span class="o">-</span><span class="mi">7</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">15</span><span class="p">),</span>
-         <span class="s1">&#39;penalty&#39;</span> <span class="p">:</span> <span class="p">[</span><span class="s2">&quot;l1&quot;</span><span class="p">,</span> <span class="s2">&quot;l2&quot;</span><span class="p">]</span> 
+         <span class="s1">&#39;logreg__C&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span><span class="o">-</span><span class="mi">7</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">15</span><span class="p">),</span>
+         <span class="s1">&#39;logreg__penalty&#39;</span> <span class="p">:</span> <span class="p">[</span><span class="s2">&quot;l1&quot;</span><span class="p">,</span> <span class="s2">&quot;l2&quot;</span><span class="p">]</span> 
           <span class="p">}</span>
 
-
-<span class="n">clf</span> <span class="o">=</span> <span class="n">GridSearchCV</span><span class="p">(</span><span class="n">LogisticRegression</span><span class="p">(</span><span class="n">class_weight</span><span class="o">=</span><span class="s2">&quot;balanced&quot;</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">),</span> 
-                   <span class="n">param_grid</span><span class="p">,</span> <span class="n">scoring</span><span class="o">=</span><span class="n">scorer_f</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">clf</span> <span class="o">=</span> <span class="n">GridSearchCV</span><span class="p">(</span><span class="n">pipe</span><span class="p">,</span> <span class="n">param_grid</span><span class="p">,</span> <span class="n">scoring</span><span class="o">=</span><span class="n">scorer_f</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
 <span class="n">clf</span> <span class="o">=</span> <span class="n">clf</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">features</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span>
 <span class="k">print</span> <span class="s2">&quot;done in </span><span class="si">%0.3f</span><span class="s2">s&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">t0</span><span class="p">)</span>
 <span class="k">print</span> <span class="s2">&quot;Best estimator found by grid search:&quot;</span>
@@ -1303,21 +1396,21 @@ done in 259.008s
 <div class="output_area"><div class="prompt"></div>
 <div class="output_subarea output_stream output_stdout output_text">
 <pre>Fitting the classifier to the training set
-done in 0.847s
+done in 5.605s
 Best estimator found by grid search:
-LogisticRegression(C=10.0, class_weight=&apos;balanced&apos;, dual=False,
+Pipeline(steps=[(&apos;scaler&apos;, MinMaxScaler(copy=True, feature_range=(0, 1))), (&apos;logreg&apos;, LogisticRegression(C=100.0, class_weight=&apos;balanced&apos;, dual=False,
           fit_intercept=True, intercept_scaling=1, max_iter=100,
           multi_class=&apos;ovr&apos;, n_jobs=1, penalty=&apos;l1&apos;, random_state=42,
-          solver=&apos;liblinear&apos;, tol=0.0001, verbose=0, warm_start=False)
+          solver=&apos;liblinear&apos;, tol=0.0001, verbose=0, warm_start=False))])
 Testing the best estimator
-LogisticRegression(C=10.0, class_weight=&apos;balanced&apos;, dual=False,
+Pipeline(steps=[(&apos;scaler&apos;, MinMaxScaler(copy=True, feature_range=(0, 1))), (&apos;logreg&apos;, LogisticRegression(C=100.0, class_weight=&apos;balanced&apos;, dual=False,
           fit_intercept=True, intercept_scaling=1, max_iter=100,
           multi_class=&apos;ovr&apos;, n_jobs=1, penalty=&apos;l1&apos;, random_state=42,
-          solver=&apos;liblinear&apos;, tol=0.0001, verbose=0, warm_start=False)
-	Accuracy: 0.81593	Precision: 0.38310	Recall: 0.62350	F1: 0.47460	F2: 0.55398
-	Total predictions: 15000	True positives: 1247	False positives: 2008	False negatives:  753	True negatives: 10992
+          solver=&apos;liblinear&apos;, tol=0.0001, verbose=0, warm_start=False))])
+	Accuracy: 0.79920	Precision: 0.33133	Recall: 0.49700	F1: 0.39760	F2: 0.45182
+	Total predictions: 15000	True positives:  994	False positives: 2006	False negatives: 1006	True negatives: 10994
 
-done in 1.897s
+done in 23.504s
 </pre>
 </div>
 </div>
@@ -1331,7 +1424,7 @@ done in 1.897s
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h3 id="Grid-Search-Optimization:-Feature-scaling,-PCA-and-Logistic-Regression">Grid Search Optimization: Feature scaling, PCA and Logistic Regression<a class="anchor-link" href="#Grid-Search-Optimization:-Feature-scaling,-PCA-and-Logistic-Regression">&#182;</a></h3>
+<h3 id="Grid-Search-Optimization:-Scaling,-PCA-and-Logistic-Regression">Grid Search Optimization: Scaling, PCA and Logistic Regression<a class="anchor-link" href="#Grid-Search-Optimization:-Scaling,-PCA-and-Logistic-Regression">&#182;</a></h3>
 </div>
 </div>
 </div>
@@ -1376,23 +1469,23 @@ done in 1.897s
 <div class="output_area"><div class="prompt"></div>
 <div class="output_subarea output_stream output_stdout output_text">
 <pre>Fitting the classifier to the training set
-done in 10.319s
+done in 17.225s
 Best estimator found by grid search:
 Pipeline(steps=[(&apos;scaler&apos;, MinMaxScaler(copy=True, feature_range=(0, 1))), (&apos;pca&apos;, RandomizedPCA(copy=True, iterated_power=3, n_components=15, random_state=None,
-       whiten=True)), (&apos;logreg&apos;, LogisticRegression(C=1.0, class_weight=&apos;balanced&apos;, dual=False,
+       whiten=True)), (&apos;logreg&apos;, LogisticRegression(C=0.001, class_weight=&apos;balanced&apos;, dual=False,
           fit_intercept=True, intercept_scaling=1, max_iter=100,
           multi_class=&apos;ovr&apos;, n_jobs=-1, penalty=&apos;l2&apos;, random_state=42,
           solver=&apos;liblinear&apos;, tol=0.0001, verbose=0, warm_start=False))])
 Testing the best estimator
 Pipeline(steps=[(&apos;scaler&apos;, MinMaxScaler(copy=True, feature_range=(0, 1))), (&apos;pca&apos;, RandomizedPCA(copy=True, iterated_power=3, n_components=15, random_state=None,
-       whiten=True)), (&apos;logreg&apos;, LogisticRegression(C=1.0, class_weight=&apos;balanced&apos;, dual=False,
+       whiten=True)), (&apos;logreg&apos;, LogisticRegression(C=0.001, class_weight=&apos;balanced&apos;, dual=False,
           fit_intercept=True, intercept_scaling=1, max_iter=100,
           multi_class=&apos;ovr&apos;, n_jobs=-1, penalty=&apos;l2&apos;, random_state=42,
           solver=&apos;liblinear&apos;, tol=0.0001, verbose=0, warm_start=False))])
-	Accuracy: 0.75793	Precision: 0.27906	Recall: 0.51500	F1: 0.36198	F2: 0.44051
-	Total predictions: 15000	True positives: 1030	False positives: 2661	False negatives:  970	True negatives: 10339
+	Accuracy: 0.68273	Precision: 0.24628	Recall: 0.66950	F1: 0.36009	F2: 0.49825
+	Total predictions: 15000	True positives: 1339	False positives: 4098	False negatives:  661	True negatives: 8902
 
-done in 1.678s
+done in 1.744s
 </pre>
 </div>
 </div>
@@ -1409,8 +1502,8 @@ done in 1.678s
 <p>The test_classifier function conducts a 1000-folds cross validation with the given classifier and the given feature list. It prints out different performance metrics (accuracy, precision, recall, f-scores) that help us assess the Classifier performance. The precision and the recall are the 2 main metrics that I was trying to maximize. The goal was to achieve  precision and recal values higher than 0.3.</p>
 <p>In this specific case:</p>
 <ul>
-<li>Precision is the ratio of correctly identified PoI to total number of real PoI. </li>
-<li>Recall is the ratio of correctly identified PoI to total number of identified PoI.</li>
+<li>Recall is the ratio of correctly identified PoI to total number of real PoI. </li>
+<li>Precision is the ratio of correctly identified PoI to total number of identified PoI.</li>
 </ul>
 <p>In general, scaling the features and reducing their dimensionality should help to increase the classifier performance.</p>
 <p>But to my surprise, the best classification performance is provided by the simple optimized Logistic Regression. Moreover, this algorithm is really fast to train than the SVC and the Random Forest.</p>

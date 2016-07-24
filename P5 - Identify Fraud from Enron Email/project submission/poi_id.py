@@ -3,22 +3,24 @@
 import sys
 import pickle
 from sklearn.linear_model import LogisticRegression
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.pipeline import Pipeline
 from tester import dump_classifier_and_data, test_classifier
 
 sys.path.append("../tools/")
 from feature_format import featureFormat, targetFeatureSplit
 
 # Task 1: Select what features you'll use.
-# features_list is a list of strings, each of which is a feature name.
-# The first feature must be "poi".
-features_list = ['poi', 'salary', 'total_payments', "total_stock_value",
-                 "to_messages", "shared_receipt_with_poi",
-                 "from_this_person_to_poi", "from_poi_to_this_person",
-                 "from_messages"]
 
 # Load the dictionary containing the dataset
 with open("final_project_dataset.pkl", "r") as data_file:
     data_dict = pickle.load(data_file)
+# features_list is a list of strings, each of which is a feature name.
+# The first feature must be "poi".
+features_list = ['poi']
+for feat in data_dict['ALLEN PHILLIP K'].keys():
+    if feat not in ['poi', 'email_address']:
+        features_list.append(feat)
 
 # Task 2: Remove outliers
 data_dict.pop("TOTAL")  # remove the TOTAL entry, as it appears clearcly as a general outlier.
@@ -65,7 +67,10 @@ labels, features = targetFeatureSplit(data)
 # stratified shuffle split cross validation. For more info:
 # http://scikit-learn.org/stable/modules/generated/sklearn.cross_validation.StratifiedShuffleSplit.html
 
-clf = LogisticRegression(C=10, penalty="l1", class_weight="balanced", random_state=42)
+estimators = [('scaler',MinMaxScaler()),
+              ('logreg', LogisticRegression(C=100, penalty="l1", class_weight="balanced", random_state=42))]
+clf = Pipeline(estimators)
+
 test_classifier(clf, my_dataset, features_list, folds=1000)
 
 # Task 6: Dump your classifier, dataset, and features_list so anyone can
