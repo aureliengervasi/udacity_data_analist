@@ -3,7 +3,7 @@
 import sys
 import pickle
 from sklearn.linear_model import LogisticRegression
-from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import Pipeline
 from tester import dump_classifier_and_data, test_classifier
 
@@ -67,8 +67,8 @@ labels, features = targetFeatureSplit(data)
 # stratified shuffle split cross validation. For more info:
 # http://scikit-learn.org/stable/modules/generated/sklearn.cross_validation.StratifiedShuffleSplit.html
 
-estimators = [('scaler',MinMaxScaler()),
-              ('logreg', LogisticRegression(C=100, penalty="l1", class_weight="balanced", random_state=42))]
+estimators = [('scaler',StandardScaler()),
+              ('logreg', LogisticRegression(C=10, penalty="l1", class_weight="balanced", random_state=42))]
 clf = Pipeline(estimators)
 
 test_classifier(clf, my_dataset, features_list, folds=1000)
