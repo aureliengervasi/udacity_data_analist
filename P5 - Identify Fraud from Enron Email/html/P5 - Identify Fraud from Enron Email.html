@@ -183,7 +183,7 @@ div#notebook {
 <h2 id="Summary">Summary<a class="anchor-link" href="#Summary">&#182;</a></h2><p>The first part is dedicated to analyze the features, get insights about the dataset, and spot the main outliers. Some feature engineering is done by adding 3 new features built out of existing ones. Their impact on the classifier performance seems to be positive.</p>
 <p>Tree-based feature selection is implemented to reduce the number of features and limit the risk of overfitting. When calculating the impact of this selection on a RandomForest Classifier, it appears that the performance gain is also limited. As a consequence, the entire feature list is used in the rest of the work, combined with a Principal Component Analysis to reduce its dimensionality.</p>
 <p>Different basic machine learning algorithms are then tested, with limited success. These algorithms are very dependent from hyper parameters. These can for instance play a strong role on overfitting. In order to determine the best parameters for this Enron Dataset, a Grid Search Analysis is done on different Classifiers. The Grid Search Analysis is done using a f-score as scorer similar to the one calculated by the tester.py file.</p>
-<p>In order to take the best out of these Classifiers, feature preparation is integrated in a pipeline estimator. More specifically, features are first scaled with a MinMax Scaler, then their dimension is reduced with a Principal Component Analysis before supplying them to the Classification Algorithm.</p>
+<p>In order to take the best out of these Classifiers, feature preparation is integrated in a pipeline estimator. More specifically, features are first scaled with a Standard Scaler, then their dimension is reduced with a Principal Component Analysis before supplying them to the Classification Algorithm.</p>
 <p>Each classifier performance is calculated with the test_classifier function from the tester.py file. This function conducts a 1000-folds cross validation with the given classifier and the given feature list. It prints out different performance metrics (accuracy, precision, recall, f-scores) that help us assess the Classifier performance.</p>
 <p>In the end, the best classifier that pops out is an optimized Logistic Regression Classifier using a L1 distance penalty. This is the algorithm that has been implemented in my poi_id.py file.</p>
 <h2 id="Limitations-and-potentials">Limitations and potentials<a class="anchor-link" href="#Limitations-and-potentials">&#182;</a></h2><p>One of the major limitation of this work was the dataset size and the numurous missing data it contains. There were only 145 usable observations to build a classifier and most of them were missing values for one or more features. This increased a lot the risk of overfitting.</p>
@@ -195,7 +195,7 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[15]:</div>
+<div class="prompt input_prompt">In&nbsp;[10]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="kn">import</span> <span class="nn">sys</span>
@@ -205,11 +205,10 @@ div#notebook {
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
 <span class="kn">from</span> <span class="nn">tester</span> <span class="kn">import</span> <span class="n">dump_classifier_and_data</span><span class="p">,</span> <span class="n">test_classifier</span>
 
-<span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="kn">import</span> <span class="n">MinMaxScaler</span>
-<span class="kn">from</span> <span class="nn">sklearn.cross_validation</span> <span class="kn">import</span> <span class="n">train_test_split</span><span class="p">,</span> <span class="n">StratifiedShuffleSplit</span>
+<span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="kn">import</span> <span class="n">StandardScaler</span>
+<span class="kn">from</span> <span class="nn">sklearn.cross_validation</span> <span class="kn">import</span> <span class="n">StratifiedShuffleSplit</span>
 <span class="kn">from</span> <span class="nn">sklearn.decomposition</span> <span class="kn">import</span> <span class="n">RandomizedPCA</span>
-<span class="kn">from</span> <span class="nn">sklearn.naive_bayes</span> <span class="kn">import</span> <span class="n">GaussianNB</span>
-<span class="kn">from</span> <span class="nn">sklearn.ensemble</span> <span class="kn">import</span> <span class="n">RandomForestClassifier</span><span class="p">,</span> <span class="n">AdaBoostClassifier</span>
+<span class="kn">from</span> <span class="nn">sklearn.ensemble</span> <span class="kn">import</span> <span class="n">RandomForestClassifier</span>
 <span class="kn">from</span> <span class="nn">sklearn.linear_model</span> <span class="kn">import</span> <span class="n">LogisticRegression</span>
 <span class="kn">from</span> <span class="nn">sklearn.svm</span> <span class="kn">import</span> <span class="n">SVC</span>
 <span class="kn">from</span> <span class="nn">sklearn.grid_search</span> <span class="kn">import</span> <span class="n">GridSearchCV</span>
@@ -272,7 +271,7 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[2]:</div>
+<div class="prompt input_prompt">In&nbsp;[11]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="c1"># Import dataset into a pandas dataframe to easily manipulate the data</span>
@@ -404,14 +403,6 @@ Number of Nan values for from_poi_to_this_person: 60 (41.1%)
 
 Features selected to be used by the classifiers: 
 [&apos;poi&apos;, &apos;salary&apos;, &apos;to_messages&apos;, &apos;deferral_payments&apos;, &apos;total_payments&apos;, &apos;exercised_stock_options&apos;, &apos;bonus&apos;, &apos;restricted_stock&apos;, &apos;shared_receipt_with_poi&apos;, &apos;restricted_stock_deferred&apos;, &apos;total_stock_value&apos;, &apos;expenses&apos;, &apos;loan_advances&apos;, &apos;from_messages&apos;, &apos;other&apos;, &apos;from_this_person_to_poi&apos;, &apos;director_fees&apos;, &apos;deferred_income&apos;, &apos;long_term_incentive&apos;, &apos;from_poi_to_this_person&apos;]
-</pre>
-</div>
-</div>
-
-<div class="output_area"><div class="prompt"></div>
-<div class="output_subarea output_stream output_stderr output_text">
-<pre>e:\Programmes\Anaconda\envs\py27\lib\site-packages\pandas\core\ops.py:714: FutureWarning: elementwise comparison failed; returning scalar instead, but in the future will perform elementwise comparison
-  result = getattr(x, name)(y)
 </pre>
 </div>
 </div>
@@ -561,7 +552,7 @@ Name: from_poi_to_this_person, dtype: object
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[4]:</div>
+<div class="prompt input_prompt">In&nbsp;[12]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="c1"># remove the TOTAL entry, as it appears clearcly as a general outlier. </span>
@@ -576,7 +567,7 @@ Name: from_poi_to_this_person, dtype: object
 <div class="output">
 
 
-<div class="output_area"><div class="prompt output_prompt">Out[4]:</div>
+<div class="output_area"><div class="prompt output_prompt">Out[12]:</div>
 
 
 <div class="output_text output_subarea output_execute_result">
@@ -631,7 +622,7 @@ Name: from_poi_to_this_person, dtype: object
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[5]:</div>
+<div class="prompt input_prompt">In&nbsp;[13]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="c1"># Task 3: Create new feature(s)</span>
@@ -668,7 +659,7 @@ Name: from_poi_to_this_person, dtype: object
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[8]:</div>
+<div class="prompt input_prompt">In&nbsp;[6]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="c1"># initial feature list to be compared with the extended one</span>
@@ -951,19 +942,19 @@ RandomForestClassifier(bootstrap=True, class_weight=&apos;balanced&apos;,
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[10]:</div>
+<div class="prompt input_prompt">In&nbsp;[14]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="c1"># Creating a pipeline to include scaling when using SVC</span>
 <span class="n">estimators_svc</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="p">(</span><span class="s1">&#39;scaler&#39;</span><span class="p">,</span><span class="n">MinMaxScaler</span><span class="p">()),</span>
+    <span class="p">(</span><span class="s1">&#39;scaler&#39;</span><span class="p">,</span><span class="n">StandardScaler</span><span class="p">()),</span>
     <span class="p">(</span><span class="s1">&#39;svc&#39;</span><span class="p">,</span> <span class="n">SVC</span><span class="p">())]</span>
 <span class="n">pipe_svc</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">(</span><span class="n">estimators_svc</span><span class="p">)</span>
 
 <span class="c1"># Creating a pipeline to include scaling when using Logistic regression</span>
 <span class="n">estimators_logreg</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="p">(</span><span class="s1">&#39;scaler&#39;</span><span class="p">,</span><span class="n">MinMaxScaler</span><span class="p">()),</span>
-    <span class="p">(</span><span class="s1">&#39;svc&#39;</span><span class="p">,</span> <span class="n">LogisticRegression</span><span class="p">())]</span>
+    <span class="p">(</span><span class="s1">&#39;scaler&#39;</span><span class="p">,</span><span class="n">StandardScaler</span><span class="p">()),</span>
+    <span class="p">(</span><span class="s1">&#39;logreg&#39;</span><span class="p">,</span> <span class="n">LogisticRegression</span><span class="p">())]</span>
 <span class="n">pipe_logreg</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">(</span><span class="n">estimators_logreg</span><span class="p">)</span>
 
 
@@ -986,46 +977,32 @@ RandomForestClassifier(bootstrap=True, class_weight=&apos;balanced&apos;,
 
 <div class="output_area"><div class="prompt"></div>
 <div class="output_subarea output_stream output_stdout output_text">
-<pre>testing:  Pipeline(steps=[(&apos;scaler&apos;, MinMaxScaler(copy=True, feature_range=(0, 1))), (&apos;svc&apos;, SVC(C=1.0, cache_size=200, class_weight=None, coef0=0.0,
-  decision_function_shape=None, degree=3, gamma=&apos;auto&apos;, kernel=&apos;rbf&apos;,
-  max_iter=-1, probability=False, random_state=None, shrinking=True,
-  tol=0.001, verbose=False))])
-true negatives:  13000
+<pre>true negatives:  13000
 false negatives:  2000
 false positives:  0
 true positives:  0
-Got a divide by zero when trying out: Pipeline(steps=[(&apos;scaler&apos;, MinMaxScaler(copy=True, feature_range=(0, 1))), (&apos;svc&apos;, SVC(C=1.0, cache_size=200, class_weight=None, coef0=0.0,
+Got a divide by zero when trying out: Pipeline(steps=[(&apos;scaler&apos;, StandardScaler(copy=True, with_mean=True, with_std=True)), (&apos;svc&apos;, SVC(C=1.0, cache_size=200, class_weight=None, coef0=0.0,
   decision_function_shape=None, degree=3, gamma=&apos;auto&apos;, kernel=&apos;rbf&apos;,
   max_iter=-1, probability=False, random_state=None, shrinking=True,
   tol=0.001, verbose=False))])
 Precision or recall may be undefined due to a lack of true positive predicitons.
 
-testing:  RandomForestClassifier(bootstrap=True, class_weight=None, criterion=&apos;gini&apos;,
-            max_depth=None, max_features=&apos;auto&apos;, max_leaf_nodes=None,
-            min_samples_leaf=1, min_samples_split=2,
-            min_weight_fraction_leaf=0.0, n_estimators=10, n_jobs=1,
-            oob_score=False, random_state=None, verbose=0,
-            warm_start=False)
 RandomForestClassifier(bootstrap=True, class_weight=None, criterion=&apos;gini&apos;,
             max_depth=None, max_features=&apos;auto&apos;, max_leaf_nodes=None,
             min_samples_leaf=1, min_samples_split=2,
             min_weight_fraction_leaf=0.0, n_estimators=10, n_jobs=1,
             oob_score=False, random_state=None, verbose=0,
             warm_start=False)
-	Accuracy: 0.86080	Precision: 0.42834	Recall: 0.13150	F1: 0.20122	F2: 0.15266
-	Total predictions: 15000	True positives:  263	False positives:  351	False negatives: 1737	True negatives: 12649
+	Accuracy: 0.86140	Precision: 0.43857	Recall: 0.14100	F1: 0.21339	F2: 0.16314
+	Total predictions: 15000	True positives:  282	False positives:  361	False negatives: 1718	True negatives: 12639
 
 
-testing:  Pipeline(steps=[(&apos;scaler&apos;, MinMaxScaler(copy=True, feature_range=(0, 1))), (&apos;svc&apos;, LogisticRegression(C=1.0, class_weight=None, dual=False, fit_intercept=True,
+Pipeline(steps=[(&apos;scaler&apos;, StandardScaler(copy=True, with_mean=True, with_std=True)), (&apos;logreg&apos;, LogisticRegression(C=1.0, class_weight=None, dual=False, fit_intercept=True,
           intercept_scaling=1, max_iter=100, multi_class=&apos;ovr&apos;, n_jobs=1,
           penalty=&apos;l2&apos;, random_state=None, solver=&apos;liblinear&apos;, tol=0.0001,
           verbose=0, warm_start=False))])
-Pipeline(steps=[(&apos;scaler&apos;, MinMaxScaler(copy=True, feature_range=(0, 1))), (&apos;svc&apos;, LogisticRegression(C=1.0, class_weight=None, dual=False, fit_intercept=True,
-          intercept_scaling=1, max_iter=100, multi_class=&apos;ovr&apos;, n_jobs=1,
-          penalty=&apos;l2&apos;, random_state=None, solver=&apos;liblinear&apos;, tol=0.0001,
-          verbose=0, warm_start=False))])
-	Accuracy: 0.86947	Precision: 0.55250	Recall: 0.11050	F1: 0.18417	F2: 0.13155
-	Total predictions: 15000	True positives:  221	False positives:  179	False negatives: 1779	True negatives: 12821
+	Accuracy: 0.84067	Precision: 0.31393	Recall: 0.16450	F1: 0.21588	F2: 0.18181
+	Total predictions: 15000	True positives:  329	False positives:  719	False negatives: 1671	True negatives: 12281
 
 
 </pre>
@@ -1055,21 +1032,24 @@ Pipeline(steps=[(&apos;scaler&apos;, MinMaxScaler(copy=True, feature_range=(0, 1
 <div class="text_cell_render border-box-sizing rendered_html">
 <h2 id="Hyperparameter-tuning">Hyperparameter tuning<a class="anchor-link" href="#Hyperparameter-tuning">&#182;</a></h2><p>Machine Learning algorithms are very dependent from hyper parameters. These paramaters can for instance play a strong role when dealing with overfitting. The goal of this chapter is to optimize the main parameters of the previous algorithms in order to increase the classification performance. In order to determine the best parameters for this Enron Dataset, a Grid Search Analysis is done on different Classifiers.</p>
 <p>The Grid Search approach trains a classifier for each hyper parameter combination of values and conducts a 10-folds cross-validation on the provided data set to select the best estimator. An f-score similar to the one calculated by the tester.py file is used to compare the different classifiers. I used then the test_classifier function from the tester.py file to calculate the classifier performance.</p>
-<p>In addition to optimizing the Classification algorithm itself, I also work on pipeline estimators that also include a MinMax Scaler and a PCA transformation to increase the classification algorithm performance.</p>
+<p>In addition to optimizing the Classification algorithm itself, I also work on pipeline estimators that also include a standard scaler and a PCA transformation to increase the classification algorithm performance.</p>
 <h3 id="Grid-Search-Optimization:-Scaling-and-SVC">Grid Search Optimization: Scaling and SVC<a class="anchor-link" href="#Grid-Search-Optimization:-Scaling-and-SVC">&#182;</a></h3>
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[11]:</div>
+<div class="prompt input_prompt">In&nbsp;[15]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="c1"># Creating a pipeline to include scaling when using SVC</span>
 <span class="n">estimators</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="p">(</span><span class="s1">&#39;scaler&#39;</span><span class="p">,</span><span class="n">MinMaxScaler</span><span class="p">()),</span>
+    <span class="p">(</span><span class="s1">&#39;scaler&#39;</span><span class="p">,</span><span class="n">StandardScaler</span><span class="p">()),</span>
     <span class="p">(</span><span class="s1">&#39;svc&#39;</span><span class="p">,</span> <span class="n">SVC</span><span class="p">(</span><span class="n">class_weight</span><span class="o">=</span><span class="s2">&quot;balanced&quot;</span><span class="p">,</span> <span class="n">degree</span><span class="o">=</span><span class="mi">2</span><span class="p">))]</span>
 <span class="n">pipe</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">(</span><span class="n">estimators</span><span class="p">)</span>
+
+<span class="c1"># Creating a stratified shuffle split to replace the standard Grid Search cross-validation</span>
+<span class="n">cv</span> <span class="o">=</span> <span class="n">StratifiedShuffleSplit</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="n">random_state</span> <span class="o">=</span> <span class="mi">42</span><span class="p">)</span>
 
 <span class="k">print</span> <span class="s2">&quot;Fitting the classifier to the training set&quot;</span>
 <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
@@ -1083,12 +1063,16 @@ Pipeline(steps=[(&apos;scaler&apos;, MinMaxScaler(copy=True, feature_range=(0, 1
     <span class="s1">&#39;svc__gamma&#39;</span><span class="p">:</span><span class="n">np</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">7</span><span class="p">)</span>
           <span class="p">}</span>
 
-<span class="n">clf</span> <span class="o">=</span> <span class="n">GridSearchCV</span><span class="p">(</span><span class="n">pipe</span><span class="p">,</span> <span class="n">param_grid</span><span class="p">,</span> <span class="n">scoring</span><span class="o">=</span><span class="n">scorer_f</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">clf</span> <span class="o">=</span> <span class="n">GridSearchCV</span><span class="p">(</span><span class="n">pipe</span><span class="p">,</span> <span class="n">param_grid</span><span class="p">,</span> <span class="n">scoring</span><span class="o">=</span><span class="n">scorer_f</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="n">cv</span><span class="p">)</span>
 <span class="n">clf</span> <span class="o">=</span> <span class="n">clf</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">features</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span>
 <span class="k">print</span> <span class="s2">&quot;done in </span><span class="si">%0.3f</span><span class="s2">s&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">t0</span><span class="p">)</span>
 <span class="k">print</span> <span class="s2">&quot;Best estimator found by grid search:&quot;</span>
 <span class="k">print</span> <span class="n">clf</span><span class="o">.</span><span class="n">best_estimator_</span>
+
+<span class="k">print</span> <span class="s2">&quot;Testing the best estimator&quot;</span>
+<span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
 <span class="n">test_classifier</span><span class="p">(</span><span class="n">clf</span><span class="o">.</span><span class="n">best_estimator_</span><span class="p">,</span> <span class="n">my_dataset</span><span class="p">,</span> <span class="n">features_list</span><span class="p">)</span>
+<span class="k">print</span> <span class="s2">&quot;done in </span><span class="si">%0.3f</span><span class="s2">s&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">t0</span><span class="p">)</span>
 </pre></div>
 
 </div>
@@ -1102,19 +1086,21 @@ Pipeline(steps=[(&apos;scaler&apos;, MinMaxScaler(copy=True, feature_range=(0, 1
 <div class="output_area"><div class="prompt"></div>
 <div class="output_subarea output_stream output_stdout output_text">
 <pre>Fitting the classifier to the training set
-done in 4.076s
+done in 44.050s
 Best estimator found by grid search:
-Pipeline(steps=[(&apos;scaler&apos;, MinMaxScaler(copy=True, feature_range=(0, 1))), (&apos;svc&apos;, SVC(C=1.0, cache_size=200, class_weight=&apos;balanced&apos;, coef0=0.0,
+Pipeline(steps=[(&apos;scaler&apos;, StandardScaler(copy=True, with_mean=True, with_std=True)), (&apos;svc&apos;, SVC(C=0.10000000000000001, cache_size=200, class_weight=&apos;balanced&apos;, coef0=0.0,
   decision_function_shape=None, degree=2, gamma=1.0, kernel=&apos;rbf&apos;,
   max_iter=-1, probability=False, random_state=None, shrinking=True,
   tol=0.001, verbose=False))])
-Pipeline(steps=[(&apos;scaler&apos;, MinMaxScaler(copy=True, feature_range=(0, 1))), (&apos;svc&apos;, SVC(C=1.0, cache_size=200, class_weight=&apos;balanced&apos;, coef0=0.0,
+Testing the best estimator
+Pipeline(steps=[(&apos;scaler&apos;, StandardScaler(copy=True, with_mean=True, with_std=True)), (&apos;svc&apos;, SVC(C=0.10000000000000001, cache_size=200, class_weight=&apos;balanced&apos;, coef0=0.0,
   decision_function_shape=None, degree=2, gamma=1.0, kernel=&apos;rbf&apos;,
   max_iter=-1, probability=False, random_state=None, shrinking=True,
   tol=0.001, verbose=False))])
-	Accuracy: 0.73733	Precision: 0.26167	Recall: 0.53250	F1: 0.35091	F2: 0.44118
-	Total predictions: 15000	True positives: 1065	False positives: 3005	False negatives:  935	True negatives: 9995
+	Accuracy: 0.27440	Precision: 0.15523	Recall: 1.00000	F1: 0.26874	F2: 0.47884
+	Total predictions: 15000	True positives: 2000	False positives: 10884	False negatives:    0	True negatives: 2116
 
+done in 1.609s
 </pre>
 </div>
 </div>
@@ -1134,14 +1120,17 @@ Pipeline(steps=[(&apos;scaler&apos;, MinMaxScaler(copy=True, feature_range=(0, 1
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[10]:</div>
+<div class="prompt input_prompt">In&nbsp;[16]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="n">estimators</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="p">(</span><span class="s1">&#39;scaler&#39;</span><span class="p">,</span><span class="n">MinMaxScaler</span><span class="p">()),</span>
+    <span class="p">(</span><span class="s1">&#39;scaler&#39;</span><span class="p">,</span><span class="n">StandardScaler</span><span class="p">()),</span>
     <span class="p">(</span><span class="s1">&#39;pca&#39;</span><span class="p">,</span> <span class="n">RandomizedPCA</span><span class="p">(</span><span class="n">whiten</span><span class="o">=</span><span class="bp">True</span><span class="p">)),</span> 
     <span class="p">(</span><span class="s1">&#39;svc&#39;</span><span class="p">,</span> <span class="n">SVC</span><span class="p">(</span><span class="n">class_weight</span><span class="o">=</span><span class="s2">&quot;balanced&quot;</span><span class="p">,</span> <span class="n">degree</span><span class="o">=</span><span class="mi">2</span><span class="p">))]</span>
 <span class="n">pipe</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">(</span><span class="n">estimators</span><span class="p">)</span>
+
+<span class="c1"># Creating a stratified shuffle split to replace the standard Grid Search cross-validation</span>
+<span class="n">cv</span> <span class="o">=</span> <span class="n">StratifiedShuffleSplit</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="n">random_state</span> <span class="o">=</span> <span class="mi">42</span><span class="p">)</span>
 
 <span class="n">param_grid</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s1">&#39;pca__n_components&#39;</span> <span class="p">:</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">20</span><span class="p">],</span>
@@ -1151,7 +1140,7 @@ Pipeline(steps=[(&apos;scaler&apos;, MinMaxScaler(copy=True, feature_range=(0, 1
              <span class="p">}</span>
 
 <span class="c1">#    &#39;svc__kernel&#39;:[&#39;linear&#39;, &#39;sigmoid&#39;, &#39;rbf&#39;, &#39;poly&#39;], </span>
-<span class="n">clf</span> <span class="o">=</span> <span class="n">GridSearchCV</span><span class="p">(</span><span class="n">pipe</span><span class="p">,</span> <span class="n">param_grid</span><span class="p">,</span> <span class="n">scoring</span><span class="o">=</span><span class="n">scorer_f</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">clf</span> <span class="o">=</span> <span class="n">GridSearchCV</span><span class="p">(</span><span class="n">pipe</span><span class="p">,</span> <span class="n">param_grid</span><span class="p">,</span> <span class="n">scoring</span><span class="o">=</span><span class="n">scorer_f</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="n">cv</span><span class="p">)</span>
 
 <span class="k">print</span> <span class="s2">&quot;Fitting the classifier to the training set&quot;</span>
 <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
@@ -1177,23 +1166,23 @@ Pipeline(steps=[(&apos;scaler&apos;, MinMaxScaler(copy=True, feature_range=(0, 1
 <div class="output_area"><div class="prompt"></div>
 <div class="output_subarea output_stream output_stdout output_text">
 <pre>Fitting the classifier to the training set
-done in 98.214s
+done in 1206.864s
 Best estimator found by grid search:
-Pipeline(steps=[(&apos;scaler&apos;, MinMaxScaler(copy=True, feature_range=(0, 1))), (&apos;pca&apos;, RandomizedPCA(copy=True, iterated_power=3, n_components=6, random_state=None,
-       whiten=True)), (&apos;svc&apos;, SVC(C=100.0, cache_size=200, class_weight=&apos;balanced&apos;, coef0=0.0,
+Pipeline(steps=[(&apos;scaler&apos;, StandardScaler(copy=True, with_mean=True, with_std=True)), (&apos;pca&apos;, RandomizedPCA(copy=True, iterated_power=3, n_components=10, random_state=None,
+       whiten=True)), (&apos;svc&apos;, SVC(C=10.0, cache_size=200, class_weight=&apos;balanced&apos;, coef0=0.0,
   decision_function_shape=None, degree=2, gamma=0.001, kernel=&apos;linear&apos;,
   max_iter=-1, probability=False, random_state=None, shrinking=True,
   tol=0.001, verbose=False))])
 Testing the best estimator
-Pipeline(steps=[(&apos;scaler&apos;, MinMaxScaler(copy=True, feature_range=(0, 1))), (&apos;pca&apos;, RandomizedPCA(copy=True, iterated_power=3, n_components=6, random_state=None,
-       whiten=True)), (&apos;svc&apos;, SVC(C=100.0, cache_size=200, class_weight=&apos;balanced&apos;, coef0=0.0,
+Pipeline(steps=[(&apos;scaler&apos;, StandardScaler(copy=True, with_mean=True, with_std=True)), (&apos;pca&apos;, RandomizedPCA(copy=True, iterated_power=3, n_components=10, random_state=None,
+       whiten=True)), (&apos;svc&apos;, SVC(C=10.0, cache_size=200, class_weight=&apos;balanced&apos;, coef0=0.0,
   decision_function_shape=None, degree=2, gamma=0.001, kernel=&apos;linear&apos;,
   max_iter=-1, probability=False, random_state=None, shrinking=True,
   tol=0.001, verbose=False))])
-	Accuracy: 0.72013	Precision: 0.26036	Recall: 0.59700	F1: 0.36259	F2: 0.47434
-	Total predictions: 15000	True positives: 1194	False positives: 3392	False negatives:  806	True negatives: 9608
+	Accuracy: 0.69413	Precision: 0.21967	Recall: 0.50700	F1: 0.30653	F2: 0.40187
+	Total predictions: 15000	True positives: 1014	False positives: 3602	False negatives:  986	True negatives: 9398
 
-done in 13.206s
+done in 5.036s
 </pre>
 </div>
 </div>
@@ -1213,10 +1202,13 @@ done in 13.206s
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[20]:</div>
+<div class="prompt input_prompt">In&nbsp;[19]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="k">print</span> <span class="s2">&quot;Fitting the classifier to the training set&quot;</span>
+<div class=" highlight hl-ipython2"><pre><span></span><span class="c1"># Creating a stratified shuffle split to replace the standard Grid Search cross-validation</span>
+<span class="n">cv</span> <span class="o">=</span> <span class="n">StratifiedShuffleSplit</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="n">random_state</span> <span class="o">=</span> <span class="mi">42</span><span class="p">)</span>
+
+<span class="k">print</span> <span class="s2">&quot;Fitting the classifier to the training set&quot;</span>
 <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
 <span class="n">param_grid</span> <span class="o">=</span> <span class="p">{</span>
          <span class="s1">&#39;n_estimators&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">20</span><span class="p">],</span>
@@ -1224,7 +1216,7 @@ done in 13.206s
           <span class="p">}</span>
 
 <span class="n">clf</span> <span class="o">=</span> <span class="n">GridSearchCV</span><span class="p">(</span><span class="n">RandomForestClassifier</span><span class="p">(</span><span class="n">class_weight</span><span class="o">=</span><span class="s1">&#39;balanced&#39;</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=-</span><span class="mi">1</span><span class="p">),</span> 
-                   <span class="n">param_grid</span><span class="p">,</span> <span class="n">scoring</span><span class="o">=</span><span class="n">scorer_f</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+                   <span class="n">param_grid</span><span class="p">,</span> <span class="n">scoring</span><span class="o">=</span><span class="n">scorer_f</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="n">cv</span><span class="p">)</span>
 <span class="n">clf</span> <span class="o">=</span> <span class="n">clf</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">features</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span>
 <span class="k">print</span> <span class="s2">&quot;done in </span><span class="si">%0.3f</span><span class="s2">s&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">t0</span><span class="p">)</span>
 <span class="k">print</span> <span class="s2">&quot;Best estimator found by grid search:&quot;</span>
@@ -1247,23 +1239,23 @@ done in 13.206s
 <div class="output_area"><div class="prompt"></div>
 <div class="output_subarea output_stream output_stdout output_text">
 <pre>Fitting the classifier to the training set
-done in 71.907s
+done in 606.900s
 Best estimator found by grid search:
 RandomForestClassifier(bootstrap=True, class_weight=&apos;balanced&apos;,
             criterion=&apos;gini&apos;, max_depth=None, max_features=&apos;auto&apos;,
             max_leaf_nodes=None, min_samples_leaf=1, min_samples_split=2,
-            min_weight_fraction_leaf=0.0, n_estimators=5, n_jobs=-1,
+            min_weight_fraction_leaf=0.0, n_estimators=15, n_jobs=-1,
             oob_score=False, random_state=42, verbose=0, warm_start=False)
 Testing the best estimator
 RandomForestClassifier(bootstrap=True, class_weight=&apos;balanced&apos;,
             criterion=&apos;gini&apos;, max_depth=None, max_features=&apos;auto&apos;,
             max_leaf_nodes=None, min_samples_leaf=1, min_samples_split=2,
-            min_weight_fraction_leaf=0.0, n_estimators=5, n_jobs=-1,
+            min_weight_fraction_leaf=0.0, n_estimators=15, n_jobs=-1,
             oob_score=False, random_state=42, verbose=0, warm_start=False)
-	Accuracy: 0.85827	Precision: 0.43000	Recall: 0.19350	F1: 0.26690	F2: 0.21742
-	Total predictions: 15000	True positives:  387	False positives:  513	False negatives: 1613	True negatives: 12487
+	Accuracy: 0.86673	Precision: 0.50082	Recall: 0.15250	F1: 0.23381	F2: 0.17714
+	Total predictions: 15000	True positives:  305	False positives:  304	False negatives: 1695	True negatives: 12696
 
-done in 321.735s
+done in 303.589s
 </pre>
 </div>
 </div>
@@ -1283,97 +1275,27 @@ done in 321.735s
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[22]:</div>
+<div class="prompt input_prompt">In&nbsp;[24]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="n">estimators</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="p">((</span><span class="s1">&#39;scaler&#39;</span><span class="p">,</span><span class="n">MinMaxScaler</span><span class="p">()),</span>
-     <span class="s1">&#39;pca&#39;</span><span class="p">,</span> <span class="n">RandomizedPCA</span><span class="p">(</span><span class="n">whiten</span><span class="o">=</span><span class="bp">True</span><span class="p">)),</span> 
+    <span class="p">(</span><span class="s1">&#39;scaler&#39;</span><span class="p">,</span><span class="n">StandardScaler</span><span class="p">()),</span>
+     <span class="p">(</span><span class="s1">&#39;pca&#39;</span><span class="p">,</span> <span class="n">RandomizedPCA</span><span class="p">(</span><span class="n">whiten</span><span class="o">=</span><span class="bp">True</span><span class="p">)),</span> 
     <span class="p">(</span><span class="s1">&#39;randomforest&#39;</span><span class="p">,</span> <span class="n">RandomForestClassifier</span><span class="p">(</span><span class="n">class_weight</span><span class="o">=</span><span class="s1">&#39;balanced&#39;</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=-</span><span class="mi">1</span><span class="p">))]</span>
 <span class="n">pipe</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">(</span><span class="n">estimators</span><span class="p">)</span>
+
+<span class="c1"># Creating a stratified shuffle split to replace the standard Grid Search cross-validation</span>
+<span class="n">cv</span> <span class="o">=</span> <span class="n">StratifiedShuffleSplit</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="n">random_state</span> <span class="o">=</span> <span class="mi">42</span><span class="p">)</span>
 
 <span class="n">param_grid</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s1">&#39;pca__n_components&#39;</span><span class="p">:[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">20</span><span class="p">],</span>
     <span class="s1">&#39;randomforest__n_estimators&#39;</span><span class="p">:[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">20</span><span class="p">],</span>
     <span class="s1">&#39;randomforest__min_samples_leaf&#39;</span><span class="p">:[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span> 
              <span class="p">}</span>
-<span class="n">clf</span> <span class="o">=</span> <span class="n">GridSearchCV</span><span class="p">(</span><span class="n">pipe</span><span class="p">,</span> <span class="n">param_grid</span><span class="p">,</span> <span class="n">scoring</span><span class="o">=</span><span class="n">scorer_f</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">clf</span> <span class="o">=</span> <span class="n">GridSearchCV</span><span class="p">(</span><span class="n">pipe</span><span class="p">,</span> <span class="n">param_grid</span><span class="p">,</span> <span class="n">scoring</span><span class="o">=</span><span class="n">scorer_f</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="n">cv</span><span class="p">)</span>
 
 <span class="k">print</span> <span class="s2">&quot;Fitting the classifier to the training set&quot;</span>
 <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
-<span class="n">clf</span> <span class="o">=</span> <span class="n">clf</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">features</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span>
-<span class="k">print</span> <span class="s2">&quot;done in </span><span class="si">%0.3f</span><span class="s2">s&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">t0</span><span class="p">)</span>
-<span class="k">print</span> <span class="s2">&quot;Best estimator found by grid search:&quot;</span>
-<span class="k">print</span> <span class="n">clf</span><span class="o">.</span><span class="n">best_estimator_</span>
-
-<span class="k">print</span> <span class="s2">&quot;Testing the best estimator&quot;</span>
-<span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
-<span class="n">test_classifier</span><span class="p">(</span><span class="n">clf</span><span class="o">.</span><span class="n">best_estimator_</span><span class="p">,</span> <span class="n">my_dataset</span><span class="p">,</span> <span class="n">features_list</span><span class="p">)</span>
-<span class="k">print</span> <span class="s2">&quot;done in </span><span class="si">%0.3f</span><span class="s2">s&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">t0</span><span class="p">)</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area"><div class="prompt"></div>
-<div class="output_subarea output_text output_error">
-<pre>
-<span class="ansired">---------------------------------------------------------------------------</span>
-<span class="ansired">ValueError</span>                                Traceback (most recent call last)
-<span class="ansigreen">&lt;ipython-input-22-f8694cf89072&gt;</span> in <span class="ansicyan">&lt;module&gt;</span><span class="ansiblue">()</span>
-<span class="ansigreen">      3</span>      &apos;pca&apos;, RandomizedPCA(whiten=True)), 
-<span class="ansigreen">      4</span>     (&apos;randomforest&apos;, RandomForestClassifier(class_weight=&apos;balanced&apos;, random_state=42, n_jobs=-1))]
-<span class="ansigreen">----&gt; 5</span><span class="ansiyellow"> </span>pipe <span class="ansiyellow">=</span> Pipeline<span class="ansiyellow">(</span>estimators<span class="ansiyellow">)</span><span class="ansiyellow"></span>
-<span class="ansigreen">      6</span> <span class="ansiyellow"></span>
-<span class="ansigreen">      7</span> param_grid = {
-
-<span class="ansigreen">e:\Programmes\Anaconda\envs\py27\lib\site-packages\sklearn\pipeline.pyc</span> in <span class="ansicyan">__init__</span><span class="ansiblue">(self, steps)</span>
-<span class="ansigreen">     89</span>     <span class="ansigreen">def</span> __init__<span class="ansiyellow">(</span>self<span class="ansiyellow">,</span> steps<span class="ansiyellow">)</span><span class="ansiyellow">:</span><span class="ansiyellow"></span>
-<span class="ansigreen">     90</span>         names<span class="ansiyellow">,</span> estimators <span class="ansiyellow">=</span> zip<span class="ansiyellow">(</span><span class="ansiyellow">*</span>steps<span class="ansiyellow">)</span><span class="ansiyellow"></span>
-<span class="ansigreen">---&gt; 91</span><span class="ansiyellow">         </span><span class="ansigreen">if</span> len<span class="ansiyellow">(</span>dict<span class="ansiyellow">(</span>steps<span class="ansiyellow">)</span><span class="ansiyellow">)</span> <span class="ansiyellow">!=</span> len<span class="ansiyellow">(</span>steps<span class="ansiyellow">)</span><span class="ansiyellow">:</span><span class="ansiyellow"></span>
-<span class="ansigreen">     92</span>             <span class="ansigreen">raise</span> ValueError<span class="ansiyellow">(</span><span class="ansiblue">&quot;Provided step names are not unique: %s&quot;</span> <span class="ansiyellow">%</span> <span class="ansiyellow">(</span>names<span class="ansiyellow">,</span><span class="ansiyellow">)</span><span class="ansiyellow">)</span><span class="ansiyellow"></span>
-<span class="ansigreen">     93</span> <span class="ansiyellow"></span>
-
-<span class="ansired">ValueError</span>: dictionary update sequence element #0 has length 3; 2 is required</pre>
-</div>
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h3 id="Grid-Search-Optimization:-Logistic-Regression">Grid Search Optimization: Logistic Regression<a class="anchor-link" href="#Grid-Search-Optimization:-Logistic-Regression">&#182;</a></h3>
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[18]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="c1"># Creating a pipeline to include scaling when using Logistic regression</span>
-<span class="n">estimators</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;scaler&#39;</span><span class="p">,</span><span class="n">MinMaxScaler</span><span class="p">()),</span>
-              <span class="p">(</span><span class="s1">&#39;logreg&#39;</span><span class="p">,</span> <span class="n">LogisticRegression</span><span class="p">(</span><span class="n">class_weight</span><span class="o">=</span><span class="s2">&quot;balanced&quot;</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">))]</span>
-<span class="n">pipe</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">(</span><span class="n">estimators</span><span class="p">)</span>
-
-<span class="k">print</span> <span class="s2">&quot;Fitting the classifier to the training set&quot;</span>
-<span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
-<span class="n">param_grid</span> <span class="o">=</span> <span class="p">{</span>
-         <span class="s1">&#39;logreg__C&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span><span class="o">-</span><span class="mi">7</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">15</span><span class="p">),</span>
-         <span class="s1">&#39;logreg__penalty&#39;</span> <span class="p">:</span> <span class="p">[</span><span class="s2">&quot;l1&quot;</span><span class="p">,</span> <span class="s2">&quot;l2&quot;</span><span class="p">]</span> 
-          <span class="p">}</span>
-
-<span class="n">clf</span> <span class="o">=</span> <span class="n">GridSearchCV</span><span class="p">(</span><span class="n">pipe</span><span class="p">,</span> <span class="n">param_grid</span><span class="p">,</span> <span class="n">scoring</span><span class="o">=</span><span class="n">scorer_f</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
 <span class="n">clf</span> <span class="o">=</span> <span class="n">clf</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">features</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span>
 <span class="k">print</span> <span class="s2">&quot;done in </span><span class="si">%0.3f</span><span class="s2">s&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">t0</span><span class="p">)</span>
 <span class="k">print</span> <span class="s2">&quot;Best estimator found by grid search:&quot;</span>
@@ -1396,21 +1318,96 @@ done in 321.735s
 <div class="output_area"><div class="prompt"></div>
 <div class="output_subarea output_stream output_stdout output_text">
 <pre>Fitting the classifier to the training set
-done in 5.605s
+done in 2873.080s
 Best estimator found by grid search:
-Pipeline(steps=[(&apos;scaler&apos;, MinMaxScaler(copy=True, feature_range=(0, 1))), (&apos;logreg&apos;, LogisticRegression(C=100.0, class_weight=&apos;balanced&apos;, dual=False,
+Pipeline(steps=[(&apos;scaler&apos;, StandardScaler(copy=True, with_mean=True, with_std=True)), (&apos;pca&apos;, RandomizedPCA(copy=True, iterated_power=3, n_components=10, random_state=None,
+       whiten=True)), (&apos;randomforest&apos;, RandomForestClassifier(bootstrap=True, class_weight=&apos;balanced&apos;,
+            criterion=&apos;gini&apos;, max...timators=20, n_jobs=-1,
+            oob_score=False, random_state=42, verbose=0, warm_start=False))])
+Testing the best estimator
+Pipeline(steps=[(&apos;scaler&apos;, StandardScaler(copy=True, with_mean=True, with_std=True)), (&apos;pca&apos;, RandomizedPCA(copy=True, iterated_power=3, n_components=10, random_state=None,
+       whiten=True)), (&apos;randomforest&apos;, RandomForestClassifier(bootstrap=True, class_weight=&apos;balanced&apos;,
+            criterion=&apos;gini&apos;, max...timators=20, n_jobs=-1,
+            oob_score=False, random_state=42, verbose=0, warm_start=False))])
+	Accuracy: 0.83733	Precision: 0.23236	Recall: 0.09550	F1: 0.13536	F2: 0.10825
+	Total predictions: 15000	True positives:  191	False positives:  631	False negatives: 1809	True negatives: 12369
+
+done in 318.682s
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Grid-Search-Optimization:-Logistic-Regression">Grid Search Optimization: Logistic Regression<a class="anchor-link" href="#Grid-Search-Optimization:-Logistic-Regression">&#182;</a></h3>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[17]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="c1"># Creating a pipeline to include scaling when using Logistic regression</span>
+<span class="n">estimators</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;scaler&#39;</span><span class="p">,</span><span class="n">StandardScaler</span><span class="p">()),</span>
+              <span class="p">(</span><span class="s1">&#39;logreg&#39;</span><span class="p">,</span> <span class="n">LogisticRegression</span><span class="p">(</span><span class="n">class_weight</span><span class="o">=</span><span class="s2">&quot;balanced&quot;</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">))]</span>
+<span class="n">pipe</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">(</span><span class="n">estimators</span><span class="p">)</span>
+
+<span class="c1"># Creating a stratified shuffle split to replace the standard Grid Search cross-validation</span>
+<span class="n">cv</span> <span class="o">=</span> <span class="n">StratifiedShuffleSplit</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="n">random_state</span> <span class="o">=</span> <span class="mi">42</span><span class="p">)</span>
+
+<span class="k">print</span> <span class="s2">&quot;Fitting the classifier to the training set&quot;</span>
+<span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
+<span class="n">param_grid</span> <span class="o">=</span> <span class="p">{</span>
+         <span class="s1">&#39;logreg__C&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span><span class="o">-</span><span class="mi">7</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">15</span><span class="p">),</span>
+         <span class="s1">&#39;logreg__penalty&#39;</span> <span class="p">:</span> <span class="p">[</span><span class="s2">&quot;l1&quot;</span><span class="p">,</span> <span class="s2">&quot;l2&quot;</span><span class="p">]</span> 
+          <span class="p">}</span>
+
+<span class="n">clf</span> <span class="o">=</span> <span class="n">GridSearchCV</span><span class="p">(</span><span class="n">pipe</span><span class="p">,</span> <span class="n">param_grid</span><span class="p">,</span> <span class="n">scoring</span><span class="o">=</span><span class="n">scorer_f</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="n">cv</span><span class="p">)</span>
+<span class="n">clf</span> <span class="o">=</span> <span class="n">clf</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">features</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span>
+<span class="k">print</span> <span class="s2">&quot;done in </span><span class="si">%0.3f</span><span class="s2">s&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">t0</span><span class="p">)</span>
+<span class="k">print</span> <span class="s2">&quot;Best estimator found by grid search:&quot;</span>
+<span class="k">print</span> <span class="n">clf</span><span class="o">.</span><span class="n">best_estimator_</span>
+
+<span class="k">print</span> <span class="s2">&quot;Testing the best estimator&quot;</span>
+<span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
+<span class="n">test_classifier</span><span class="p">(</span><span class="n">clf</span><span class="o">.</span><span class="n">best_estimator_</span><span class="p">,</span> <span class="n">my_dataset</span><span class="p">,</span> <span class="n">features_list</span><span class="p">)</span>
+<span class="k">print</span> <span class="s2">&quot;done in </span><span class="si">%0.3f</span><span class="s2">s&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">t0</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area"><div class="prompt"></div>
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Fitting the classifier to the training set
+done in 90.614s
+Best estimator found by grid search:
+Pipeline(steps=[(&apos;scaler&apos;, StandardScaler(copy=True, with_mean=True, with_std=True)), (&apos;logreg&apos;, LogisticRegression(C=10.0, class_weight=&apos;balanced&apos;, dual=False,
           fit_intercept=True, intercept_scaling=1, max_iter=100,
           multi_class=&apos;ovr&apos;, n_jobs=1, penalty=&apos;l1&apos;, random_state=42,
           solver=&apos;liblinear&apos;, tol=0.0001, verbose=0, warm_start=False))])
 Testing the best estimator
-Pipeline(steps=[(&apos;scaler&apos;, MinMaxScaler(copy=True, feature_range=(0, 1))), (&apos;logreg&apos;, LogisticRegression(C=100.0, class_weight=&apos;balanced&apos;, dual=False,
+Pipeline(steps=[(&apos;scaler&apos;, StandardScaler(copy=True, with_mean=True, with_std=True)), (&apos;logreg&apos;, LogisticRegression(C=10.0, class_weight=&apos;balanced&apos;, dual=False,
           fit_intercept=True, intercept_scaling=1, max_iter=100,
           multi_class=&apos;ovr&apos;, n_jobs=1, penalty=&apos;l1&apos;, random_state=42,
           solver=&apos;liblinear&apos;, tol=0.0001, verbose=0, warm_start=False))])
-	Accuracy: 0.79920	Precision: 0.33133	Recall: 0.49700	F1: 0.39760	F2: 0.45182
-	Total predictions: 15000	True positives:  994	False positives: 2006	False negatives: 1006	True negatives: 10994
+	Accuracy: 0.79853	Precision: 0.33301	Recall: 0.50950	F1: 0.40277	F2: 0.46067
+	Total predictions: 15000	True positives: 1019	False positives: 2041	False negatives:  981	True negatives: 10959
 
-done in 23.504s
+done in 6.401s
 </pre>
 </div>
 </div>
@@ -1430,20 +1427,23 @@ done in 23.504s
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[19]:</div>
+<div class="prompt input_prompt">In&nbsp;[18]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="n">estimators</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;scaler&#39;</span><span class="p">,</span><span class="n">MinMaxScaler</span><span class="p">()),</span>
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">estimators</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;scaler&#39;</span><span class="p">,</span><span class="n">StandardScaler</span><span class="p">()),</span>
               <span class="p">(</span><span class="s1">&#39;pca&#39;</span><span class="p">,</span> <span class="n">RandomizedPCA</span><span class="p">(</span><span class="n">whiten</span><span class="o">=</span><span class="bp">True</span><span class="p">)),</span> 
               <span class="p">(</span><span class="s1">&#39;logreg&#39;</span><span class="p">,</span> <span class="n">LogisticRegression</span><span class="p">(</span><span class="n">class_weight</span><span class="o">=</span><span class="s2">&quot;balanced&quot;</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=-</span><span class="mi">1</span><span class="p">))]</span>
 <span class="n">pipe</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">(</span><span class="n">estimators</span><span class="p">)</span>
+
+<span class="c1"># Creating a stratified shuffle split to replace the standard Grid Search cross-validation</span>
+<span class="n">cv</span> <span class="o">=</span> <span class="n">StratifiedShuffleSplit</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="n">random_state</span> <span class="o">=</span> <span class="mi">42</span><span class="p">)</span>
 
 <span class="n">param_grid</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s1">&#39;pca__n_components&#39;</span> <span class="p">:</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">20</span><span class="p">],</span>
     <span class="s1">&#39;logreg__C&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span><span class="o">-</span><span class="mi">7</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">15</span><span class="p">),</span>
     <span class="s1">&#39;logreg__penalty&#39;</span> <span class="p">:</span> <span class="p">[</span><span class="s2">&quot;l1&quot;</span><span class="p">,</span> <span class="s2">&quot;l2&quot;</span><span class="p">]</span> 
              <span class="p">}</span>
-<span class="n">clf</span> <span class="o">=</span> <span class="n">GridSearchCV</span><span class="p">(</span><span class="n">pipe</span><span class="p">,</span> <span class="n">param_grid</span><span class="p">,</span> <span class="n">scoring</span><span class="o">=</span><span class="n">scorer_f</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">clf</span> <span class="o">=</span> <span class="n">GridSearchCV</span><span class="p">(</span><span class="n">pipe</span><span class="p">,</span> <span class="n">param_grid</span><span class="p">,</span> <span class="n">scoring</span><span class="o">=</span><span class="n">scorer_f</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="n">cv</span><span class="p">)</span>
 
 <span class="k">print</span> <span class="s2">&quot;Fitting the classifier to the training set&quot;</span>
 <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
@@ -1469,23 +1469,23 @@ done in 23.504s
 <div class="output_area"><div class="prompt"></div>
 <div class="output_subarea output_stream output_stdout output_text">
 <pre>Fitting the classifier to the training set
-done in 17.225s
+done in 186.484s
 Best estimator found by grid search:
-Pipeline(steps=[(&apos;scaler&apos;, MinMaxScaler(copy=True, feature_range=(0, 1))), (&apos;pca&apos;, RandomizedPCA(copy=True, iterated_power=3, n_components=15, random_state=None,
-       whiten=True)), (&apos;logreg&apos;, LogisticRegression(C=0.001, class_weight=&apos;balanced&apos;, dual=False,
+Pipeline(steps=[(&apos;scaler&apos;, StandardScaler(copy=True, with_mean=True, with_std=True)), (&apos;pca&apos;, RandomizedPCA(copy=True, iterated_power=3, n_components=15, random_state=None,
+       whiten=True)), (&apos;logreg&apos;, LogisticRegression(C=1.0, class_weight=&apos;balanced&apos;, dual=False,
           fit_intercept=True, intercept_scaling=1, max_iter=100,
           multi_class=&apos;ovr&apos;, n_jobs=-1, penalty=&apos;l2&apos;, random_state=42,
           solver=&apos;liblinear&apos;, tol=0.0001, verbose=0, warm_start=False))])
 Testing the best estimator
-Pipeline(steps=[(&apos;scaler&apos;, MinMaxScaler(copy=True, feature_range=(0, 1))), (&apos;pca&apos;, RandomizedPCA(copy=True, iterated_power=3, n_components=15, random_state=None,
-       whiten=True)), (&apos;logreg&apos;, LogisticRegression(C=0.001, class_weight=&apos;balanced&apos;, dual=False,
+Pipeline(steps=[(&apos;scaler&apos;, StandardScaler(copy=True, with_mean=True, with_std=True)), (&apos;pca&apos;, RandomizedPCA(copy=True, iterated_power=3, n_components=15, random_state=None,
+       whiten=True)), (&apos;logreg&apos;, LogisticRegression(C=1.0, class_weight=&apos;balanced&apos;, dual=False,
           fit_intercept=True, intercept_scaling=1, max_iter=100,
           multi_class=&apos;ovr&apos;, n_jobs=-1, penalty=&apos;l2&apos;, random_state=42,
           solver=&apos;liblinear&apos;, tol=0.0001, verbose=0, warm_start=False))])
-	Accuracy: 0.68273	Precision: 0.24628	Recall: 0.66950	F1: 0.36009	F2: 0.49825
-	Total predictions: 15000	True positives: 1339	False positives: 4098	False negatives:  661	True negatives: 8902
+	Accuracy: 0.74700	Precision: 0.25578	Recall: 0.47000	F1: 0.33128	F2: 0.40257
+	Total predictions: 15000	True positives:  940	False positives: 2735	False negatives: 1060	True negatives: 10265
 
-done in 1.744s
+done in 2.238s
 </pre>
 </div>
 </div>
@@ -1506,7 +1506,7 @@ done in 1.744s
 <li>Precision is the ratio of correctly identified PoI to total number of identified PoI.</li>
 </ul>
 <p>In general, scaling the features and reducing their dimensionality should help to increase the classifier performance.</p>
-<p>But to my surprise, the best classification performance is provided by the simple optimized Logistic Regression. Moreover, this algorithm is really fast to train than the SVC and the Random Forest.</p>
+<p>But to my surprise, the best classification performance is provided by the simple optimized Logistic Regression. Moreover, this algorithm is really faster to train than the SVC and the Random Forest.</p>
 <p>I suspect that, as the C hyper parameter from the logistic regression algorithm has been developed to tackle the issue of overfitting, it may mitigate the need to use a dimensionality reduction approach. It also confirms that logistic regression does not need scaling to be properly trained.</p>
 <p>As a consequence, I decided to implement this optimized algorithm in the poi_id file.</p>
 
