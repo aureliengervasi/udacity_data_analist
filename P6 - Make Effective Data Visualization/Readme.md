@@ -31,10 +31,7 @@ D3.js version
 # PROJECT UNDER WORK
 To be done:
 - Improve train line paths
-- Add legend with line width
-- Add city name if mouse hovering
-- Add regularity number if mouse hovering
-
+- Work on the markup file
 
 
 ## Summary
@@ -42,9 +39,11 @@ To be done:
 
 ## Limitations and potentials
 - Data set does not seem to be complete. Some TGV lines seems to be missing (Lyon Part Dieu - Mulhouse ?)
-- The train line paths based on the TGV railway map (http://www.sncf.com/fr/trains/tgv/reseau). In order to focus my effort on the D3.js coding, I deliberately chose to simplify these paths. 
+- The train line paths based on the TGV railway map (http://www.sncf.com/fr/trains/tgv/reseau). In order to focus my effort on the D3.js coding, I deliberately chose to simplify these paths.
 
 ## Bibliograpy
 
 departement map
 sncf open data
+http://bl.ocks.org/WilliamQLiu/76ae20060e19bf42d774
+http://learnjsdata.com/time.html
