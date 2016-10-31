@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="http://d3js.org/d3.v3.min.js"></script>
+    <style>
+      h2 {
+        text-align: center;
+        color: black;
+      }
+      circle {
+        fill: orange;
+        stroke: black;
+        stroke-width: 0.7;
+        opacity: 0.7;
+      }
+      select {
+        position: fixed;
+        top: 100px;
+      }
+      rect.legend {
+        stroke: black;
+        stroke-width: 1;
+        fill-opacity: 0;
+      }
+      line.legend {
+        stroke: red;
+      }
+      text.legend {
+        font-size, 2px;
+      }
+      path {
+      pointer-events: all;
+      }
+    </style>
+    <script type="text/javascript">
+    // date formated with full text month name
+      function full_text_date(date) {
+        return d3.time.format("%B %Y")(d3.time.format("%Y-%m").parse(date))
+      }
+
+      function draw(geo_data) {
+        "use strict";
+        var margin = 75,
+            width = 800 - margin,
+            height = 800 - margin;
+
+        // Create a scale for line width
+        var line_strokewidth_scale = d3.scale.linear()
+         .domain([0, 1])
+         .range([8, 0]);
+
+        // Page body
+        d3.select("body")
+          .append("h2")
+          .text("Pertubations sur les lignes TGV");
+
+       // SVG element
+       var svg = d3.select("body")
+           .append("div")
+           .attr("align","center")
+           .append("svg")
+           .attr("width", width + margin)
+           .attr("height", height + margin)
+
+        // d3 projection on mercator map
+        var projection = d3.geo.mercator()
+                               .scale(2400)
+                               .translate([width / 2.35, height / .280]);
+        var path = d3.geo.path().projection(projection);
+
+        var map = svg.append('g').attr('class', 'map');
+        map.selectAll('path')
+           .data(geo_data.features)
+           .enter()
+           .append('path')
+           .attr('d', path)
+           .attr('class', 'region')
+           .style('fill', 'lightBlue')
+           .style('stroke', 'black')
+           .style('stroke-opacity', 0.3)
+           .style('stroke-width', 0.5);
+
+        // plot cities
+       d3.tsv("/data/villes.tsv", plot_cities);
+
+       function plot_cities(data) {
+            var cities = svg.append('g').attr('class', 'cities');
+            cities.selectAll('circle')
+                  .data(data)
+                  .enter()
+                  .append("circle")
+                  .attr('cx', function(d) {return projection([+d['lon'], +d['lat']])[0];})
+                  .attr('cy', function(d) {return projection([+d['lon'], +d['lat']])[1];})
+                  .attr('r', 3)
+                  .on("mouseover", cityMouseOver)
+                  .on("mouseout", cityMouseOut);
+
+            // Mouse over handler
+            function cityMouseOver(d,i) {
+              d3.select(this).attr("r",6);
+              cities.append("text").attr({
+                  id: "t" + d3.format(".0f")(d.lon) + "-" + d3.format(".0f")(d.lat) + "-" + i,  // Create an id for text so we can select it later for removing on mouseout
+                  x: function() {return projection([+d.lon, +d.lat])[0]+5;},
+                  y: function() {return projection([+d.lon, +d.lat])[1]-5;}
+                  })
+                .text(function() {return d.name;});
+                }
+
+            function cityMouseOut(d,i) {
+              d3.select(this).attr("r",3);
+              d3.select("#t" + d3.format(".0f")(d.lon) + "-" + d3.format(".0f")(d.lat) + "-" + i).remove();
+            }
+
+            // plot TGV lines
+            d3.json("/geojson/tgv_lines.geojson", plot_lines);
+
+            function plot_lines(geo_data) {
+                // lines which stroke width is adapted according to regularity
+                var lines1 = svg.append("g").attr('class', 'train_lines1');
+                lines1.selectAll("path")
+                     .data(geo_data.features)
+                     .enter()
+                     .append("path")
+                     .attr('d', path)
+                     .style('stroke', 'black')
+                     .style('fill-opacity', 0)
+                     .style('stroke-width', 0);
+
+                // thicker transparent lines that define the mouse hitbox for mouseover event
+                var lines2 = svg.append("g").attr('class', 'train_lines2');
+                lines2.selectAll("path")
+                    .data(geo_data.features)
+                    .enter()
+                    .append("path")
+                    .attr('d', path)
+                    .style('fill-opacity', 0)
+                    .style('stroke-opacity',1)
+                    .style('stroke-width', 10);
+
+                 // animate lines
+                 d3.tsv("/data/regularity.tsv", function(d) {
+                     d['year'] = +d['year'];
+                     d['month'] = +d['month'];
+                     d['regularity'] = +d['regularity'];
+                     return d;}, animation);
+
+                function animation(data) {
+                    // add legend
+                    var x_box = 600.5;
+                    var y_box = 60.5;
+                    function x_box_shift(delta) {
+                      return x_box + delta;}
+                    function y_box_shift(delta) {
+                      return y_box + delta;}
+
+                    var legend = d3.select("svg").append("g")
+                                  .attr("class", "legend");
+                    legend.append("rect").attr("class", "legend")
+                                    .attr("width",170).attr("height", 120)
+                                    .attr("x",x_box).attr("y", y_box);
+                    legend.append("line").attr("class", "legend")
+                                    .attr("x1",x_box_shift(10)).attr("y1", y_box_shift(25))
+                                    .attr("x2",x_box_shift(40)).attr("y2", y_box_shift(25))
+                                    .attr("stroke-width", line_strokewidth_scale(0.45));
+                    legend.append("text").attr("class", "legend")
+                                    .attr("x",x_box_shift(50)).attr("y", y_box_shift(28))
+                                    .attr("font-size",13.5)
+                                    .text("train regularity: 45%");
+                    legend.append("line").attr("class", "legend")
+                                    .attr("x1",x_box_shift(10)).attr("y1", y_box_shift(50))
+                                    .attr("x2",x_box_shift(40)).attr("y2", y_box_shift(50))
+                                    .attr("stroke-width", line_strokewidth_scale(0.6));
+                    legend.append("text").attr("class", "legend")
+                                    .attr("x",x_box_shift(50)).attr("y", y_box_shift(53))
+                                    .attr("font-size",13.5)
+                                    .text("train regularity: 60%");
+                    legend.append("line").attr("class", "legend")
+                                    .attr("x1",x_box_shift(10)).attr("y1", y_box_shift(75))
+                                    .attr("x2",x_box_shift(40)).attr("y2", y_box_shift(75))
+                                    .attr("stroke-width", line_strokewidth_scale(0.75));
+                    legend.append("text").attr("class", "legend")
+                                    .attr("x",x_box_shift(50)).attr("y", y_box_shift(78))
+                                    .attr("font-size",13.5)
+                                    .text("train regularity: 75%");
+                    legend.append("line").attr("class", "legend")
+                                    .attr("x1",x_box_shift(10)).attr("y1", y_box_shift(100))
+                                    .attr("x2",x_box_shift(40)).attr("y2", y_box_shift(100))
+                                    .attr("stroke-width", line_strokewidth_scale(.9));
+                    legend.append("text").attr("class", "legend")
+                                    .attr("x",x_box_shift(50)).attr("y", y_box_shift(103))
+                                    .attr("font-size",13.5)
+                                    .text("train regularity: 90%");
+
+                    // group entries by date
+                    var nested = d3.nest()
+                                   .key(function(d) {return d['Date'];})
+                                   .entries(data);
+
+                    // update rail section opacity and thickness according to monthly train regularity
+                    function update(date) {
+                        var filtered = nested.filter(function(d) {
+                             return d['key'] === date;});
+
+                        d3.select("h2")
+                           .text("Pertubations sur les principales lignes TGV - " + full_text_date(date));
+                        // lines which stroke width is adapted according to regularity
+                        var train_lines1 = svg.select('g.train_lines1').selectAll('path')
+                                          .data(filtered[0].values, function(d) {return d['line_section'];});
+
+                        // thicker transparent lines that define the mouse hitbox for mouseover event
+                        var train_lines2 = svg.select('g.train_lines2').selectAll('path')
+                                          .data(filtered[0].values, function(d) {return d['line_section'];})
+                                          .on("mouseover", lineMouseOver)
+                                          .on("mouseout", lineMouseOut);
+
+                        train_lines1.exit().remove();
+                        train_lines2.exit().remove();
+
+                        train_lines1.transition()
+                                  .duration(200)
+                                  .style('stroke', 'red')
+                                  .style('stroke-width', function(d) {return line_strokewidth_scale(d['regularity']);});
+                        train_lines2.transition();
+
+                        // Mouse over handler
+                        function lineMouseOver(d) {
+                          var coordinates = d3.mouse(this);
+                          svg.select('g.train_lines2').append("text").attr({
+                              id: d.line_section,
+                              x: coordinates[0], y: coordinates[1]
+                              })
+                            .text(function() {return 100*d3.format("0.2f")(d.regularity) + "%";});
+                        }
+
+                        function lineMouseOut(d) {
+                          svg.select('#' + d.line_section).remove();
+                        }
+
+                     }
+
+                     // update through all dates
+                     var dates = ['2011-09','2011-10','2011-11','2011-12',
+                                  '2012-01','2012-02','2012-03','2012-04','2012-05','2012-06',
+                                  '2012-07','2012-08','2012-09','2012-10','2012-11','2012-12',
+                                  '2013-01','2013-02','2013-03','2013-04','2013-05','2013-06',
+                                  '2013-07','2013-08','2013-09','2013-10','2013-11','2013-12',
+                                  '2014-01','2014-02','2014-03','2014-04','2014-05','2014-06',
+                                  '2014-07','2014-08','2014-09','2014-10','2014-11','2014-12',
+                                  '2015-01','2015-02','2015-03','2015-04','2015-05','2015-06',
+                                  '2015-07','2015-08','2015-09','2015-10','2015-11','2015-12',
+                                  '2016-01','2016-02','2016-03','2016-04','2016-05','2016-06'];
+
+                     var date_idx = 0;
+                     var date_interval = setInterval(function() {
+                       update(dates[date_idx]);
+                       date_idx++;
+                       if(date_idx >= dates.length) {
+                           clearInterval(date_interval);
+
+                           // add list selector to manually select the date
+                           var selector = d3.select("body").append("div")
+                                .attr("align", "center")
+                                .append("select")
+                                .attr("id", "dates_buttons");
+
+                           var buttons = selector.selectAll("option")
+                                  .data(dates)
+                                  .enter()
+                                  .append("option")
+                                  .text(function(d) {return full_text_date(d);})
+                                  .attr("value", function(d) {return d;})
+                                  .each(function(d) {
+                                    var option = d3.select(this);
+                                    if(d = dates[date_idx-1])
+                                      option.attr("selected","selected"); // select the last updated month as default option
+                                  });
+
+                           selector.on("change", function() {
+                               var selected_date = d3.select(this).property('value');
+                               update(selected_date);
+                           });
+                       }
+                     }, 1000);
+             }
+            }
+          }
+    };
+
+
+    </script>
+  </head>
+<body>
+
+  <script type="text/javascript">
+    d3.json("/geojson/departements.geojson", draw);
+  </script>
+
+</body>
+</html>
