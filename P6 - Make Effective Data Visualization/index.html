@@ -4,6 +4,9 @@
   <meta charset="utf-8">
   <script src="http://d3js.org/d3.v3.min.js"></script>
     <style>
+      * {
+        font-family:Arial;
+      }
       h2 {
         color: black;
       }
@@ -22,10 +25,24 @@
         stroke-width: 3;
       }
       text.legend {
-        font-size, 2px;
+        font-size: 14px;
       }
       path {
       pointer-events: all;  /* to activate event when mouse on border */
+      }
+      div.next_button {
+        background-color: lightBlue;
+        margin: 10px;
+        color: white;
+        padding: 4px;
+        width:100px;
+        text-align: center;
+      }
+      p.comment {
+        font-size: 14px;
+      }
+      li.disturbances {
+        font-size: 15px;
       }
     </style>
     <script type="text/javascript">
@@ -43,17 +60,22 @@
         // Create a scale for path color
         var color_scale = d3.scale.linear()
           .domain([0.5, 0.75, 1])
-          .range(["red", "yellow","green"]);
+          .range(["#a63603", "#fd8d3c","#feedde"]);
 
         // Page body
         d3.select("body")
           .append("h2")
           .text("Pertubations sur les lignes TGV");
 
+        // add main message
+        var message = d3.select("body").append("div");
+        message.append("h3")
+          .attr("class", "message")
+          .text("Data shows that, in general, train regularity is high on the TGV lines (89% on average). However there are two main reasons for big delays.")
+          .style("font-style", "italic");
+
         // add list selector placeholder to manually select the date
-        var selector = d3.select("body").append("div")
-             .append("select")
-             .attr("id", "dates_buttons");
+        d3.select("body").append("div").attr("class","selector");
 
        // Main SVG element
        var svg = d3.select("body").append("table")
@@ -67,14 +89,6 @@
         // Disturbances panel
         var dist_list = d3.select("table").select("tr")
           .append("td").attr("class","disturbances").style("width","400px");
-        dist_list.append("h3").attr("class","disturbances").text("Number of train lines impacted by disturbances");
-        dist_list.append("li").attr("class","disturbances").text("Caused by people: ");
-        dist_list.append("li").attr("class","disturbances").text("Caused by animals: ");
-        dist_list.append("li").attr("class","disturbances").text("Caused by technical failures: ");
-        dist_list.append("li").attr("class","disturbances").text("Caused by malicious acts: ");
-        dist_list.append("li").attr("class","disturbances").text("Caused by construction works: ");
-        dist_list.append("li").attr("class","disturbances").text("Caused by strikes: ");
-        dist_list.append("li").attr("class","disturbances").text("Caused by weather events: ");
 
         // d3 projection on mercator map
         var projection = d3.geo.mercator()
@@ -152,66 +166,96 @@
                     .style('stroke-opacity',1)
                     .style('stroke-width', 5);
 
-                // load comments
-                d3.tsv("data/comments.tsv", load_comments);
+                // add legend
+                var x_box = 30.5;
+                var y_box = 0.5;
+                function x_box_shift(delta) {
+                  return x_box + delta;}
+                function y_box_shift(delta) {
+                  return y_box + delta;}
+
+                var legend = d3.select("svg").append("g")
+                              .attr("class", "legend");
+                legend.append("rect").attr("class", "legend")
+                                .attr("width",170).attr("height", 120)
+                                .attr("x",x_box).attr("y", y_box);
+                legend.append("line").attr("class", "legend")
+                                .attr("x1",x_box_shift(10)).attr("y1", y_box_shift(25))
+                                .attr("x2",x_box_shift(40)).attr("y2", y_box_shift(25))
+                                .style("stroke", color_scale(0.45));
+                legend.append("text").attr("class", "legend")
+                                .attr("x",x_box_shift(50)).attr("y", y_box_shift(28))
+                                .attr("font-size",13.5)
+                                .text("train regularity: 45%");
+                legend.append("line").attr("class", "legend")
+                                .attr("x1",x_box_shift(10)).attr("y1", y_box_shift(50))
+                                .attr("x2",x_box_shift(40)).attr("y2", y_box_shift(50))
+                                .style("stroke", color_scale(0.60));
+                legend.append("text").attr("class", "legend")
+                                .attr("x",x_box_shift(50)).attr("y", y_box_shift(53))
+                                .attr("font-size",13.5)
+                                .text("train regularity: 60%");
+                legend.append("line").attr("class", "legend")
+                                .attr("x1",x_box_shift(10)).attr("y1", y_box_shift(75))
+                                .attr("x2",x_box_shift(40)).attr("y2", y_box_shift(75))
+                                .style("stroke", color_scale(0.75));
+                legend.append("text").attr("class", "legend")
+                                .attr("x",x_box_shift(50)).attr("y", y_box_shift(78))
+                                .attr("font-size",13.5)
+                                .text("train regularity: 75%");
+                legend.append("line").attr("class", "legend")
+                                .attr("x1",x_box_shift(10)).attr("y1", y_box_shift(100))
+                                .attr("x2",x_box_shift(40)).attr("y2", y_box_shift(100))
+                                .style("stroke", color_scale(0.90));
+                legend.append("text").attr("class", "legend")
+                                .attr("x",x_box_shift(50)).attr("y", y_box_shift(103))
+                                .attr("font-size",13.5)
+                                .text("train regularity: 90%");
+
+                // create "Next" button for the 1st animation
+                d3.select("h3.message").append("div")
+                  .attr("class", "next_button")
+                  .text("Next...")
+                  .on("click",function() {
+                    d3.select(this).remove();
+                    d3.tsv("data/comments.tsv", load_comments);
+                    d3.select("h3.message")
+                      .text("First, weather conditions can cause strong disturbances on an entire axis as shown in January 2013, where heavy snowfalls occured in the north of France.")
+                      .append("div").attr("class", "next_button").text("Next...")
+                      .style("background-color","white");
+
+                    // Disturbances panel
+                    dist_list.append("h4").attr("class","disturbances").text("Number of train lines impacted by disturbances");
+                    dist_list.append("li").attr("class","disturbances").attr("id","people")
+                      .text("Caused by people: ");
+                    dist_list.append("li").attr("class","disturbances").attr("id","animal")
+                      .text("Caused by animals: ");
+                    dist_list.append("li").attr("class","disturbances").attr("id","failure")
+                      .text("Caused by technical failures: ");
+                    dist_list.append("li").attr("class","disturbances").attr("id","malicious")
+                      .text("Caused by malicious acts: ");
+                    dist_list.append("li").attr("class","disturbances").attr("id","construction")
+                      .text("Caused by construction works: ");
+                    dist_list.append("li").attr("class","disturbances").attr("id","strikes")
+                      .text("Caused by strikes: ");
+                    dist_list.append("li").attr("class","disturbances").attr("id","weather")
+                      .text("Caused by weather events: ").style("font-weight","bold");
+
+                    // Comments panel
+                    d3.select("body").append("h4").attr("class", "comments_header")
+                      .text("Comments from the SNCF data set"); // placeholder for comments header
+                    d3.select("body").append("div").attr("class", "comments_list"); // placeholder for comments
+                  });
 
                 function load_comments(comments) {
-                  d3.select("body").append("h3").attr("class", "comments_header")
-                    .text("Comments from the SNCF data set"); // placeholder for comments header
-                  d3.select("body").append("div").attr("class", "comments_list"); // placeholder for comments
                   d3.tsv("data/regularity.tsv", function(data) {
-                      data['regularity'] = +data['regularity']; // convert to integer
-                      animation(data, comments);
-                      });
+                    load_regularity(data, comments);
+                  });
                 }
 
                 // animate lines
-                function animation(reg,comments) {
-                    // add legend
-                    var x_box = 30.5;
-                    var y_box = 0.5;
-                    function x_box_shift(delta) {
-                      return x_box + delta;}
-                    function y_box_shift(delta) {
-                      return y_box + delta;}
+                function load_regularity(reg,comments) {
 
-                    var legend = d3.select("svg").append("g")
-                                  .attr("class", "legend");
-                    legend.append("rect").attr("class", "legend")
-                                    .attr("width",170).attr("height", 120)
-                                    .attr("x",x_box).attr("y", y_box);
-                    legend.append("line").attr("class", "legend")
-                                    .attr("x1",x_box_shift(10)).attr("y1", y_box_shift(25))
-                                    .attr("x2",x_box_shift(40)).attr("y2", y_box_shift(25))
-                                    .style("stroke", color_scale(0.45));
-                    legend.append("text").attr("class", "legend")
-                                    .attr("x",x_box_shift(50)).attr("y", y_box_shift(28))
-                                    .attr("font-size",13.5)
-                                    .text("train regularity: 45%");
-                    legend.append("line").attr("class", "legend")
-                                    .attr("x1",x_box_shift(10)).attr("y1", y_box_shift(50))
-                                    .attr("x2",x_box_shift(40)).attr("y2", y_box_shift(50))
-                                    .style("stroke", color_scale(0.60));
-                    legend.append("text").attr("class", "legend")
-                                    .attr("x",x_box_shift(50)).attr("y", y_box_shift(53))
-                                    .attr("font-size",13.5)
-                                    .text("train regularity: 60%");
-                    legend.append("line").attr("class", "legend")
-                                    .attr("x1",x_box_shift(10)).attr("y1", y_box_shift(75))
-                                    .attr("x2",x_box_shift(40)).attr("y2", y_box_shift(75))
-                                    .style("stroke", color_scale(0.75));
-                    legend.append("text").attr("class", "legend")
-                                    .attr("x",x_box_shift(50)).attr("y", y_box_shift(78))
-                                    .attr("font-size",13.5)
-                                    .text("train regularity: 75%");
-                    legend.append("line").attr("class", "legend")
-                                    .attr("x1",x_box_shift(10)).attr("y1", y_box_shift(100))
-                                    .attr("x2",x_box_shift(40)).attr("y2", y_box_shift(100))
-                                    .style("stroke", color_scale(0.90));
-                    legend.append("text").attr("class", "legend")
-                                    .attr("x",x_box_shift(50)).attr("y", y_box_shift(103))
-                                    .attr("font-size",13.5)
-                                    .text("train regularity: 90%");
                     // group entries by date
                     var nested_reg = d3.nest()
                                    .key(function(d) {return d['Date'];})
@@ -289,35 +333,33 @@
                       }
 
                       // update disturbances count
-                      var dist_list = d3.select("td.disturbances");
-                      dist_list.selectAll("li").remove();
                       comments = filtered_comments[0].values
-                      dist_list.append("li").attr("class","disturbances").text(function() {
+                      d3.select("#people").text(function() {
                         return "Caused by people: " + d3.sum(comments, function(d) {return d.obs_person;});
                       });
-                      dist_list.append("li").attr("class","disturbances").text(function() {
+                      d3.select("#animal").text(function() {
                         return "Caused by animals: " + d3.sum(comments, function(d) {return d.obs_animal;});
                       });
-                      dist_list.append("li").attr("class","disturbances").text(function() {
+                      d3.select("#failure").text(function() {
                         return "Caused by technical failures: " + d3.sum(comments, function(d) {return d.obs_technical;});
                       });
-                      dist_list.append("li").attr("class","disturbances").text(function() {
+                      d3.select("#malicious").text(function() {
                         return "Caused by malicious acts: " + d3.sum(comments, function(d) {return d.obs_malicious;});
                       });
-                      dist_list.append("li").attr("class","disturbances").text(function() {
+                      d3.select("#construction").text(function() {
                         return "Caused by construction works: " + d3.sum(comments, function(d) {return d.obs_construction;});
                       });
-                      dist_list.append("li").attr("class","disturbances").text(function() {
+                      d3.select("#strikes").text(function() {
                         return "Caused by strikes: " + d3.sum(comments, function(d) {return d.obs_strike;});
                       });
-                      dist_list.append("li").attr("class","disturbances").text(function() {
+                      d3.select("#weather").text(function() {
                         return "Caused by weather events: " + d3.sum(comments, function(d) {return d.obs_weather;});
                       });
                     }
 
 
-                     // update through all dates
-                     var dates = ['2011-09','2011-10','2011-11','2011-12',
+                    // update through all dates
+                    var dates = ['2011-09','2011-10','2011-11','2011-12',
                                   '2012-01','2012-02','2012-03','2012-04','2012-05','2012-06',
                                   '2012-07','2012-08','2012-09','2012-10','2012-11','2012-12',
                                   '2013-01','2013-02','2013-03','2013-04','2013-05','2013-06',
@@ -329,17 +371,87 @@
                                   '2016-01','2016-02','2016-03','2016-04','2016-05','2016-06'];
 
 
-                     var date_idx = 0;
-                     var date_interval = setInterval(function() {
-                       update(dates[date_idx]);
-                       date_idx++;
-                       if(date_idx >= dates.length) {
-                           clearInterval(date_interval);
+                    var end_date = "2013-01"
+                    var date_idx = 0;
+                    var date_interval = setInterval(function() {
+                      update(dates[date_idx]);
+                      date_idx++;
+                      if(dates[date_idx-1] >= end_date) {
+                        clearInterval(date_interval);
 
-                           // add list selector to manually select the date
-                           var selector = d3.select("#dates_buttons")
+                        // update Next button
+                        d3.select("div.next_button")
+                          .style("background-color","lightBlue")
+                          .on("click",function() {
+                            d3.select(this).remove();
+                            d3.select("h3.message")
+                              .text("But big strikes on a national level can also have a major impact as seen in June 2014")
+                              .append("div")
+                              .attr("class", "next_button").text("Next...")
+                              .style("background-color","white");
 
-                           selector.selectAll("option")
+                            // update disturbance list formatting
+                            d3.select("#weather").style("font-weight","normal");
+                            d3.select("#strikes").style("font-weight","bold");
+                            animation2();
+                            });
+                      }
+                    }, 1000);
+
+                    function animation2() {
+                      var end_date = "2014-06"
+                      var date_idx = 16; // starting on January 2013
+                      var date_interval = setInterval(function() {
+                        update(dates[date_idx]);
+                        date_idx++;
+                        if(dates[date_idx-1] >= end_date) {
+                          clearInterval(date_interval);
+
+                          // update main message and Next button
+                          d3.select("div.next_button")
+                            .style("background-color","lightBlue")
+                            .on("click",function() {
+                              d3.select(this).remove();
+                              d3.select("h3.message")
+                                .text("This two causes can generally explain most of the low train regularity values.")
+                                .append("div")
+                                .attr("class", "next_button").text(".")
+                                .style("background-color","white");
+
+                              // update disturbance list formatting
+                              d3.select("#weather").style("font-weight","bold");
+                              d3.select("#strikes").style("font-weight","bold");
+                              animation3();
+                              });
+                        }
+                      }, 1000);
+                    }
+
+                    function animation3() {
+                      var end_date = "2016-06"
+                      var date_idx = 33; // starting on June 2014
+                      var date_interval = setInterval(function() {
+                        update(dates[date_idx]);
+                        date_idx++;
+                        if(dates[date_idx-1] >= end_date) {
+                          clearInterval(date_interval);
+
+                          // update Message and Next button
+                          d3.select("div.next_button")
+                            .remove();
+                          d3.select("h3.message")
+                            .text("You can now browse through the different months by yourself!");
+
+                          // update disturbance list formatting
+                          d3.select("#weather").style("font-weight","normal");
+                          d3.select("#strikes").style("font-weight","normal");
+
+                          // add list selector to manually select the date
+                          var selector = d3.select("div.selector")
+                               .append("select")
+                               .attr("id", "dates_buttons");
+
+                          selector.selectAll("option")
                             .data(dates)
                             .enter()
                             .append("option")
@@ -349,14 +461,20 @@
                               var option = d3.select(this);
                               if(d = dates[date_idx-1])
                                 option.attr("selected","selected"); // select the last updated month as default option
-                            });
+                              });
 
-                           selector.on("change", function() {
-                               var selected_date = d3.select(this).property('value');
-                               update(selected_date);
-                           });
-                       }
-                     }, 1000);
+                            selector.on("change", function() {
+                              var selected_date = d3.select(this).property('value');
+                              update(selected_date);
+                            });
+                        }
+                      }, 1000);
+                    }
+
+
+
+
+
              }
             }
           }
