@@ -44,11 +44,11 @@ D3.js version: v3
 
 My idea was to draw a map of the main TGV lines in France, where my animation would modify the color of the different paths in order to translate a change in the monthly train regularity. So I had to deal with a continuous data type (train regularity, between 0% and 100%) on a map chart type.  
 
-My visual encoding in this case would be the stroke color which would vary from green (if there is no train delay, or cancellation), to yellow and red. In a previous version, I also used the line opacity and line thickness as a visual encoding, but after some feedback, I preferred to stay with only stroke color.
+My visual encoding in this case would be the stroke color which would vary from light rose (if there is no train delay, or cancellation), to red. This colors where chosen in order to be colorblind safe. In a previous version, I also used the line opacity and line thickness as a visual encoding, but after some feedback, I preferred to stay with only stroke color.
 
 I also included the main disturbances statistics in order to see the correlation between train regularity and the different types of disturbances. The different observations related to each month are displayed below the map, if the user wants more details.
 
-The overall visualization is based on a "martini-glass" scheme. The visualization begins with an animation that updates the map for each month between September 2011 and June 2016. At the end of this sequence, the user has the possibility to choose which specific month he wants to look at. Thanks to mouse-over events, it is also possible to get the exact regularity value on each train line section.
+The overall visualization is based on a "martini-glass" scheme. The visualization begins with an animation that updates the map for each month between September 2011 and January 2013, which is a good example of the impact of weather conditions on train regularity. The next animation brings the viewer to June 2014, where a lot of strikes occurred in the railway company. The last animation unrolls the remaining months until June 2016. At the end of this sequence, the user has the possibility to choose which specific month he wants to look at. Thanks to mouse-over events, it is also possible to get the exact regularity value on each train line section.
 
 ### Data preparation
 
@@ -85,7 +85,7 @@ In order to improve he first version of my visualization (index_old.html), I had
 - "But even with a legend, it would be nice to be able to get the exact value when my mouse is over the railway section."
 - "I can see different circles that must represent cities, but I'm not sure to be able to name them correctly. Adding some text when the mouse is over it would help a lot."
 - "Dates are provided in a strange format. It would be easier if the months name could be given in full letters."
-- "The main message is not clear. The viewer needs more help during the animation phase.". As a consequence, I processed the observations from the dataset and extracted statistics about the different disturbances families. I also added the raw observation below the map, if more details are needed.
+- "The main message is not clear. The viewer needs more help during the animation phase.". As a consequence, I processed the observations from the dataset and extracted statistics about the different disturbances families. I also added the raw observation below the map, if more details are needed. A also split the animation in 3 different phases where each focuses on a specific message.
 
 ## Bibliograpy
 
@@ -93,3 +93,4 @@ In order to improve he first version of my visualization (index_old.html), I had
 - SNCF Open Data portal: https://data.sncf.com/
 - Mouse-over event example: http://bl.ocks.org/WilliamQLiu/76ae20060e19bf42d774
 - Time formating example: http://learnjsdata.com/time.html
+- Colorblind safe palettes: http://colorbrewer2.org/
