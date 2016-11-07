@@ -12,6 +12,18 @@ https://www.cs.cmu.edu/~./enron/
 
 The Udacity team extracted some useful features related to email correspondence for 145 users and enhanced it with financial data for these 145 users (salary, stock options, etc.).
 
+## Code
+
+Jupyter notebook under the following [link](P5 - Identify Fraud from Enron Email.ipynb).
+
+Packages versions:
+
+- Python: v2.7.11
+- NumPy: v1.10.4
+- Pandas: v0.18.0
+- sklearn: v0.17.1
+
+
 ## Summary
 
 The first part is dedicated to analyze the features, get insights about the dataset, and spot the main outliers. Some feature engineering is done by adding 3 new features built out of existing ones. Their impact on the classifier performance seems to be positive.
@@ -33,3 +45,9 @@ One of the major limitation of this work was the dataset size and the numurous m
 In order to tackle this issue, the StratifiedShuffleSplit function from the sickit learn cross-validation package was used to implement 10-folds to 1000-folds cross validation when developing and testing the different algorithms.
 
 In order to improve further the classifier performance, it would be interesting to try to implement some specific ensemble classifiers combining for example logistic regression with SVC or decision trees.
+
+##Bibliography
+
+Sickit Learn examples : http://scikit-learn.org/ (RandomForestClassifier, AdaBoostClassifier, LogisticRegression, Pipeline, GridSearchCV, StratifiedShuffleSplit, RandomizedPCA, SVC)
+
+Python Machine Learning, Sebastian Raschka, 2015, Packt Publishing
