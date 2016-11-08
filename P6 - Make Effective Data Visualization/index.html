@@ -305,7 +305,7 @@
                         train_lines2.exit().remove();
 
                         train_lines1.transition()
-                                  .duration(200)
+                                  .duration(500)
                                   .style('stroke-width',3)
                                   .style('stroke', function(d) {return color_scale(d['regularity']);});
                         train_lines2.transition();
@@ -358,7 +358,50 @@
                     }
 
 
-                    // update through all dates
+                    update("2013-01");  // update to January 2013
+
+                    // update Next button
+                    d3.select("div.next_button")
+                      .style("background-color","lightBlue")
+                      .on("click",function() {
+                        d3.select(this).remove();
+                        d3.select("h3.message")
+                          .text("But big strikes on a national level can also have a major impact as seen in June 2014")
+                          .append("div")
+                          .attr("class", "next_button").text("Next...")
+                          .style("background-color","white");
+
+                        // update disturbance list formatting
+                        d3.select("#weather").style("font-weight","normal");
+                        d3.select("#strikes").style("font-weight","bold");
+                        animation2();
+                        });
+
+
+                    function animation2() {
+                      update("2014-06"); // update to June 2014
+
+                      // update main message and Next button
+                      d3.select("div.next_button")
+                        .style("background-color","lightBlue")
+                        .on("click",function() {
+                          d3.select(this).remove();
+                          d3.select("h3.message")
+                            .text("This two causes can generally explain most of the low train regularity values.")
+                            .append("div")
+                            .attr("class", "next_button").text(".")
+                            .style("background-color","white");
+
+                          // update disturbance list formatting
+                          d3.select("#weather").style("font-weight","bold");
+                          d3.select("#strikes").style("font-weight","bold");
+                          animation3();
+                          });
+                    }
+
+                    function animation3() {
+
+                    // list of all dates available
                     var dates = ['2011-09','2011-10','2011-11','2011-12',
                                   '2012-01','2012-02','2012-03','2012-04','2012-05','2012-06',
                                   '2012-07','2012-08','2012-09','2012-10','2012-11','2012-12',
@@ -370,64 +413,6 @@
                                   '2015-07','2015-08','2015-09','2015-10','2015-11','2015-12',
                                   '2016-01','2016-02','2016-03','2016-04','2016-05','2016-06'];
 
-
-                    var end_date = "2013-01"
-                    var date_idx = 0;
-                    var date_interval = setInterval(function() {
-                      update(dates[date_idx]);
-                      date_idx++;
-                      if(dates[date_idx-1] >= end_date) {
-                        clearInterval(date_interval);
-
-                        // update Next button
-                        d3.select("div.next_button")
-                          .style("background-color","lightBlue")
-                          .on("click",function() {
-                            d3.select(this).remove();
-                            d3.select("h3.message")
-                              .text("But big strikes on a national level can also have a major impact as seen in June 2014")
-                              .append("div")
-                              .attr("class", "next_button").text("Next...")
-                              .style("background-color","white");
-
-                            // update disturbance list formatting
-                            d3.select("#weather").style("font-weight","normal");
-                            d3.select("#strikes").style("font-weight","bold");
-                            animation2();
-                            });
-                      }
-                    }, 1000);
-
-                    function animation2() {
-                      var end_date = "2014-06"
-                      var date_idx = 16; // starting on January 2013
-                      var date_interval = setInterval(function() {
-                        update(dates[date_idx]);
-                        date_idx++;
-                        if(dates[date_idx-1] >= end_date) {
-                          clearInterval(date_interval);
-
-                          // update main message and Next button
-                          d3.select("div.next_button")
-                            .style("background-color","lightBlue")
-                            .on("click",function() {
-                              d3.select(this).remove();
-                              d3.select("h3.message")
-                                .text("This two causes can generally explain most of the low train regularity values.")
-                                .append("div")
-                                .attr("class", "next_button").text(".")
-                                .style("background-color","white");
-
-                              // update disturbance list formatting
-                              d3.select("#weather").style("font-weight","bold");
-                              d3.select("#strikes").style("font-weight","bold");
-                              animation3();
-                              });
-                        }
-                      }, 1000);
-                    }
-
-                    function animation3() {
                       var end_date = "2016-06"
                       var date_idx = 33; // starting on June 2014
                       var date_interval = setInterval(function() {

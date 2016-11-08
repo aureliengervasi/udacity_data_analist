@@ -50,7 +50,7 @@ My visual encoding in this case would be the stroke color which would vary from 
 
 I also included the main disturbances statistics in order to see the correlation between train regularity and the different types of disturbances. The different observations related to each month are displayed below the map, if the user wants more details.
 
-The overall visualization is based on a "martini-glass" scheme. The visualization begins with an animation that updates the map for each month between September 2011 and January 2013, which is a good example of the impact of weather conditions on train regularity. The next animation brings the viewer to June 2014, where a lot of strikes occurred in the railway company. The last animation unrolls the remaining months until June 2016. At the end of this sequence, the user has the possibility to choose which specific month he wants to look at. Thanks to mouse-over events, it is also possible to get the exact regularity value on each train line section.
+The overall visualization is based on a "martini-glass" scheme. The visualization begins with an animation that updates the map to January 2013, which is a good example of the impact of weather conditions on train regularity. The next animation brings the viewer to June 2014, where a lot of strikes occurred in the railway company. The last animation unrolls the remaining months until June 2016. At the end of this sequence, the user has the possibility to choose which specific month he wants to look at. Thanks to mouse-over events, it is also possible to get the exact regularity value on each train line section.
 
 ### Data preparation
 
@@ -81,7 +81,7 @@ The visualization should bring several messages:
 
 ## Feedback
 
-In order to improve he first version of my visualization (index_old.html), I had it reviewed by 3 friends. The following [link](PNG/Capture_v1.PNG) gives an idea about the first version. Several observations have been made, which I used to develop further my project:
+In order to improve he first version of my visualization (index_old.html), I had it reviewed by 3 friends. The following [link](PNG/Capture_v1.PNG) gives an idea about the first version. Several observations have been made, which I used to develop further my project and which led to the [final version](http://aureliengervasi.github.io/udacity_data_analist/P6/index.html):
 - "Varying path opacity and thickness produces lines that are sometimes difficult to see. They are too thin, and almost transparent." In fact, for regularity above 85% it was very difficult to see where the line is. As a consequence, I choose to only vary the line opacity, and I doubled the maximum thickness that can be reached.
 - "With no legend explaining the line thickness scale, it is difficult to judge if what we see translates a strong disturbance or not."
 - "But even with a legend, it would be nice to be able to get the exact value when my mouse is over the railway section."
