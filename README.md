@@ -69,6 +69,8 @@ I choose to use the monthly TGV train line regularity statistics from the French
 
 The visualization is implemented in an html page, using the D3.js library and geojson data for drawing the map of France.
 
+[Link to the HTML visualization](http://aureliengervasi.github.io/udacity_data_analist/P6/index.html)
+
 ***topics: Dimple.js, D3.js, visualization design principles, visual encodings, HTML, CSS, SVG, geojson***
 
 
