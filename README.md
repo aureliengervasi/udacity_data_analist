@@ -30,7 +30,7 @@ The correlation of the survival rate with each independent variable was studied,
 
 ***topics: Python, NumPy, Pandas, Matplotlib***
 
-### [P3 - Wrangle OpenStreetMap Data with MongoDB - Paris Metroline](P3 - Wrangle OpenStreetMap Data/Readme.md)
+### [P3 - Wrangle OpenStreetMap Data with MongoDB - Paris Metroline](P3 - Wrangle OpenStreetMap Data/)
 
 **Chose a region and used data munging techniques to assess the quality of the data for validity, accuracy, completeness, consistency and uniformity.**
 
