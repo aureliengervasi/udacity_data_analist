@@ -38,6 +38,8 @@ Pandas version: v0.17.1
 
 D3.js version: v3
 
+[Link to the HTML visualization](http://aureliengervasi.github.io/udacity_data_analist/P6/index.html)
+
 ## Summary
 
 ### Design Decision
