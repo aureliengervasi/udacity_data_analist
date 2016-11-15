@@ -73,7 +73,7 @@ The visualization is implemented in an html page, using the D3.js library and ge
 
 ***topics: Dimple.js, D3.js, visualization design principles, visual encodings, HTML, CSS, SVG, geojson***
 
-### [P7 - Design an A/B Test](P7 - Design an A B Test/Readme.md)
+### [P7 - Design an A/B Test](P7 - Design an A B Test/)
 
 The goal of this project is to design an A/B test in order modify the Udacity website to improve the overall student experience and improve coaches' capacity to support students.
 
