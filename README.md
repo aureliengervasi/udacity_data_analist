@@ -59,7 +59,7 @@ The major challenge is the low number of entries in the dataset (145 entries wit
 
 In the end, the best classifier achieved a precision of 33% and a recall of 60%.
 
-*topics: Python, scikit-learn, machine learning, natural language processing, feature selection, hyper-parameter tuning, verifying machine learning performance*
+**topics: Python, scikit-learn, machine learning, natural language processing, feature selection, hyper-parameter tuning, verifying machine learning performance***
 
 ### [P6 - Make Effective Data Visualization](P6 - Make Effective Data Visualization/Readme.md)
 
@@ -73,5 +73,17 @@ The visualization is implemented in an html page, using the D3.js library and ge
 
 ***topics: Dimple.js, D3.js, visualization design principles, visual encodings, HTML, CSS, SVG, geojson***
 
+### [P7 - Design an A/B Test](P7 - Design an A B Test/Readme.md)
 
+The goal of this project is to design an A/B test in order modify the Udacity website to improve the overall student experience and improve coaches' capacity to support students.
+
+My work consisted in different steps:
+- Choosing the invariant and evaluation metrics
+- Defining a Null hypothesis and whether to use the Bonferroni correction
+- Estimating the size (in page views) and the duration/exposure of the experiment
+- Conduct sanity checks on the invariant metrics after the first results
+- Conduct effect size test and sign-test on the evaluation metrics after the first results
+- Decide whether to launch the experiment
+
+***topics: statistics, hypothesis testing, pooled standard error, test sizing***
 	
