@@ -16,6 +16,8 @@ The unit of diversion is a cookie, although if the student enrolls in the free t
 
 ## Metric Choice
 
+The following metrics were available as invariant or evaluation metrics.
+
 The practical significance boundary for each metric, that is, the difference that would have to be observed before that was a meaningful change for the business, is given in parentheses. All practical significance boundaries are given as absolute changes.
 
 ### Invariant metrics
@@ -40,9 +42,24 @@ If the trial screener works as expected, fewer visitors will enroll in the free 
 
 - **Net conversion**: *number of user-ids to remain enrolled past the 14-day boundary (and thus make at least one payment) divided by the number of unique cookies to click the "Start free trial" button.* (dmin= 0.0075)
 
-One of the goal of this experiment is to show that, even with the trial screener, the number of students that stay enrolled after the 14-day boundary stays roughly the same. To validate this assumption, this metric should not change significantly.
+One of the goal of this experiment is to show that, even with the trial screener, the number of students that stay enrolled after the 14-day boundary is not reduced. To validate this assumption, this metric should not decrease significantly.
 
 Another solution could have been to have also chosen the retention metric, but as its probability is close to 50%, it would lead to a very high number of page views to spot significant changes.
+
+
+### Unused metrics
+
+- **Number of user-ids**: *number of users who enroll in the free trial.* (dmin=50)
+
+This metric could have been chosen as an evaluation metric, as the experiment is supposed reduce it significantly. But as it is an absolute value, and not a ratio, its variation also depends on the number of students that ends up in the group. This dependency makes it a relatively poor evaluation metrics to my opinion.
+
+
+- **Retention**: *number of user-ids to remain enrolled past the 14-day boundary (and thus make at least one payment) divided by number of user-ids to complete checkout.* (dmin=0.01)
+
+This metric could have been used as an evaluation metrics. We could logically expect that it would increase, as the students who enroll are more likely to remain enrolled past the 14-day boundary.
+
+But as its baseline value is close to 0.5 (0.53), it would lead to a very high number of samples (4 655 238 page views without the Bonferroni correction!) to validate the test power.
+
 
 
 ## Measuring Standard Deviation
@@ -64,7 +81,7 @@ Evaluation metric | Sample size | Probability | Standard deviation
 Gross conversion | 400 | 0,21 | 0,0202
 Net conversion | 400 | 0,11 | 0,0156
 
-All the chosen evaluation metrics are probabilities, which should help to validate our choice of using an analytical method to estimate their variability. Even if using cookies may temper this assumption, these metrics are based on independent events. 
+All the chosen evaluation metrics are probabilities where the unit of analysis is a count of cookies. In our experiment, the unit of diversion is also the cookie. Hence, we can be confident in using this analytical method to estimate the variability.
 
 But it is important to note that assuming these distributions to be like binomial distributions involves a chance that their variability gets underestimated. 
 
@@ -97,18 +114,20 @@ I will not use the Bonferroni correction on these two metrics because, the **AND
 
 Evaluation metrics | probability = p | dmin | α | 1−β | Total page views
 ------- | -------- | -------- | -------- | -------- | --------
-Gross conversion | 0,21 | 0,01 | 2,5% | 80% | 788450
-Net conversion | 0,11 | 0,0075 | 2,5% | 80% | 827150
+Gross conversion | 0,21 | 0,01 | 5% | 80% | 651075
+Net conversion | 0,11 | 0,0075 | 5% | 80% | 683050
 
-Approximately 827150 page views will be needed for this experiment.
+Approximately 683050 page views will be needed for this experiment.
 
 ### Duration vs. Exposure
 
-This amount of page views can be obtained in 21 days if 100% of the traffic is dedicated to this experiment. 
+This amount of page views can be obtained in less than 18 days if 100% of the traffic is dedicated to this experiment. 
 
 Supposing that no other experiment is being run at the same time, this could be an acceptable solution. 
 
-But dedicating all the website traffic to this experiment can be risky. If something goes wrong in the experiment group, we can lose up to 50% of the users willing to register for the free trial. But as the website modification is small, this risk is very limited.
+This choice can be justified by the fact that the users participating in this experiment are exposed to minimal risk. They are no chance that people gets hurt (physically, nor psychologically, nor emotionally), or that sensitive personal data gets leaked. It does not seem necessary to limit this experiment to a fraction of the total traffic.
+
+But dedicating all the website traffic to this experiment can also lead to strong disturbances if something goes wrong in the implementation. For instance, we can lose up to 50% of the users (the experiment group) willing to register for the free trial. But as the website modification is small, this is quite unlikely.
 
 
 ## Analysis
@@ -154,33 +173,34 @@ Sanity check: | **Passed!**
 
 A metric is statistically significant if the confidence interval does not include 0 (that is, you can be confident there was a change), and it is practically significant if the confidence interval does not include the practical significance boundary (that is, you can be confident there is a change that matters to the business.)
 
->NB: I am using the Bonferroni correction for a total family-wise power test of 5%.
 
 #### Gross conversion
 
-This metric must be significantly different between the control group and the experiment group to reject our Null hypothesis. We are using the pooled standard error to estimate the 97.5% confidence interval (with the Bonferroni correction).
+This metric must be significantly different between the control group and the experiment group to reject our Null hypothesis. We are using the pooled standard error to estimate the 95% confidence interval (no Bonferroni correction).
 
 Indicator | Value
 ---- | ----
 Pooled standard error | 0.0044
 Observed difference | -0.0206
-Confidence interval | [-0.0304; -0.0108]
+Confidence interval | [-0.0291; -0.0120]
 Statistical significance: | **Yes**
 Practical significance boundary | 0.010
 Practical significance: | **Yes**
 
 #### Net conversion
 
-This metric must be **NOT** significantly different between the control group and the experiment group to reject our Null hypothesis. Indeed, we don't want our net conversion to change with the new free trial screener. As before, we are using here the pooled standard error to estimate the 97.5% confidence interval (with the Bonferroni correction).
+This metric should **NOT** decrease significantly between the control group and the experiment group to reject our Null hypothesis. Indeed, we don't want our net conversion to decrease with the new free trial screener. As before, we are using here the pooled standard error to estimate the 95% confidence interval (no Bonferroni correction).
 
 Indicator | Value
 ---- | ----
 Pooled standard error | 0.0034
 Observed difference | -0.0049
-Confidence interval | [-0.0126; 0.0028]
+Confidence interval | [-0.0116; 0.0019]
 Statistical significance: | **No**
 Practical significance boundary | 0.0075
 Practical significance: | **No**
+
+It is important to underline the fact that the confidence interval is not contained inside the practical significance interval. There is a chance that the net conversion drops with the new trial-screener.
 
 ### Sign test
 
@@ -193,7 +213,7 @@ Indicator | Value
 Number of positive events | 19
 Total number of events | 23
 Two-tail p-value (binomial distribution) | 0.0026
-Statistical significance (with Bonferroni correction)? | **Yes**
+Statistical significance? | **Yes**
 
 #### Net conversion
 
@@ -202,19 +222,26 @@ Indicator | Value
 Number of positive events | 13
 Total number of events | 23
 Two-tail p-value (binomial distribution) | 0.6776
-Statistical significance (with Bonferroni correction)? | **No**
+Statistical significance? | **No**
 
 ### Summary
 
-The effect-size hypothesis test and the sign-test both showed significant results to reject our Null hypothesis.
+The effect-size hypothesis test and the sign-test both showed from the first results that there are high chances to reject our Null hypothesis.
+
+But the net conversion metrics still hold uncertainties whether it will not decrease with the new screener.
 
 >**Null hypothesis**: The trial screener does not reduce the number of frustrated students who leave the free trial **OR** the trial screener reduces the number of students continuing past the free trial.
 
-The Bonferroni correction enabled us to ensure a 5% family-wise power test with 2 metrics being evaluated (Gross conversion and Net conversion). 
+As we are considering an **AND** relation between the two metrics, I did not use the Bonferroni correction to ensure a family-wise alpha of 5%. This relation that binds them is conservative enough to ensure the necessary test power. 
 
 ## Recommendation
 
-Out of the first results, all the sanity checks on the invariant metrics have been validated. When looking at the evaluation metrics, we can already see statistically and practically significant results that go in the direction of rejecting the Null hypothesis. All the key indicators are reacting as we were expecting them to be, which is why I would recommend to launch the experiment. 
+Out of the first results, all the sanity checks on the invariant metrics have been validated. When looking at the evaluation metrics, the gross conversion shows a significant (statistically and practically) reduction.
+
+But the net conversion metrics only shows that there is no statistically significant change. The confidence interval is not included in the practical significance interval. This means that we cannot ensure yet (with alpha = 95%) that the net conversion will not decrease beyond the practical significance boundary. We need more samples to precise our confidence interval.
+
+
+As the other key indicators are reacting as we were expecting them to be, I would recommend to launch the experiment to gather more samples and get a smaller confidence interval for my evaluation metrics.
 
 # Follow-up experiment
 
@@ -224,14 +251,15 @@ To keep student motivation during the free trial process, an e-mail could be sen
 
 My hypothesis in this case would be that sending this e-mail would help to reduce the number of students having already enrolled in the free trial program and canceling before the end of the 14-day boundary.
 
-I would use the net conversion as an evaluation metric, and I would expect it to be significantly higher in the experiment group than in the control group. In that case, my unit of diversion would be the number of unique cookies that clicks on the "start free trial" button. With this metric, I will be able to detect if this e-mail sending improves the number of students continuing after the 14-day boundary. I will not use the retention metric, as its probability is too close to 0.5, which would lead to a too high number of page views.
+I would use the retention as an evaluation metric.
 
-I would also use the following metrics as invariant metrics to conduct my sanity checks:
+>That is, number of user-ids to remain enrolled past the 14-day boundary (and thus make at least one payment) divided by number of user-ids to complete checkout.
 
-- Number of cookies
-- Number of clicks
-- Click-through probability on "start free trial button"
-- Gross conversion
+As our experiment is dealing with users having already enrolled, it does not make sense anymore to use cookie-based metrics. In this case, my unit of diversion would be the user-id. 
 
-As we are not using the retention as an evaluation metric, the gross conversion is especially critical here to make sure that any difference detected in the net conversion is not simply related to a change in the probability of finishing the log-in process.
+I would expect the retention to be significantly higher in the experiment group than in the control group. With this metric, I will be able to detect if this e-mail sending improves the number of students continuing after the 14-day boundary. 
+
+But using the retention metrics might lead to a high number of necessary page views as its baseline value is close to 0.5. We need to make sure that the test duration is compatible with the business needs.
+
+My unit of diversion being the user-id, I would use the number of user-id as an invariant metrics to conduct my sanity checks.
 
