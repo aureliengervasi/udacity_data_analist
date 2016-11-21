@@ -95,16 +95,16 @@ If possible, I would conduct empirical variability estimations on both metrics b
 
 To clarify the problem, I detailed below the chosen Null hypothesis and how do we reject it.
 
-**Null hypothesis**: The trial screener does not reduce the number of frustrated students who leave the free trial **OR** the trial screener reduces the number of students continuing past the free trial.
+**Null hypothesis**: The trial screener does not reduce the number of frustrated students who leave the free trial or the trial screener reduces the number of students continuing past the free trial.
 
-So, to reject the Null hypothesis, the following results must be validated:
+So, to reject the Null hypothesis, the following alternative hypothesis must be validated:
 - There is a significant reduction of the gross conversion rate, 
 
 **AND**
 
 - There is not a significant reduction of the net conversion rate
 
-I will not use the Bonferroni correction on these two metrics because, the **AND** relation that binds them is conservative enough to ensure the necessary test power. 
+I will not use the Bonferroni correction on these two metrics because the **AND** relation that binds them is conservative enough. 
 
 
 ### Number of Samples vs. Power
@@ -200,7 +200,7 @@ Statistical significance: | **No**
 Practical significance boundary | 0.0075
 Practical significance: | **No**
 
-It is important to underline the fact that the confidence interval is not contained inside the practical significance interval. There is a chance that the net conversion drops with the new trial-screener.
+It is important to underline the fact that the lower bound of the practical significance interval (-0.0075) is included in the confidence interval [-0.0116; 0.0019]. This means that we cannot state that the free-trial screener does not reduce the net retention level past the practical significance level.
 
 ### Sign test
 
@@ -226,22 +226,24 @@ Statistical significance? | **No**
 
 ### Summary
 
-The effect-size hypothesis test and the sign-test both showed from the first results that there are high chances to reject our Null hypothesis.
+The effect-size hypothesis test and the sign-test both showed from the first results that there the gross conversion should significantly be reduced by the change.
 
-But the net conversion metrics still hold uncertainties whether it will not decrease with the new screener.
+But the net conversion metrics still hold uncertainties whether it will not decrease with the new screener.  
 
->**Null hypothesis**: The trial screener does not reduce the number of frustrated students who leave the free trial **OR** the trial screener reduces the number of students continuing past the free trial.
-
-As we are considering an **AND** relation between the two metrics, I did not use the Bonferroni correction to ensure a family-wise alpha of 5%. This relation that binds them is conservative enough to ensure the necessary test power. 
+As we are testing whether the gross conversion is reduced, **AND** that the net conversion is not reduced, I did not use the Bonferroni correction. Otherwise, it would have been too conservative and would have increase the chance of false negative.  
 
 ## Recommendation
 
 Out of the first results, all the sanity checks on the invariant metrics have been validated. When looking at the evaluation metrics, the gross conversion shows a significant (statistically and practically) reduction.
 
-But the net conversion metrics only shows that there is no statistically significant change. The confidence interval is not included in the practical significance interval. This means that we cannot ensure yet (with alpha = 95%) that the net conversion will not decrease beyond the practical significance boundary. We need more samples to precise our confidence interval.
+But the net conversion metrics only shows that there is no statistically significant change. The lower bound of the practical significance interval is included in the confidence interval. This means that we cannot ensure yet (with alpha = 95%) that the net conversion will not decrease beyond the practical significance boundary. We need more samples to precise our confidence interval.
 
+This would be a good time to get the client's opinion. What the first results showed us is that:
+- the free-trial screener significantly reduces the gross conversion, which could be translated in a cost reduction for our client
+- the free trial screener will not significantly increase the net conversion, and there is a slight chance that it can even decrease it, resulting in a loss of income.
 
-As the other key indicators are reacting as we were expecting them to be, I would recommend to launch the experiment to gather more samples and get a smaller confidence interval for my evaluation metrics.
+What is difficult for me to assess, is whether the cost reduction caused by the free-trial screener could easily compensate the potential loss of income. If this is the case, I would recommend to launch the experiment, which could help us to get more samples and precise our confidence interval for the net conversion. Otherwise, it would be wiser to think about another experiment. 
+
 
 # Follow-up experiment
 
