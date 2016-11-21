@@ -85,12 +85,17 @@ required_size(s=sqrt(0.1*(1-0.1)*2), d_min=0.01)
 p_click = 3200/40000 # Click-through-probability on "Start free trial"
 
 # sample size calculation for Gross conversion with Bonferroni correction
-required_size(s=sqrt(0.21*(1-0.21)*2), d_min=0.01, alpha=0.05/2)/p_click*2
+required_size(s=sqrt(0.21*(1-0.21)*2), d_min=0.01, alpha=0.05)/p_click*2
 
 # sample size calculation for Net conversion with Bonferroni correction
-required_size(s=sqrt(0.11*(1-0.11)*2), d_min=0.0075, alpha=0.05/2)/p_click*2
+required_size(s=sqrt(0.11*(1-0.11)*2), d_min=0.0075, alpha=0.05)/p_click*2
 
 # NB: to get the total page view number, we need the maximum number of samples related to one metric, 
 #     multiply it by the click-through probability to get the number of pages, and multiply it by 2
 #     to get the total number of pages for both groups (experiment and control)
 
+
+
+# sample size calculation for retention conversion with Bonferroni correction
+p_enrollement = 0.21
+required_size(s=sqrt(0.53*(1-0.53)*2), d_min=0.0100, alpha=0.05)/p_enrollement/p_click*2
