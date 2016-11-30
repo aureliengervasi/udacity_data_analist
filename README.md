@@ -75,15 +75,10 @@ The visualization is implemented in an html page, using the D3.js library and ge
 
 ### [P7 - Design an A/B Test](P7 - Design an A B Test/)
 
-The goal of this project is to design an A/B test in order modify the Udacity website to improve the overall student experience and improve coaches' capacity to support students. 
+**Designed an A/B test, including which metrics to measure and how long the test should be run. I also analyzed the results of an A/B test that was run by Udacity, recommended a decision, and proposed a follow-up experiment.**
 
-My work consisted in different steps:
-- Choosing the invariant and evaluation metrics
-- Defining a Null hypothesis and whether to use the Bonferroni correction
-- Estimating the size (in page views) and the duration/exposure of the experiment
-- Conduct sanity checks on the invariant metrics after the first results
-- Conduct effect size test and sign-test on the evaluation metrics after the first results
-- Decide whether to launch the experiment
+The goal of this project was to design an A/B test in order modify the Udacity website to improve the overall student experience and improve coaches' capacity to support students. 
 
-***topics: statistics, hypothesis testing, pooled standard error, test sizing***
+
+***topics: A/B test design, confidence intervals, binomial distribution, variability of different metrics, hypothesis testing***
 	
